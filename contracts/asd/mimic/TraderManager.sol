@@ -5,6 +5,7 @@ contract TraderManager {
     struct SocialTrader {
         mapping(address => Follower) followers;
         address user;
+        address socialTraderToken;
         bool verified;
     }
     struct Follower {
@@ -26,6 +27,12 @@ contract TraderManager {
         _;
     }
 
+    function followSocialTrader(address _socialTrader) external {
+        require(
+            listOfSocialTraders[_socialTrader].user != address(0),
+            "Invalid social trader"
+        );
+    }
     function verifySocialTrader(address _user) external onlyAdmin {
         require(
             listOfSocialTraders[_user].user != address(0)
