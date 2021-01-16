@@ -1,6 +1,6 @@
 ---
 name: New Issue Template
-about: Describe this issue template's purpose here.
+about: New Issue Template for Features or Bugs
 title: "[BUG/FEATURE] Issue Detail"
 labels: ''
 assignees: ''
