@@ -37,7 +37,10 @@ contract TraderManager {
         address _FEE_TOKEN_ADDRESS,
         uint256 _FEE,
         uint256 _MINIMUM_MINT
-    ) public returns(address token) {
+    ) 
+        public 
+        returns(address token) 
+    {
         token = address(
             new SocialTraderToken(
                 msg.sender,
@@ -59,25 +62,31 @@ contract TraderManager {
 
         return token;
     }
-    function followSocialTrader(address _socialTrader, uint256 _amount) external {
+    function followSocialTrader(
+        address _socialTrader, 
+        uint256 _amount
+    ) 
+        external 
+    {
         require(
             listOfSocialTraders[_socialTrader].user != address(0),
             "Invalid social trader"
         );
         SocialTraderToken token = listOfSocialTraders[_socialTrader].socialTraderToken;
-
+        token.mintTokens(_amount);
     }
-    function unfollowSocialTrader(address _trader) external {
+    function unfollowSocialTrader(address _socialTrader) external {
         require(
-            listOfSocialTraders[_trader].user != address(0)
+            listOfSocialTraders[_socialTrader].user != address(0)
         );
-        //listOfSocialTraders[_trader].followers[msg.sender] = false;
+        SocialTraderToken token = listOfSocialTraders[_socialTrader].socialTraderToken;
+        token.burnTokens(token.balanceOf(msg.sender));
     }
-    function verifySocialTrader(address _trader) external onlyAdmin {
+    function verifySocialTrader(address _socialTrader) external onlyAdmin {
         require(
-            listOfSocialTraders[_trader].user != address(0)
+            listOfSocialTraders[_socialTrader].user != address(0)
         );
-        listOfSocialTraders[_trader].verified = true;
+        listOfSocialTraders[_socialTrader].verified = true;
     }
     function onlyAdminCheck() internal view {
         require(

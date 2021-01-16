@@ -4,7 +4,6 @@ pragma solidity ^0.7.0;
 import "../ERC677/ERC677.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
-// !!! TODO: ADD BURNABLE FUNCTIONS !!!
 contract SocialTraderToken is ERC677 {
     using SafeMath for uint256;
     /**
@@ -64,6 +63,9 @@ contract SocialTraderToken is ERC677 {
         _onlyFollower();
         _;
     }
+    function burnTokens(uint256 _amount) public {
+        _burn(msg.sender, _amount);
+    }
     function mintTokens(uint256 _amount) public {
         require(
             allowNewMints,
@@ -73,10 +75,14 @@ contract SocialTraderToken is ERC677 {
             _amount >= MINIMUM_MINT
         );
         _chargeFee(_amount);
+        _mint(msg.sender, _amount);
     }
     function redeemFees() public onlySocialTrader {
         IERC20 token = IERC20(FEE_TOKEN_ADDRESS);
-        token.transfer(socialTrader, token.balanceOf(address(this)));
+        token.transfer(
+            socialTrader, 
+            token.balanceOf(address(this))
+        );
     }
     function changeFee(uint256 _amount) public onlySocialTrader {
         if(_amount > 0) {
@@ -105,7 +111,10 @@ contract SocialTraderToken is ERC677 {
         );
     }
     function _chargeFee(uint256 _minted) internal {
-        transferFrom(msg.sender, address(this), _minted.mul(FEE_PER_TOKEN));
+        transferFrom(
+            msg.sender, address(this), 
+            _minted.mul(FEE_PER_TOKEN)
+        );
     }
 
 }
