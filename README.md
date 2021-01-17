@@ -18,4 +18,6 @@ As an alternative, Optional can act as a secondary frontend. Ability to convert 
 
 Project Mimic is in development, not currently audited, additional risks in the underlying code, and additional risks with the social trader.
 
+**This is NOT investment advice! Options involve special risks and may not fit well for all investors. Do your own research!**
+
 Completion of the project is not guaranteed.
