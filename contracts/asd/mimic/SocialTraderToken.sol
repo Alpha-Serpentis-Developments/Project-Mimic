@@ -42,9 +42,9 @@ contract SocialTraderToken is ERC677 {
     event TraderManagerChanged(address _newTraderManager);
 
     constructor(
-        address _TRADER_MANAGER,
         string memory _name, 
-        string memory _symbol, 
+        string memory _symbol,
+        address _TRADER_MANAGER,
         address _FEE_TOKEN_ADDRESS,
         uint256 _FEE_PER_TOKEN,
         uint16 _PROFIT_TAKE_FEE,

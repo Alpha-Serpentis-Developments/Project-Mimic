@@ -20,8 +20,10 @@ contract TraderManager {
         LONG_PUT,
         SHORT_CALL,
         SHORT_PUT,
-        DEBIT_SPREAD,
-        CREDIT_SPREAD,
+        CALL_DEBIT_SPREAD,
+        CALL_CREDIT_SPREAD,
+        PUT_DEBIT_SPREAD,
+        PUT_CREDIT_SPREAD,
         STRADDLE,
         LONG_STRANGLE,
         SHORT_STRANGLE
@@ -57,6 +59,8 @@ contract TraderManager {
     address private admin;
 
     event SocialTraderRegistered(address socialTrader, address token);
+    event SocialTraderVerified(address socialTrader);
+    event AdminChanged(address newAdmin);
 
     constructor(address _admin) {
         require(
@@ -83,6 +87,7 @@ contract TraderManager {
         string memory _symbol,
         address _FEE_TOKEN_ADDRESS,
         uint256 _FEE,
+        uint16 _PROFIT_TAKE_FEE,
         uint256 _MINIMUM_MINT
     ) 
         public 
@@ -90,12 +95,14 @@ contract TraderManager {
     {
         token = address(
             new SocialTraderToken(
-                msg.sender,
                 _name,
                 _symbol,
+                address(this),
                 _FEE_TOKEN_ADDRESS,
                 _FEE,
-                _MINIMUM_MINT
+                _PROFIT_TAKE_FEE,
+                _MINIMUM_MINT,
+                msg.sender
             )
         );
 
@@ -111,7 +118,8 @@ contract TraderManager {
     function getEligibleTraders(
 
     ) 
-        public 
+        public
+        view 
         returns(address[] memory eligibleAddresses) 
     {
         
