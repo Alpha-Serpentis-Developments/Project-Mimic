@@ -26,17 +26,29 @@ contract TraderManager {
         PUT_CREDIT_SPREAD,
         STRADDLE,
         LONG_STRANGLE,
-        SHORT_STRANGLE
+        SHORT_STRANGLE,
+        CUSTOM
+    }
+    /**
+     * @dev List of trading operations 
+     */
+    enum TradeOperation {
+        BUY,
+        SELL,
+        WRITE,
+        EXERCISE
     }
     /**
      * @dev Struct that outlines a Position
      * strategy is the position's strategy type.
      * style is the position's option style
+     * oToken represents the address of the token
      * closed represents if the position is closed
      */
     struct Position {
         TradingType strategy;
         OptionStyle style;
+        address oToken;
         bool closed;
     }
     /**
@@ -61,6 +73,8 @@ contract TraderManager {
     event SocialTraderRegistered(address socialTrader, address token);
     event SocialTraderVerified(address socialTrader);
     event AdminChanged(address newAdmin);
+    event PositionOpened(address socialTrader, TradingType strategy, OptionStyle style, address oToken, uint256 positionIndex);
+    event PositionClosed(address socialTrader, uint256 positionIndex);
 
     constructor(address _admin) {
         require(
