@@ -8,6 +8,21 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 contract SocialTraderToken is ERC677 {
     using SafeMath for uint256;
     /**
+     * @dev Struct that represents the allowed moves for a follower
+     */
+    struct AllowedMoves {
+        TraderManager.OptionStyle[2] styles;
+        TraderManager.TradingType[] types;
+    }
+    /**
+     * @dev Struct that represents the token obligations for the follower
+     */
+    struct TokenObligation {
+        address[] tokensObligated;
+        mapping(address => uint256) tokensInitialAmount;
+        mapping(address => uint256) tokensObligatedAmount;
+    }
+    /**
      * @dev Address of the trader manager contract
      */
      address public TRADER_MANAGER;
@@ -38,8 +53,26 @@ contract SocialTraderToken is ERC677 {
      * @dev Allow to mint new tokens
      */
     bool public allowNewMints = true;
+    /**
+     * @dev Tokens used for committing trades
+     */
+    address[] public tokensPooled;
+    /**
+     * @dev Permissions of a follower's moves
+     */
+    mapping(address => AllowedMoves) private followerPermissions;
+    /**
+     * @dev Mapping of each pooled token that represents a ratio of what can be redeemed
+     */
+    mapping(address => uint256) private poolTokenRatio;
+    /**
+     * @dev Mapping of each participant that represents what pool tokens they're obligated to
+     */
+    mapping(address => TokenObligation) private poolTokenObligation;
 
     event TraderManagerChanged(address _newTraderManager);
+    event MintsAvailable();
+    event MintsUnavailable();
 
     constructor(
         string memory _name, 
@@ -77,6 +110,7 @@ contract SocialTraderToken is ERC677 {
         _onlyFollower();
         _;
     }
+
     function burnTokens(uint256 _amount) public {
         _burn(msg.sender, _amount);
         // Redeem collateral/underlying and profits if any
@@ -91,6 +125,17 @@ contract SocialTraderToken is ERC677 {
         );
         _chargeFee(_amount);
         _mint(msg.sender, _amount);
+    }
+    function redeemProfits(address[] memory _tokens) public onlyFollower {
+        for(uint256 i; i < _tokens.length; i++) {
+            IERC20 token = IERC20(_tokens[i]);
+            uint256 tokenInitialAmt = poolTokenObligation[msg.sender].tokensInitialAmount[_tokens[i]];
+            uint256 tokenObligatedAmt = poolTokenObligation[msg.sender].tokensObligatedAmount[_tokens[i]];
+            if(tokenInitialAmt < tokenObligatedAmt) {
+                token.transfer(msg.sender, tokenObligatedAmt-tokenInitialAmt);
+                poolTokenObligation[msg.sender].tokensObligatedAmount[_tokens[i]] = tokenInitialAmt;
+            }
+        }
     }
     function redeemFees() public onlySocialTrader {
         IERC20 token = IERC20(FEE_TOKEN_ADDRESS);
@@ -122,9 +167,10 @@ contract SocialTraderToken is ERC677 {
         address _oTokenAddress
     ) 
         public 
-        onlySocialTrader 
+        onlySocialTrader
+        returns(uint256 _positionIndex) 
     {
-        
+        // Filter addresses 
     }
     function closePosition(
         uint256 _positionIndex
@@ -136,7 +182,42 @@ contract SocialTraderToken is ERC677 {
     }
     function isFollower(address _account) public view returns(bool) {
         return balanceOf(_account) > 0;
-    } 
+    }
+    function filterEligibleAddresses(
+        TraderManager.OptionStyle _style,
+        TraderManager.TradingType _type,
+        address[] memory addresses
+    ) 
+        public 
+        view 
+        returns(address[] memory filtered) 
+    {
+        filtered = addresses;
+
+        for(uint256 i = 0; i < addresses.length; i++) {
+            bool styleAllowed;
+            bool typeAllowed;
+            // Check if the style is allowed
+            for(uint256 j = 0; j < followerPermissions[addresses[i]].styles.length; j++) {
+                if(followerPermissions[addresses[i]].styles[j] == _style) {
+                    styleAllowed = true;
+                    break;
+                }
+            }
+            // Check if the type is allowed
+            for(uint256 j = 0; j < followerPermissions[addresses[i]].types.length; j++) {
+                if(followerPermissions[addresses[i]].types[j] == _type) {
+                    typeAllowed = true;
+                    break;
+                }
+            }
+            if(!styleAllowed || !typeAllowed) {
+                delete filtered[i];
+            }
+        }
+
+        return filtered;
+    }
     function _onlySocialTrader() internal view {
         require(
             msg.sender == socialTrader,
@@ -154,6 +235,9 @@ contract SocialTraderToken is ERC677 {
             msg.sender, address(this), 
             _minted.mul(FEE_PER_TOKEN)
         );
+    }
+    function _recalculateTokenObligation() internal {
+
     }
     function _redeemFunds() internal {
         // Redeems underlying/collateral + profits (if any)
