@@ -19,7 +19,8 @@ As an alternative, Optional can act as a secondary frontend. Ability to convert 
 If you wish to contribute to the code, feel free to submit issues, pull requests, or reach out to me.
 
 Discord: AlphaSerpentis#3203 (216037365829992448)
-Twitter: @AlphaSerpentis_
+
+Twitter: [@AlphaSerpentis_](https://twitter.com/AlphaSerpentis_)
 
 # Notice
 
