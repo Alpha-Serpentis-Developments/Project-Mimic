@@ -12,7 +12,14 @@ Followers can limit their risk to certain moves, such as:
 - Credit Spreads
 - Debit Spreads
 
-As an alternative, Optional can act as a secondary frontend. Ability to convert premiums to a choice of token or to straight up Ether. In addition, the ability to create your own option chains. 
+As an alternative, Optional can act as a secondary frontend. Ability to convert premiums to a choice of token or to straight up Ether. In addition, the ability to create your own option chains.
+
+# Contributing
+
+If you wish to contribute to the code, feel free to submit issues, pull requests, or reach out to me.
+
+Discord: AlphaSerpentis#3203 (216037365829992448)
+Twitter: @AlphaSerpentis_
 
 # Notice
 
