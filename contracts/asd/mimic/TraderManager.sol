@@ -36,7 +36,9 @@ contract TraderManager {
         BUY,
         SELL,
         WRITE,
-        EXERCISE
+        BURN,
+        EXERCISE,
+        REDEEM_COLLATERAL
     }
     /**
      * @dev Struct that outlines a Position
