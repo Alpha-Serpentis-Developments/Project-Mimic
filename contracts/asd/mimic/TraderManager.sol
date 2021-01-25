@@ -2,6 +2,7 @@
 pragma solidity >=0.5.0 <0.8.0;
 
 import "./SocialTraderToken.sol";
+import "./Whitelist.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract TraderManager {
@@ -30,7 +31,7 @@ contract TraderManager {
         CUSTOM
     }
     /**
-     * @dev List of trading operations 
+     * @dev List of trading operations
      */
     enum TradeOperation {
         BUY,
@@ -54,33 +55,22 @@ contract TraderManager {
         bool closed;
     }
     /**
-     * @dev Struct that outlines the SocialTrader
+     * @dev Mapping of each Social Trader's open positions
      */
-    struct SocialTrader {
-        address user;
-        SocialTraderToken socialTraderToken;
-        Position[] positions;
-        bool verified;
-    }
-
-    /**
-     * @dev Mapping of Social Traders 
-     */
-    mapping(address => SocialTrader) private listOfSocialTraders;
+    mapping(address => Position[]) private traderOpenPositions;
     /**
      * @dev Address of the admin of the TraderManager contract
      */
     address private admin;
 
-    event SocialTraderRegistered(address socialTrader, address token);
-    event SocialTraderVerified(address socialTrader);
     event AdminChanged(address newAdmin);
     event PositionOpened(address socialTrader, TradingType strategy, OptionStyle style, address oToken, uint256 positionIndex);
     event PositionClosed(address socialTrader, uint256 positionIndex);
 
     constructor(address _admin) {
         require(
-            _admin != address(0)
+            _admin != address(0),
+            "Zero address"
         );
         admin = _admin;
     }
@@ -89,102 +79,17 @@ contract TraderManager {
         onlyAdminCheck();
         _;
     }
-    modifier onlySocialTrader {
-        onlySocialTraderCheck();
-        _;
-    }
-    modifier onlySocialTraderToken {
-        onlySocialTraderTokenCheck();
-        _;
-    }
 
-    function becomeSocialTrader(
-        string memory _name,
-        string memory _symbol,
-        address _FEE_TOKEN_ADDRESS,
-        uint256 _FEE,
-        uint16 _PROFIT_TAKE_FEE,
-        uint256 _MINIMUM_MINT
-    ) 
-        public 
-        returns(address token) 
-    {
-        token = address(
-            new SocialTraderToken(
-                _name,
-                _symbol,
-                address(this),
-                _FEE_TOKEN_ADDRESS,
-                _FEE,
-                _PROFIT_TAKE_FEE,
-                _MINIMUM_MINT,
-                msg.sender
-            )
-        );
-
-        SocialTrader memory st;
-
-        st.user = msg.sender;
-        st.socialTraderToken = SocialTraderToken(token);
-
-        listOfSocialTraders[msg.sender] = st;
-
-        return token;
-    }
     function getEligibleTraders(
 
-    ) 
+    )
         public
-        view 
-        returns(address[] memory eligibleAddresses) 
+        view
+        returns(address[] memory eligibleAddresses)
     {
         
     }
-    function followSocialTrader(
-        address _socialTrader, 
-        uint256 _amount
-    ) 
-        external 
-    {
-        require(
-            listOfSocialTraders[_socialTrader].user != address(0),
-            "Invalid social trader"
-        );
-        SocialTraderToken token = listOfSocialTraders[_socialTrader].socialTraderToken;
-        token.mintTokens(_amount);
-    }
-    function unfollowSocialTrader(address _socialTrader) external {
-        require(
-            listOfSocialTraders[_socialTrader].user != address(0)
-        );
-        SocialTraderToken token = listOfSocialTraders[_socialTrader].socialTraderToken;
-        token.burnTokens(token.balanceOf(msg.sender));
-    }
-    function verifySocialTrader(address _socialTrader) external onlyAdmin {
-        require(
-            listOfSocialTraders[_socialTrader].user != address(0)
-        );
-        listOfSocialTraders[_socialTrader].verified = true;
-    }
-    function openPosition(
-        OptionStyle _style,
-        TradingType _type,
-        address _option
-    ) 
-        external 
-        onlySocialTraderToken
-        returns(uint256 positionIndex) 
-    {
-
-    }
-    function closePosition(
-        uint256 positionIndex
-    ) 
-        external 
-        onlySocialTraderToken 
-    {
-
-    }
+    // TODO: Re-add open and close functions
     function changeAdmin(address _admin) external onlyAdmin {
         require(
             _admin != address(0)
@@ -195,18 +100,6 @@ contract TraderManager {
         require(
             msg.sender == admin,
             "Not admin"
-        );
-    }
-    function onlySocialTraderCheck() internal view {
-        require(
-            listOfSocialTraders[msg.sender].user == msg.sender,
-            "Not social trader"
-        );
-    }
-    function onlySocialTraderTokenCheck() internal view {
-        require(
-            address(listOfSocialTraders[msg.sender].socialTraderToken) == msg.sender,
-            "Not token contract"
         );
     }
 }
