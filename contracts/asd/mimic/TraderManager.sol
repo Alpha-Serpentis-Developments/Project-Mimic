@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity >=0.5.0 <0.8.0;
+pragma solidity ^0.7.0;
 
-import "./SocialTraderToken.sol";
+import "./SocialHub.sol";
 import "./Whitelist.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -92,7 +92,8 @@ contract TraderManager {
     // TODO: Re-add open and close functions
     function changeAdmin(address _admin) external onlyAdmin {
         require(
-            _admin != address(0)
+            _admin != address(0),
+            "Zero address"
         );
         admin = _admin;
     }
