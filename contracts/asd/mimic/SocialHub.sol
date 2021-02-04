@@ -20,7 +20,7 @@ contract SocialHub {
     struct SocialTrader {
         address feeTokenAddress;
         uint256 entryFee;
-        uint256 maximumFollowers;
+        uint256 maximumFollowers; // Greater than 50 is NOT recommended. Staying below 25 is optimal!
         Follower[] followers;
         mapping(address => bool) isFollowing; // Used as a check for the followers array
         uint16 profitTakeFee; // Represented as a percentage with two decimal precision
@@ -126,6 +126,18 @@ contract SocialHub {
 
         emit Unfollowed(msg.sender, _socialTrader);
     }
+    function cleanFollowers(
+        address _socialTrader
+    )
+        external
+    {
+        SocialTrader storage st = listOfSocialTraders[_socialTrader];
+        require(
+            st.exists,
+            "Not a social trader"
+        );
+        _cleanFollowers(st);
+    }
     function redeemFees() external onlySocialTrader {
 
     }
@@ -150,5 +162,18 @@ contract SocialHub {
             listOfSocialTraders[msg.sender].exists,
             "Unauthorized (social trader)"
         );
+    }
+    function _cleanFollowers(
+        SocialTrader storage _st
+    )
+        internal
+    {
+        // TODO: FIND AN EFFICIENT METHOD TO HANDLE THIS ISSUE
+        for(uint256 i = 0; i < _st.followers.length; i++) {
+            if(!_st.isFollowing[msg.sender]) {
+                delete _st.followers[i]; // Removes unfollowed user
+            }
+        }
+        _st.followers.pop();
     }
 }
