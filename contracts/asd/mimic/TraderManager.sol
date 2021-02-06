@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.7.0;
 
-import "./SocialHub.sol";
-import "./Whitelist.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SocialHub} from "./SocialHub.sol";
+import {Whitelist} from "./Whitelist.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract TraderManager {
     /**

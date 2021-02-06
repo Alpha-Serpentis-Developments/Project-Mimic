@@ -5,21 +5,21 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Incentive {
     /**
-     * @dev Token to pay the incentive
-     */
-    IERC20 private payIn;
-    /**
-     * @dev Maximum allowed to pull per request
-     */
-    uint256 private maxPayment;
-    /**
      * @dev Mapping of addresses permitted to pull funds
      */
     mapping(address => bool) private permittedAddresses;
     /**
+     * @dev Token to pay the incentive
+     */
+    IERC20 public payIn;
+    /**
+     * @dev Maximum allowed to pull per request
+     */
+    uint256 public maxPayment;
+    /**
      * @dev Address of the admin
      */
-    address private admin;
+    address public admin;
 
     constructor(address _tokenToPayIn, address _admin) {
         payIn = IERC20(_tokenToPayIn);
@@ -35,8 +35,12 @@ contract Incentive {
         _;
     }
 
-    function pullIncentive(uint256 _amount) external onlyPermitted {
-        payIn.transfer(msg.sender, _amount);
+    function pullIncentive(address _receiving, uint256 _amount) external onlyPermitted {
+        require(
+            _amount <= maxPayment,
+            "Incentive request too large!"
+        );
+        payIn.transfer(_receiving, _amount);
     }
     function addPermittedAddress(address _permitted) external onlyAdmin {
         require(

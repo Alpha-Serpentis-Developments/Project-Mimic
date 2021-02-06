@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.7.0;
 
-import "./TraderManager.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Incentive} from "./Incentive.sol";
+import {TraderManager} from "./TraderManager.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeMath} from "@openzeppelin/contracts/math/SafeMath.sol";
 
 contract SocialHub {
+    using SafeMath for uint256;
     /**
      * @dev Struct that outlines the Follower
      */
     struct Follower {
-        address user;
         TraderManager.OptionStyle[2] styles;
         TraderManager.TradingType[] types;
         address[] allowedTokens;
@@ -21,8 +23,8 @@ contract SocialHub {
         address feeTokenAddress;
         uint256 entryFee;
         uint256 maximumFollowers; // Greater than 50 is NOT recommended. Staying below 25 is optimal!
-        Follower[] followers;
-        mapping(address => bool) isFollowing; // Used as a check for the followers array
+        //Follower[] followers;
+        address[] followersAddr;
         uint16 profitTakeFee; // Represented as a percentage with two decimal precision
         bool exists; // Used as a check if social trader exists
         bool verified;
@@ -32,11 +34,24 @@ contract SocialHub {
      */
     mapping(address => SocialTrader) private listOfSocialTraders;
     /**
+     * @dev Mapping of following hashes to determine if user is following
+     */
+    mapping(bytes32 => Follower) private hashedFollowing;
+    /**
+     * @dev Rate in which the cleaning incentive is put for each element cleaned
+     */
+    uint256 public incentiveRate;
+    /**
+     * @dev Address of the incentive smart contract
+     */
+    Incentive public incentive;
+    /**
      * @dev Address of the admin of the SocialHub
      */
     address public admin;
 
     event AdminChanged(address newAdmin);
+    event IncentiveRateChanged(uint256 newRate);
     event Followed(address follower, address following);
     event Unfollowed(address follower, address following);
     event SocialTraderRegistered(address socialTrader);
@@ -94,40 +109,52 @@ contract SocialHub {
             "Not a social trader"
         );
         require(
-            st.followers.length == st.maximumFollowers,
+            st.followersAddr.length <= st.maximumFollowers,
             "Maximum follow count"
         );
-        // Assumes user approved entry fee
-        IERC20 fee = IERC20(st.feeTokenAddress);
-        fee.transferFrom(
-            msg.sender,
-            _socialTrader, // Pays direct to social trader
-            st.entryFee
+        require(
+            _styles.length > 0,
+            "Need at least one style"
         );
+        require(
+            _tradeTypes.length > 0,
+            "Need at least one type"
+        );
+        require(
+            _allowedTokens.length > 0,
+            "Need at least one allowed token"
+        );
+        if(st.entryFee > 0) {
+            // Assumes user approved entry fee
+            IERC20 fee = IERC20(st.feeTokenAddress);
+            fee.transferFrom(
+                msg.sender,
+                _socialTrader, // Pays direct to social trader
+                st.entryFee
+            );
+        }
         // Prepare follower
         Follower memory follower;
-        follower.user = msg.sender;
         follower.styles = _styles;
         follower.types = _tradeTypes;
         follower.allowedTokens = _allowedTokens;
         // Follow social trader
-        st.followers.push(follower);
-        st.isFollowing[msg.sender] = true;
+        _addFollower(st);
+        hashedFollowing[
+            keccak256(
+                abi.encode(
+                    msg.sender,
+                    _socialTrader
+                )
+            )
+        ] = follower;
 
         emit Followed(msg.sender, _socialTrader);
     }
-    function unfollowSocialTrader(address _socialTrader) external {
-        SocialTrader storage st = listOfSocialTraders[_socialTrader];
-        require(
-            st.exists,
-            "Not a social trader"
-        );
-        st.isFollowing[msg.sender] = false;
-
-        emit Unfollowed(msg.sender, _socialTrader);
-    }
-    function cleanFollowers(
-        address _socialTrader
+    function unfollowSocialTrader(
+        address _socialTrader,
+        bool _optionalClean,
+        uint256 _maxElementsToClean
     )
         external
     {
@@ -136,7 +163,26 @@ contract SocialHub {
             st.exists,
             "Not a social trader"
         );
-        _cleanFollowers(st);
+        _removeFollower(st);
+        delete hashedFollowing[keccak256(abi.encode(msg.sender, _socialTrader))];
+        if(_optionalClean) {
+            _incentive(_cleanFollowers(st, _maxElementsToClean));
+        }
+
+        emit Unfollowed(msg.sender, _socialTrader);
+    }
+    function cleanFollowers(
+        address _socialTrader,
+        uint256 _maxElementsToClean
+    )
+        external
+    {
+        SocialTrader storage st = listOfSocialTraders[_socialTrader];
+        require(
+            st.exists,
+            "Not a social trader"
+        );
+        _incentive(_cleanFollowers(st, _maxElementsToClean));
     }
     function redeemFees() external onlySocialTrader {
 
@@ -163,17 +209,71 @@ contract SocialHub {
             "Unauthorized (social trader)"
         );
     }
-    function _cleanFollowers(
+    function _addFollower(
         SocialTrader storage _st
     )
         internal
     {
-        // TODO: FIND AN EFFICIENT METHOD TO HANDLE THIS ISSUE
-        for(uint256 i = 0; i < _st.followers.length; i++) {
-            if(!_st.isFollowing[msg.sender]) {
-                delete _st.followers[i]; // Removes unfollowed user
+        for(uint256 i = 0; i < _st.followersAddr.length; i++) {
+            if(_st.followersAddr[i] == address(0)) {
+                _st.followersAddr[i] = msg.sender;
+                break;
             }
         }
-        _st.followers.pop();
+    }
+    function _removeFollower(
+        SocialTrader storage _st
+    )
+        internal
+    {
+        for(uint256 i = 0; i < _st.followersAddr.length; i++) {
+            if(_st.followersAddr[i] == msg.sender) {
+                delete _st.followersAddr[i];
+                break;
+            }
+        }
+    }
+    function _cleanFollowers(
+        SocialTrader storage _st,
+        uint256 _maxElementsToClean
+    )
+        internal
+        returns(uint256 _elementsCleaned)
+    {
+        require(
+            _maxElementsToClean > 0,
+            "Needs at least one element to clean"
+        );
+
+        bool beginToShift;
+        for(uint256 i = 0; i < _st.followersAddr.length; i++) {
+            if(beginToShift) {
+                _st.followersAddr[i] = _st.followersAddr[i+1]; // Shift to the left
+                if(i == _st.followersAddr.length - 1) { // Prevent index out of bounds
+                    break;
+                } else if(_st.followersAddr[i] == address(0)) { // Check for more empty slots
+                    _st.followersAddr[i] = _st.followersAddr[i+1];
+                    _elementsCleaned++;
+                }
+            } else if(_st.followersAddr[i] == address(0)) {
+                beginToShift = true;
+                _st.followersAddr[i] = _st.followersAddr[i+1];
+                _elementsCleaned++;
+            }
+
+            if(_elementsCleaned >= _maxElementsToClean)
+                break;
+        }
+    }
+    function _incentive(
+        uint256 _elementsCleaned
+    )
+        internal
+    {
+        require(
+            _elementsCleaned > 0,
+            "No elements cleaned"
+        );
+        incentive.pullIncentive(msg.sender, _elementsCleaned.mul(incentiveRate));
     }
 }
