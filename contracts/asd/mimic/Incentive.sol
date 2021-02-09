@@ -35,21 +35,46 @@ contract Incentive {
         _;
     }
 
-    function pullIncentive(address _receiving, uint256 _amount) external onlyPermitted {
+    function isIncentiveAvailable(
+        uint256 _amount
+    )
+        public
+        view
+        returns(bool)
+    {
+        return _amount <= payIn.balanceOf(address(this));
+    }
+    function pullIncentive(
+        address _receiving,
+        uint256 _amount
+    )
+        external
+        onlyPermitted
+    {
         require(
             _amount <= maxPayment,
             "Incentive request too large!"
         );
         payIn.transfer(_receiving, _amount);
     }
-    function addPermittedAddress(address _permitted) external onlyAdmin {
+    function addPermittedAddress(
+        address _permitted
+    )
+        external
+        onlyAdmin
+    {
         require(
             _permitted != address(0),
             "Zero address"
         );
         permittedAddresses[_permitted] = true;
     }
-    function revokePermittedAddress(address _revoked) external onlyAdmin {
+    function revokePermittedAddress(
+        address _revoked
+    )
+        external
+        onlyAdmin
+    {
         require(
             _revoked != address(0),
             "Zero address"

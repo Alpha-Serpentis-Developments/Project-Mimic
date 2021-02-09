@@ -57,7 +57,11 @@ contract TraderManager {
     /**
      * @dev Mapping of each Social Trader's open positions
      */
-    mapping(address => Position[]) private traderOpenPositions;
+    mapping(address => Position[]) public traderOpenPositions;
+    /**
+     * @dev Whitelist contract
+     */
+    Whitelist public whitelist;
     /**
      * @dev Address of the admin of the TraderManager contract
      */
