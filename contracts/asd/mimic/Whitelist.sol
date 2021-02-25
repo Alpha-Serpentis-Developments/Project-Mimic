@@ -56,6 +56,9 @@ contract Whitelist {
         );
         admin = _admin;
     }
+    function isWhitelisted(address _address) external view returns(bool) {
+        return whitelisted[_address];
+    }
     function _onlyAdmin() internal view {
         require(
             msg.sender == admin,
