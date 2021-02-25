@@ -17,6 +17,10 @@ contract Incentive {
      */
     uint256 public maxPayment;
     /**
+     * @dev Bool value if incentive is active
+     */
+    bool public active;
+    /**
      * @dev Address of the admin
      */
     address public admin;
@@ -42,7 +46,7 @@ contract Incentive {
         view
         returns(bool)
     {
-        return _amount <= payIn.balanceOf(address(this));
+        return _amount <= payIn.balanceOf(address(this)) && active;
     }
     function pullIncentive(
         address _receiving,
@@ -56,6 +60,14 @@ contract Incentive {
             "Incentive request too large!"
         );
         payIn.transfer(_receiving, _amount);
+    }
+    function changeActive(
+        bool _newVal
+    )
+        external
+        onlyAdmin
+    {
+        active = _newVal;
     }
     function addPermittedAddress(
         address _permitted
