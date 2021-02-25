@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.7.0;
+pragma experimental ABIEncoderV2;
 
 import {TraderManager} from "./TraderManager.sol";
+import {Whitelist} from "./Whitelist.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeMath} from "@openzeppelin/contracts/math/SafeMath.sol";
 
@@ -12,7 +14,7 @@ contract SocialHub {
      */
     struct Follower {
         TraderManager.OptionStyle[2] styles;
-        TraderManager.TradingType[] types;
+        string[] types; // TraderManager.TradingTypes
         address[] allowedTokens;
     }
     /**
@@ -26,7 +28,7 @@ contract SocialHub {
         //Follower[] followers;
         address[] followersAddr;
         uint16 profitTakeFee; // Represented as a percentage with two decimal precision
-        bool exists; // Used as a check if social trader exists
+        bool openToFollow;
         bool verified;
     }
     /**
@@ -38,23 +40,31 @@ contract SocialHub {
      */
     mapping(bytes32 => Follower) private hashedFollowing;
     /**
+     * @dev Mapping that shows the obligations for each token for each social trader's obligation
+     */
+    mapping(address => mapping(address => uint256)) public tokenObligations;
+    /**
+    * @dev Whitelist smart contract that outlines what addresses can be set/interact with this contract
+     */
+    Whitelist public whitelist;
+    /**
      * @dev Address of the admin of the SocialHub
      */
     address public admin;
 
     event AdminChanged(address newAdmin);
-    event IncentiveRateChanged(uint256 newRate);
     event Followed(address follower, address following);
     event Unfollowed(address follower, address following);
     event SocialTraderRegistered(address socialTrader);
     event SocialTraderVerified(address socialTrader);
 
-    constructor(address _admin) {
+    constructor(address _admin, address _whitelist) {
         require(
-            _admin != address(0),
+            _admin != address(0) && _whitelist != address(0),
             "Invalid address"
         );
         admin = _admin;
+        whitelist = Whitelist(_whitelist);
     }
 
     modifier onlyAdmin {
@@ -63,6 +73,10 @@ contract SocialHub {
     }
     modifier onlySocialTrader {
         _onlySocialTrader();
+        _;
+    }
+    modifier onlyWhitelisted {
+        _onlyWhitelisted();
         _;
     }
 
@@ -80,11 +94,11 @@ contract SocialHub {
         SocialTrader storage st = listOfSocialTraders[msg.sender];
 
         st.trader = msg.sender;
-        st.exists = true;
         st.feeTokenAddress = _feeTokenAddress;
         st.entryFee = _entryFeeAmt;
         st.maximumFollowers = _maximumFollowers;
         st.profitTakeFee = _profitTakeFee;
+        st.openToFollow = true;
 
         emit SocialTraderRegistered(msg.sender);
     }
@@ -94,14 +108,14 @@ contract SocialHub {
     function followSocialTrader(
         address _socialTrader,
         TraderManager.OptionStyle[2] memory _styles,
-        TraderManager.TradingType[] memory _tradeTypes,
+        string[] memory _tradeTypes,
         address[] memory _allowedTokens
     )
         external
     {
         SocialTrader storage st = listOfSocialTraders[_socialTrader];
         require(
-            st.exists,
+            st.trader != address(0),
             "Not a social trader"
         );
         require(
@@ -125,9 +139,10 @@ contract SocialHub {
             IERC20 fee = IERC20(st.feeTokenAddress);
             fee.transferFrom(
                 msg.sender,
-                _socialTrader, // Pays direct to social trader
+                address(this),
                 st.entryFee
             );
+            tokenObligations[st.feeTokenAddress][_socialTrader].add(st.entryFee);
         }
         // Prepare follower
         Follower memory follower;
@@ -149,7 +164,7 @@ contract SocialHub {
     {
         SocialTrader storage st = listOfSocialTraders[_socialTrader];
         require(
-            st.exists,
+            st.trader != address(0),
             "Not a social trader"
         );
         _removeFollower(st);
@@ -160,7 +175,28 @@ contract SocialHub {
      * @dev Social trader redeems fees
      */
     function redeemFees() external onlySocialTrader {
+        address tokenAddr = listOfSocialTraders[msg.sender].feeTokenAddress;
+        IERC20(tokenAddr).transfer(
+            msg.sender,
+            tokenObligations[tokenAddr][msg.sender]
+        );
 
+        tokenObligations[tokenAddr][msg.sender] = 0;
+    }
+    /**
+     * @dev Called by a Whitelisted address (TraderManager) to perform a profit take before dispersing out profits if any
+     */
+    function profitTake(
+        address _socialTrader
+    )
+        external
+        onlyWhitelisted
+    {
+        SocialTrader storage st = listOfSocialTraders[_socialTrader];
+        require(
+            st.trader != address(0),
+            "Social trader does not exist"
+        );
     }
     /**
      * @dev Verifies the social trader
@@ -168,13 +204,28 @@ contract SocialHub {
     function verifySocialTrader(address _socialTrader) external onlyAdmin {
         SocialTrader storage st = listOfSocialTraders[_socialTrader];
         require(
-            st.exists,
+            st.trader != address(0),
             "Not a social trader"
         );
         st.verified = true;
 
         emit SocialTraderVerified(_socialTrader);
     }
+    /**
+     * @dev Verifies an address is a social trader
+     */
+    function isSocialTrader(
+        address _socialTrader
+    )
+        external
+        view
+        returns(bool)
+    {
+        return listOfSocialTraders[_socialTrader].trader != address(0);
+    }
+    /**
+     * @dev Returns if an address is a social trader
+     */
     function _onlyAdmin() internal view {
         require(
             msg.sender == admin,
@@ -183,8 +234,14 @@ contract SocialHub {
     }
     function _onlySocialTrader() internal view {
         require(
-            listOfSocialTraders[msg.sender].exists,
+            listOfSocialTraders[msg.sender].trader != address(0),
             "Unauthorized (social trader)"
+        );
+    }
+    function _onlyWhitelisted() internal view {
+        require(
+            whitelist.isWhitelisted(msg.sender),
+            "Unauthorized (whitelist)"
         );
     }
     function _addFollower(

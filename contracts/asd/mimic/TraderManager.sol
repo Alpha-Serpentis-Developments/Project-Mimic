@@ -14,23 +14,6 @@ contract TraderManager {
         EUROPEAN
     }
     /**
-     * @dev List of trading strategies that are supported by Mimic
-     */
-    enum TradingType {
-        LONG_CALL,
-        LONG_PUT,
-        SHORT_CALL,
-        SHORT_PUT,
-        CALL_DEBIT_SPREAD,
-        CALL_CREDIT_SPREAD,
-        PUT_DEBIT_SPREAD,
-        PUT_CREDIT_SPREAD,
-        STRADDLE,
-        LONG_STRANGLE,
-        SHORT_STRANGLE,
-        CUSTOM
-    }
-    /**
      * @dev List of trading operations
      */
     enum TradeOperation {
@@ -46,14 +29,33 @@ contract TraderManager {
      * strategy is the position's strategy type.
      * style is the position's option style
      * oToken represents the address of the token
+     * tokens represents the array of tokens utilized
      * closed represents if the position is closed
      */
     struct Position {
-        TradingType strategy;
+        string strategy;
         OptionStyle style;
         address oToken;
+        mapping(address => uint256) startingValues;
         bool closed;
     }
+    /**
+     * @dev List of trading strategies that are supported by Mimic
+     */
+    string[] public tradingTypes = new string[](
+        "LONG_CALL",
+        "LONG_PUT",
+        "SHORT_CALL",
+        "SHORT_PUT",
+        "CALL_DEBIT_SPREAD",
+        "CALL_CREDIT_SPREAD",
+        "PUT_DEBIT_SPREAD",
+        "PUT_CREDIT_SPREAD",
+        "STRADDLE",
+        "LONG_STRANGLE",
+        "SHORT_STRANGLE",
+        "CUSTOM"
+    );
     /**
      * @dev Mapping of each Social Trader's open positions
      */
@@ -63,24 +65,40 @@ contract TraderManager {
      */
     Whitelist public whitelist;
     /**
+     * @dev Social Hub contract
+     */
+    SocialHub public socialHub;
+    /**
      * @dev Address of the admin of the TraderManager contract
      */
     address private admin;
 
     event AdminChanged(address newAdmin);
-    event PositionOpened(address socialTrader, TradingType strategy, OptionStyle style, address oToken, uint256 positionIndex);
+    event WhitelistChanged(address newWhitelist);
+    event SocialHubChanged(address newSocialHub);
+    event PositionOpened(address socialTrader, string strategy, OptionStyle style, address oToken, uint256 positionIndex);
     event PositionClosed(address socialTrader, uint256 positionIndex);
 
-    constructor(address _admin) {
+    constructor(address _admin, address _whitelist, address _socialHub) {
         require(
             _admin != address(0),
             "Zero address"
         );
         admin = _admin;
+        whitelist = Whitelist(_whitelist);
+        socialHub = SocialHub(_socialHub);
     }
 
     modifier onlyAdmin {
-        onlyAdminCheck();
+        _onlyAdminCheck();
+        _;
+    }
+    modifier onlySocialTrader {
+        _onlySocialTrader();
+        _;
+    }
+    modifier onlyWhitelisted {
+        _onlyWhitelisted();
         _;
     }
 
@@ -93,7 +111,14 @@ contract TraderManager {
     {
         
     }
-    // TODO: Re-add open and close functions
+    function openPosition(
+        
+    ) external onlySocialTrader {
+
+    }
+    function closePosition() external onlySocialTrader {
+
+    }
     function changeAdmin(address _admin) external onlyAdmin {
         require(
             _admin != address(0),
@@ -101,10 +126,22 @@ contract TraderManager {
         );
         admin = _admin;
     }
-    function onlyAdminCheck() internal view {
+    function _onlyAdminCheck() internal view {
         require(
             msg.sender == admin,
             "Not admin"
+        );
+    }
+    function _onlySocialTrader() internal view {
+        require(
+            socialHub.isSocialTrader(msg.sender),
+            "Unauthorized (social trader)"
+        );
+    }
+    function _onlyWhitelisted() internal view {
+        require(
+            whitelist.isWhitelisted(msg.sender),
+            "Unauthorized (whitelist)"
         );
     }
 }
