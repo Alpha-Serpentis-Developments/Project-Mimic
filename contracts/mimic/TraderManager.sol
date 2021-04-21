@@ -40,12 +40,6 @@ contract TraderManager {
         bool closed;
     }
     /**
-     * @dev List of trading strategies that are supported by Mimic
-     * Each string represents the name of a trading type ("LONG_CALL", "SHORT_CALL", etc.)
-     * Each string is paired against a trading operation array to determine its execution
-     */
-    mapping(string => TradeOperation[]) tradingTypes;
-    /**
      * @dev Mapping of each Social Trader's open positions
      */
     mapping(address => Position[]) public traderOpenPositions;
@@ -92,15 +86,6 @@ contract TraderManager {
         _;
     }
 
-    function getEligibleTraders(
-
-    )
-        public
-        view
-        returns(address[] memory eligibleAddresses)
-    {
-        
-    }
     function openPosition(
         
     ) external onlySocialTrader {
