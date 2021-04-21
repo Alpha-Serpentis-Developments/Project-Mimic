@@ -41,21 +41,10 @@ contract TraderManager {
     }
     /**
      * @dev List of trading strategies that are supported by Mimic
+     * Each string represents the name of a trading type ("LONG_CALL", "SHORT_CALL", etc.)
+     * Each string is paired against a trading operation array to determine its execution
      */
-    string[] public tradingTypes = new string[](
-        "LONG_CALL",
-        "LONG_PUT",
-        "SHORT_CALL",
-        "SHORT_PUT",
-        "CALL_DEBIT_SPREAD",
-        "CALL_CREDIT_SPREAD",
-        "PUT_DEBIT_SPREAD",
-        "PUT_CREDIT_SPREAD",
-        "STRADDLE",
-        "LONG_STRANGLE",
-        "SHORT_STRANGLE",
-        "CUSTOM"
-    );
+    mapping(string => TradeOperation[]) tradingTypes;
     /**
      * @dev Mapping of each Social Trader's open positions
      */
@@ -76,6 +65,7 @@ contract TraderManager {
     event AdminChanged(address newAdmin);
     event WhitelistChanged(address newWhitelist);
     event SocialHubChanged(address newSocialHub);
+    event NewTradingTypeAdded(string tradingType, TradeOperation[] operations);
     event PositionOpened(address socialTrader, string strategy, OptionStyle style, address oToken, uint256 positionIndex);
     event PositionClosed(address socialTrader, uint256 positionIndex);
 
@@ -125,6 +115,34 @@ contract TraderManager {
             "Zero address"
         );
         admin = _admin;
+    }
+    function _executeTradingOperation(
+        TradeOperation[] memory _operations
+    )
+        internal
+    {
+        for(uint256 i = 0; i < _operations.length; i++) {
+            TradeOperation operation = _operations[i];
+            // BUY
+            if(operation == TradeOperation.BUY) {
+            
+            // SELL
+            } else if(operation == TradeOperation.SELL) {
+            
+            // WRITE
+            } else if(operation == TradeOperation.WRITE) {
+
+            // BURN
+            } else if(operation == TradeOperation.BURN) {
+
+            // EXERCISE
+            } else if(operation == TradeOperation.EXERCISE) {
+
+            // REDEEM COLLATERAL
+            } else if(operation == TradeOperation.REDEEM_COLLATERAL) {
+
+            }
+        }
     }
     function _onlyAdminCheck() internal view {
         require(
