@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.4;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ITraderManager} from "../interfaces/ITraderManager.sol";
 
-interface ISocialTraderToken is IERC20, ITraderManager {
+interface ISocialTraderToken is ITraderManager {
     function executeTrade(TradeOperation[] memory _operations) external;
     function executePredeterminedTrade() external;
     function collectFee() external;

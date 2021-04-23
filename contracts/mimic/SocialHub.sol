@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.4;
 
-import {TraderManager} from "./TraderManager.sol";
 import {Whitelist} from "./Whitelist.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeMath} from "@openzeppelin/contracts/math/SafeMath.sol";
@@ -15,7 +14,8 @@ contract SocialHub {
         address trader;
         uint256 entryFee;
         address[] followersAddr;
-        uint16 profitTakeFee; // Represented as a percentage with two decimal precision
+        string twitterURL;
+        uint16 profitTakeFee; // Represented as a percentage with two decimal precision (1xx.xx%)
         bool verified;
     }
     /**
@@ -77,27 +77,6 @@ contract SocialHub {
         st.profitTakeFee = _profitTakeFee;
 
         emit SocialTraderRegistered(msg.sender);
-    }
-    /**
-     * @dev Social trader redeems fees
-     */
-    function redeemFees() external onlySocialTrader {
-        // TODO: Throw this into the ERC677 contract
-    }
-    /**
-     * @dev Called by a Whitelisted address (TraderManager) to perform a profit take before dispersing out profits if any
-     */
-    function profitTake(
-        address _socialTrader
-    )
-        external
-        onlyWhitelisted
-    {
-        SocialTrader storage st = listOfSocialTraders[_socialTrader];
-        require(
-            st.trader != address(0),
-            "Social trader does not exist"
-        );
     }
     /**
      * @dev Verifies the social trader

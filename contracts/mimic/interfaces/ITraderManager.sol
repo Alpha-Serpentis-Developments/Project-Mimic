@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.4;
 
 interface ITraderManager {
     /**
@@ -22,11 +22,11 @@ interface ITraderManager {
     }
     /**
      * @dev Struct that outlines a Position
-     * strategy is the position's strategy type.
-     * style is the position's option style
-     * oToken represents the address of the token
-     * tokens represents the array of tokens utilized
-     * closed represents if the position is closed
+     * - strategy is the position's strategy type.
+     * - style is the position's option style
+     * - oToken represents the address of the token
+     * - tokens represents the array of tokens utilized
+     * - closed represents if the position is closed
      */
     struct Position {
         string strategy;
