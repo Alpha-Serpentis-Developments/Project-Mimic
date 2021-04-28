@@ -1,51 +1,31 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.4;
 
-import {Whitelist} from "./Whitelist.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeMath} from "@openzeppelin/contracts/math/SafeMath.sol";
+import {SocialTraderToken} from "./SocialTraderToken.sol";
 
 contract SocialHub {
-    using SafeMath for uint256;
-    /**
-     * @dev Struct that outlines the Social Trader
-     */
+    /// @notice Struct that outlines the Social Trader
     struct SocialTrader {
-        address trader;
-        uint256 entryFee;
-        address[] followersAddr;
+        SocialTraderToken token;
         string twitterURL;
-        uint16 profitTakeFee; // Represented as a percentage with two decimal precision (1xx.xx%)
         bool verified;
     }
-    /**
-     * @dev Mapping of Social Traders
-     */
-    mapping(address => SocialTrader) private listOfSocialTraders;
-    /**
-     * @dev Mapping that shows the obligations for each token for each social trader's obligation
-     */
-    mapping(address => mapping(address => uint256)) public tokenObligations;
-    /**
-    * @dev Whitelist smart contract that outlines what addresses can be set/interact with this contract
-     */
-    Whitelist public whitelist;
-    /**
-     * @dev Address of the admin of the SocialHub
-     */
+    /// @notice Mapping of social traders
+    mapping(address => SocialTrader) public listOfSocialTraders;
+    /// @notice Address of the admin of the SocialHub
     address public admin;
 
     event AdminChanged(address newAdmin);
-    event SocialTraderRegistered(address socialTrader);
-    event SocialTraderVerified(address socialTrader);
+    event SocialTraderRegistered(address token);
+    event SocialTraderVerified(address token);
 
-    constructor(address _admin, address _whitelist) {
+    constructor(address _admin) {
         require(
-            _admin != address(0) && _whitelist != address(0),
+            _admin != address(0),
             "Invalid address"
         );
         admin = _admin;
-        whitelist = Whitelist(_whitelist);
     }
 
     modifier onlyAdmin {
@@ -56,27 +36,23 @@ contract SocialHub {
         _onlySocialTrader();
         _;
     }
-    modifier onlyWhitelisted {
-        _onlyWhitelisted();
-        _;
-    }
 
     /**
      * @dev Register to become a social trader
      */
     function becomeSocialTrader(
-        uint256 _entryFeeAmt,
+        string memory _tokenName,
+        string memory _symbol,
+        uint256 _mintingFee,
         uint16 _profitTakeFee
     )
         public
     {
         SocialTrader storage st = listOfSocialTraders[msg.sender];
 
-        st.trader = msg.sender;
-        st.entryFee = _entryFeeAmt;
-        st.profitTakeFee = _profitTakeFee;
+        st.token = new SocialTraderToken(_tokenName, _symbol, _mintingFee, _profitTakeFee, msg.sender);
 
-        emit SocialTraderRegistered(msg.sender);
+        emit SocialTraderRegistered(address(st.token));
     }
     /**
      * @dev Verifies the social trader
@@ -84,7 +60,7 @@ contract SocialHub {
     function verifySocialTrader(address _socialTrader) external onlyAdmin {
         SocialTrader storage st = listOfSocialTraders[_socialTrader];
         require(
-            st.trader != address(0),
+            st.token.admin.address != address(0),
             "Not a social trader"
         );
         st.verified = true;
@@ -101,7 +77,7 @@ contract SocialHub {
         view
         returns(bool)
     {
-        return listOfSocialTraders[_socialTrader].trader != address(0);
+        return listOfSocialTraders[_socialTrader].token.admin.address != address(0);
     }
     /**
      * @dev Returns if an address is a social trader
@@ -114,14 +90,8 @@ contract SocialHub {
     }
     function _onlySocialTrader() internal view {
         require(
-            listOfSocialTraders[msg.sender].trader != address(0),
+            listOfSocialTraders[msg.sender].token.admin.address != address(0),
             "Unauthorized (social trader)"
-        );
-    }
-    function _onlyWhitelisted() internal view {
-        require(
-            whitelist.isWhitelisted(msg.sender),
-            "Unauthorized (whitelist)"
         );
     }
 }

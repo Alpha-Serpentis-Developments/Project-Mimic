@@ -29,14 +29,16 @@ interface ITraderManager {
      * - closed represents if the position is closed
      */
     struct Position {
-        string strategy;
+        string openingStrategy;
+        string closingStrategy;
         OptionStyle style;
         address oToken;
+        address numeraire;
         mapping(address => uint256) startingValues;
         bool closed;
     }
 
-    function openPosition() external;
-    function closePosition() external;
+    function openPosition(string memory _openingStrategy) external returns(uint256);
+    function closePosition(uint256 _timestamp, string memory _closingStrategy) external;
     function changeAdmin(address _admin) external;
 }
