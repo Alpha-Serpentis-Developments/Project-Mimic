@@ -6,8 +6,6 @@ Optional allows option traders to become social traders or follow other social t
 
 Each social trading token has a unique style based on the trader's strategies. Followers can limit their risk to certain traders or tokens based on their predetermined moves.
 
-As an alternative, Optional can act as a secondary frontend. Ability to convert premiums to a choice of token or to straight up Ether. In addition, the ability to create your own option chains.
-
 # Contributing
 
 If you wish to contribute to the code, feel free to submit issues, pull requests, or reach out to me.

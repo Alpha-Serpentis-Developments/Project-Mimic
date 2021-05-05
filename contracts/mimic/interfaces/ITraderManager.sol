@@ -22,10 +22,11 @@ interface ITraderManager {
     }
     /**
      * @dev Struct that outlines a Position
-     * - strategy is the position's strategy type.
+     * - openingStrategy is the opening strategy
+     * - closingStrategy is the closing strategy
      * - style is the position's option style
      * - oToken represents the address of the token
-     * - tokens represents the array of tokens utilized
+     * - numeraire represents the address of the numeraire
      * - closed represents if the position is closed
      */
     struct Position {
@@ -34,11 +35,10 @@ interface ITraderManager {
         OptionStyle style;
         address oToken;
         address numeraire;
-        mapping(address => uint256) startingValues;
         bool closed;
     }
 
-    function openPosition(string memory _openingStrategy) external returns(uint256);
+    function openPosition(string memory _openingStrategy, address _oToken) external returns(uint256);
     function closePosition(uint256 _timestamp, string memory _closingStrategy) external;
     function changeAdmin(address _admin) external;
 }

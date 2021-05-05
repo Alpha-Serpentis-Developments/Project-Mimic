@@ -5,6 +5,8 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SocialTraderToken} from "./SocialTraderToken.sol";
 
 contract SocialHub {
+    error Unauthorized();
+
     /// @notice Struct that outlines the Social Trader
     struct SocialTrader {
         SocialTraderToken token;
@@ -13,6 +15,10 @@ contract SocialHub {
     }
     /// @notice Mapping of social traders
     mapping(address => SocialTrader) public listOfSocialTraders;
+    /// @notice Protocol minting fee
+    uint16 public mintingFee;
+    /// @notice Protocol take profit fee
+    uint16 public takeProfitFee;
     /// @notice Address of the admin of the SocialHub
     address public admin;
 
@@ -32,9 +38,13 @@ contract SocialHub {
         _onlyAdmin();
         _;
     }
-    modifier onlySocialTrader {
-        _onlySocialTrader();
-        _;
+
+    function modifyMintingFee(uint16 _newFee) public onlyAdmin {
+        mintingFee = _newFee;
+    }
+
+    function modifyTakeProfitFee(uint16 _newFee) public onlyAdmin {
+        takeProfitFee = _newFee;
     }
 
     /**
@@ -43,7 +53,7 @@ contract SocialHub {
     function becomeSocialTrader(
         string memory _tokenName,
         string memory _symbol,
-        uint256 _mintingFee,
+        uint16 _mintingFee,
         uint16 _profitTakeFee
     )
         public
@@ -83,15 +93,7 @@ contract SocialHub {
      * @dev Returns if an address is a social trader
      */
     function _onlyAdmin() internal view {
-        require(
-            msg.sender == admin,
-            "Unauthorized"
-        );
-    }
-    function _onlySocialTrader() internal view {
-        require(
-            listOfSocialTraders[msg.sender].token.admin.address != address(0),
-            "Unauthorized (social trader)"
-        );
+        if(msg.sender != admin)
+            revert Unauthorized();
     }
 }
