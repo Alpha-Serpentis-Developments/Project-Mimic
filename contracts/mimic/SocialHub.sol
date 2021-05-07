@@ -6,6 +6,8 @@ import {SocialTraderToken} from "./SocialTraderToken.sol";
 
 contract SocialHub {
     error Unauthorized();
+    error NotASocialTrader(address trader);
+    error ZeroAddress();
 
     /// @notice Struct that outlines the Social Trader
     struct SocialTrader {
@@ -23,14 +25,13 @@ contract SocialHub {
     address public admin;
 
     event AdminChanged(address newAdmin);
-    event SocialTraderRegistered(address token);
-    event SocialTraderVerified(address token);
+    event SocialTraderRegistered(address indexed token, address indexed trader);
+    event SocialTraderVerified(address indexed token);
 
     constructor(address _admin) {
-        require(
-            _admin != address(0),
-            "Invalid address"
-        );
+        if(_admin == address(0))
+            revert ZeroAddress();
+            
         admin = _admin;
     }
 
@@ -62,7 +63,7 @@ contract SocialHub {
 
         st.token = new SocialTraderToken(_tokenName, _symbol, _mintingFee, _profitTakeFee, msg.sender);
 
-        emit SocialTraderRegistered(address(st.token));
+        emit SocialTraderRegistered(address(st.token), msg.sender);
     }
     /**
      * @dev Verifies the social trader

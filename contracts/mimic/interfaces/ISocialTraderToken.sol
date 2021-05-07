@@ -6,6 +6,7 @@ import {ITraderManager} from "../interfaces/ITraderManager.sol";
 
 interface ISocialTraderToken is ITraderManager {
     error ZeroAddress();
+    error PositionNotActive(uint256 positionTimestamp);
     error Unauthorized_Admin();
     error UnsafeModule_DoesNotExist();
     error UnsafeModule_Revert();

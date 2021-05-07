@@ -38,7 +38,11 @@ interface ITraderManager {
         bool closed;
     }
 
-    function openPosition(string memory _openingStrategy, address _oToken) external returns(uint256);
+    function openPosition(
+        string memory _openingStrategy,
+        address _oToken,
+        OptionStyle _style
+    ) external returns(uint256);
     function closePosition(uint256 _timestamp, string memory _closingStrategy) external;
     function changeAdmin(address _admin) external;
 }
