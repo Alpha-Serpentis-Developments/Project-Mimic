@@ -22,12 +22,16 @@ contract SocialTraderToken is ERC20, ISocialTraderToken {
     mapping(uint256 => Position) public positions;
     /// @notice Mapping of token addresses representing how much fees are obligated to the owner
     mapping(address => uint256) public obligatedFees;
+    /// @notice Mapping of approved UNSAFE modules
+    mapping(address => bool) public approvedUnsafeModules;
     /// @notice Active positions if any
     Position[] public activePositions;
     /// @notice Minting fee in either the underlying or numeraire represented in % (100.00%)
     uint16 public mintingFee;
     /// @notice Profit take fee represented in % (100.00%)
     uint16 public takeProfitFee;
+    /// @notice Withdrawal fee represented in % (100.00%)
+    uint16 public withdrawalFee;
     /// @notice Interface for exchange on v1
     IExchange public exchangev1;
     /// @notice Interface for exchange on v2
@@ -44,11 +48,12 @@ contract SocialTraderToken is ERC20, ISocialTraderToken {
     event TakeProfitFeeModified(uint16 indexed newFee);
     event AdminChanged(address newAdmin);
 
-    constructor(string memory _name, string memory _symbol, uint16 _mintingFee, uint16 _takeProfitFee, address _admin) ERC20(_name, _symbol) {
+    constructor(string memory _name, string memory _symbol, uint16 _mintingFee, uint16 _takeProfitFee, uint16 _withdrawalFee, address _admin) ERC20(_name, _symbol) {
         if(_admin == address(0))
             revert ZeroAddress();
         mintingFee = _mintingFee;
         takeProfitFee = _takeProfitFee;
+        withdrawalFee = _withdrawalFee;
         socialHub = msg.sender;
         admin = _admin;
     }
@@ -65,8 +70,8 @@ contract SocialTraderToken is ERC20, ISocialTraderToken {
 
     /// @notice The admin/social trader can modify the minting fee
     /// @dev Modify the minting fee represented in percentage with two decimals of precision (xxx.xx%)
-    /// @param _newMintingFee value representing the minting fee in %; can only go as high as 100.00% (10000) otherwise error OutOfBounds is thrown
-    function modifyMintingFee(uint16 _newMintingFee) public onlyAdmin outOfBoundsCheck(10000, _newMintingFee) {
+    /// @param _newMintingFee value representing the minting fee in %; can only go as high as 50.00% (5000) otherwise error OutOfBounds is thrown
+    function modifyMintingFee(uint16 _newMintingFee) public onlyAdmin outOfBoundsCheck(5000, _newMintingFee) {
         mintingFee = _newMintingFee;
 
         emit MintingFeeModified(_newMintingFee);
@@ -74,8 +79,8 @@ contract SocialTraderToken is ERC20, ISocialTraderToken {
     
     /// @notice The admin/social trader can modify the take profit fee
     /// @dev Modify the take profit fee represented in percentage with two decimals of precision (xxx.xx%)
-    /// @param _newTakeProfitFee value representing the take profit fee in %; can only go as high as 100.00% (10000) otherwise error OutOfBounds is thrown
-    function modifyTakeProfitFee(uint16 _newTakeProfitFee) public onlyAdmin outOfBoundsCheck(10000, _newTakeProfitFee) {
+    /// @param _newTakeProfitFee value representing the take profit fee in %; can only go as high as 50.00% (5000) otherwise error OutOfBounds is thrown
+    function modifyTakeProfitFee(uint16 _newTakeProfitFee) public onlyAdmin outOfBoundsCheck(5000, _newTakeProfitFee) {
         takeProfitFee = _newTakeProfitFee;
 
         emit TakeProfitFeeModified(_newTakeProfitFee);
@@ -212,24 +217,39 @@ contract SocialTraderToken is ERC20, ISocialTraderToken {
         return (success, returnData);
     }
 
+    /// @notice Checks if caller is an admin (social trader)
+    /// @dev Internal function for the modifier "onlyAdmin" to verify msg.sender is an admin
     function _onlyAdmin() internal view {
         if(msg.sender != admin)
             revert Unauthorized_Admin();
     }
 
+    /// @notice Checks if a given value is greater than the max
+    /// @dev Verifies that the given value is not greater than the max value otherwise revert
+    /// @param _max maximum value
+    /// @param _given provided value to check
     function _outOfBoundsCheck(uint256 _max, uint256 _given) internal pure {
         if(_given > _max)
             revert OutOfBounds(_max, _given);
     }
 
+    /// @notice Grab the numeraire of an oToken
+    /// @dev Using the OptionStyle, determine the numeraire of an oToken
+    /// @param _oToken address of the oToken
+    /// @param _style Enum of OptionStyle.AMERICAN or OptionStyle.EUROPEAN
+    /// @return numeraire address of the numeraire
     function _determineNumeraire(address _oToken, OptionStyle _style) internal view returns(address numeraire) {
         if(_style == OptionStyle.AMERICAN) {
-
+            
         } else {
             
         }
     }
 
+    /// @notice Execution of trades
+    /// @dev Provided a position and operations, it will execute the trades in the provided order in the array
+    /// @param _operations memory array of TradeOperation that will be used to execute a trade
+    /// @param _position storage-type of Position 
     function _executeTradingOperation(
         TradeOperation[] memory _operations,
         Position storage _position
