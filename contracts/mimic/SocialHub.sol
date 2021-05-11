@@ -2,9 +2,10 @@
 pragma solidity ^0.8.4;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ISocialHub} from "./interfaces/ISocialHub.sol";
 import {SocialTraderToken} from "./SocialTraderToken.sol";
 
-contract SocialHub {
+contract SocialHub is ISocialHub {
     error Unauthorized();
     error NotASocialTrader(address trader);
     error OutOfBounds(uint256 max, uint256 given);
@@ -32,6 +33,8 @@ contract SocialHub {
     address public successor;
     /// @notice Address of the admin of the SocialHub
     address public admin;
+    /// @notice UNIX time of deployment (used for version checking)
+    uint256 public immutable deploymentTime;
 
     event MintingFeeChanged(uint16 newFee);
     event TakeProfitFeeChanged(uint16 newFee);
@@ -40,6 +43,8 @@ contract SocialHub {
     event SocialTraderRegistered(address indexed token, address indexed trader);
     event SocialTraderVerified(address indexed token);
     event SocialHubDeprecated(address indexed successor);
+    event DetailsReceived(address indexed trader);
+    event DetailsSent(address indexed trader);
 
     constructor(address _predecessor, address _admin) {
         if(_admin == address(0))
@@ -47,6 +52,7 @@ contract SocialHub {
         
         predecessor = _predecessor;
         admin = _admin;
+        deploymentTime = block.timestamp;
     }
 
     modifier onlyAdmin {
@@ -114,7 +120,7 @@ contract SocialHub {
         uint16 _newMintingFee,
         uint16 _newProfitTakeFee,
         uint16 _newWithdrawalFee
-    ) public {
+    ) external override {
         // Only allow the predecessor to send calls to the function
         if(msg.sender != predecessor)
             revert Unauthorized();
@@ -129,18 +135,44 @@ contract SocialHub {
 
         st.twitterHandle = _twitterHandle;
         st.verified = _verified;
+
+        emit DetailsReceived(_socialTrader);
     }
 
-    function transferDetailsToSuccessor(address _trader) public {
+    function transferDetailsToSuccessor(
+        address _socialTrader,
+        bool _generateNewToken,
+        string memory _newName,
+        string memory _newSymbol,
+        uint16 _newMintingFee,
+        uint16 _newProfitTakeFee,
+        uint16 _newWithdrawalFee
+    ) external override {
         // Check if the SocialHub is deprecated
         if(!_deprecatedCheck(false))
             revert NotDeprecated();
 
+        SocialTrader storage st = listOfSocialTraders[_socialTrader];
+
         // Ensure msg.sender is the SocialTraderToken
-        if(msg.sender != address(listOfSocialTraders[_trader].token))
+        if(msg.sender != address(listOfSocialTraders[_socialTrader].token))
             revert Unauthorized();
 
-        
+        ISocialHub(successor).receiveTransferDetails(
+            address(st.token),
+            _socialTrader,
+            st.twitterHandle,
+            st.verified,
+            _generateNewToken,
+            _newName,
+            _newSymbol,
+            _newMintingFee,
+            _newProfitTakeFee,
+            _newWithdrawalFee
+        );
+
+        delete listOfSocialTraders[_socialTrader];
+        emit DetailsSent(_socialTrader);
     }
 
     /**
@@ -154,7 +186,8 @@ contract SocialHub {
         uint16 _profitTakeFee,
         uint16 _withdrawalFee
     )
-        public
+        external
+        override
         deprecatedCheck(true)
     {
         SocialTrader storage st = listOfSocialTraders[msg.sender];
@@ -167,7 +200,7 @@ contract SocialHub {
     /**
      * @dev Verifies the social trader
      */
-    function verifySocialTrader(address _socialTrader) external onlyAdmin deprecatedCheck(true) {
+    function verifySocialTrader(address _socialTrader) external override onlyAdmin deprecatedCheck(true) {
         SocialTrader storage st = listOfSocialTraders[_socialTrader];
 
         if(st.token.admin.address == address(0))
@@ -184,6 +217,7 @@ contract SocialHub {
         address _socialTrader
     )
         external
+        override
         view
         returns(bool)
     {
@@ -204,7 +238,7 @@ contract SocialHub {
     /// @param _revertIfDeprecated true to revert if the hub is deprecated, otherwise return true
     /// @return true if deprecated, false if not deprecated
     function _deprecatedCheck(bool _revertIfDeprecated) internal view returns(bool) {
-        if(successor != address(0))
+        if(successor != address(0) && _revertIfDeprecated)
             revert Deprecated(successor);
 
         return successor != address(0);
