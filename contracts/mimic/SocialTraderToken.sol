@@ -4,6 +4,7 @@ pragma solidity ^0.8.4;
 import {ISocialTraderToken} from "./interfaces/ISocialTraderToken.sol";
 import {IExchange} from "./interfaces/IExchange.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SocialHub} from "./SocialHub.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -18,33 +19,33 @@ contract SocialTraderToken is ERC20, ISocialTraderToken {
     error WithdrawalWindowIsInactive();
 
     /// @notice Mapping of a strategy to execute predefined
-    mapping(string => TradeOperation[]) public strategies;
+    mapping(string => TradeOperation[]) private strategies;
     /// @notice Mapping of a position (timestamp => position)
-    mapping(uint256 => Position) public positions;
+    mapping(uint256 => Position) private positions;
     /// @notice Mapping of token addresses representing how much fees are obligated to the owner
-    mapping(address => uint256) public obligatedFees;
+    mapping(address => uint256) private obligatedFees;
     /// @notice Array of pooled tokens currently
-    address[] public pooledTokens;
+    address[] private pooledTokens;
     /// @notice Mapping of approved UNSAFE modules
-    mapping(address => bool) public approvedUnsafeModules;
+    mapping(address => bool) private approvedUnsafeModules;
     /// @notice Active positions (in UNIX) if any
-    uint256[] public activePositions;
+    uint256[] private activePositions;
     /// @notice Boolean representing if the token is under a withdrawal window
-    bool public withdrawalWindowActive;
+    bool private withdrawalWindowActive;
     /// @notice Minting fee in either the underlying or numeraire represented in % (100.00%)
-    uint16 public mintingFee;
+    uint16 private mintingFee;
     /// @notice Profit take fee represented in % (100.00%)
-    uint16 public takeProfitFee;
+    uint16 private takeProfitFee;
     /// @notice Withdrawal fee represented in % (100.00%)
-    uint16 public withdrawalFee;
+    uint16 private withdrawalFee;
     /// @notice Minimum minting (default is 1e18)
-    uint256 public minimumMint;
+    uint256 private minimumMint;
     /// @notice Interface for exchange on v1
-    IExchange public exchangev1;
+    IExchange private exchangev1;
     /// @notice Interface for exchange on v2
-    IExchange public exchangev2;
+    IExchange private exchangev2;
     /// @notice Address of the Social Hub (where protocol fees are deposited to)
-    address public socialHub;
+    address private socialHub;
     /// @notice Address of the admin (the social trader)
     address public admin;
 
@@ -99,6 +100,33 @@ contract SocialTraderToken is ERC20, ISocialTraderToken {
     /// @return true if the position at the given timestamp is active, otherwise false (false if position doesn't exist)
     function isInActivePosition(uint256 _timestamp) public view returns(bool) {
         return !positions[_timestamp].closed;
+    }
+    
+    /// @notice Changes the social hub
+    /// @dev Move to the successor social hub and optionally generate a new token if desired
+    /// @param _generateNewToken boolean if the social trader wishes to create a new token
+    /// @param _newName memory-type string of the new token name
+    /// @param _newSymbol memory-type stirng of the new token symbol
+    /// @param _newMintingFee new minting fees of the new token
+    /// @param _newProfitTakeFee new profit take fees of the new token
+    /// @param _newWithdrawalFee new withdrawal fees of the new token
+    function changeSocialHubs(
+        bool _generateNewToken,
+        string memory _newName,
+        string memory _newSymbol,
+        uint16 _newMintingFee,
+        uint16 _newProfitTakeFee,
+        uint16 _newWithdrawalFee
+    ) public onlyAdmin {
+        SocialHub(socialHub).transferDetailsToSuccessor(
+            admin,
+            _generateNewToken,
+            _newName,
+            _newSymbol,
+            _newMintingFee,
+            _newProfitTakeFee,
+            _newWithdrawalFee
+        );
     }
 
     /// @notice Mints social tokens by depositing a proportion of pooled tokens
