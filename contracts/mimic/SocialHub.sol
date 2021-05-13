@@ -20,7 +20,7 @@ contract SocialHub is ISocialHub {
         bool verified;
     }
     /// @notice Mapping of social traders
-    mapping(address => SocialTrader) public listOfSocialTraders;
+    mapping(address => SocialTrader) private listOfSocialTraders;
     /// @notice Protocol minting fee
     uint16 public mintingFee;
     /// @notice Protocol take profit fee
@@ -34,7 +34,7 @@ contract SocialHub is ISocialHub {
     /// @notice Address of the admin of the SocialHub
     address public admin;
     /// @notice UNIX time of deployment (used for version checking)
-    uint256 public immutable deploymentTime;
+    uint256 private immutable deploymentTime;
 
     event MintingFeeChanged(uint16 newFee);
     event TakeProfitFeeChanged(uint16 newFee);
@@ -138,7 +138,16 @@ contract SocialHub is ISocialHub {
 
         emit DetailsReceived(_socialTrader);
     }
-
+    
+    /// @notice Transfer details to the new social hub
+    /// @dev Transfer details and optionally generate a new token; can only be called by the social token
+    /// @param _socialTrader address of the social trader
+    /// @param _generateNewToken boolean if the social trader wishes to create a new token
+    /// @param _newName memory-type string of the new token name
+    /// @param _newSymbol memory-type stirng of the new token symbol
+    /// @param _newMintingFee new minting fees of the new token
+    /// @param _newProfitTakeFee new profit take fees of the new token
+    /// @param _newWithdrawalFee new withdrawal fees of the new token
     function transferDetailsToSuccessor(
         address _socialTrader,
         bool _generateNewToken,
