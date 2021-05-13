@@ -15,6 +15,7 @@ contract SocialTraderToken is ERC20, ISocialTraderToken {
     using SafeERC20 for IERC20;
 
     error OutOfBounds(uint256 max, uint256 given);
+    error WithdrawalWindowIsInactive();
 
     /// @notice Mapping of a strategy to execute predefined
     mapping(string => TradeOperation[]) public strategies;
@@ -22,16 +23,22 @@ contract SocialTraderToken is ERC20, ISocialTraderToken {
     mapping(uint256 => Position) public positions;
     /// @notice Mapping of token addresses representing how much fees are obligated to the owner
     mapping(address => uint256) public obligatedFees;
+    /// @notice Array of pooled tokens currently
+    address[] public pooledTokens;
     /// @notice Mapping of approved UNSAFE modules
     mapping(address => bool) public approvedUnsafeModules;
-    /// @notice Active positions if any
-    Position[] public activePositions;
+    /// @notice Active positions (in UNIX) if any
+    uint256[] public activePositions;
+    /// @notice Boolean representing if the token is under a withdrawal window
+    bool public withdrawalWindowActive;
     /// @notice Minting fee in either the underlying or numeraire represented in % (100.00%)
     uint16 public mintingFee;
     /// @notice Profit take fee represented in % (100.00%)
     uint16 public takeProfitFee;
     /// @notice Withdrawal fee represented in % (100.00%)
     uint16 public withdrawalFee;
+    /// @notice Minimum minting (default is 1e18)
+    uint256 public minimumMint;
     /// @notice Interface for exchange on v1
     IExchange public exchangev1;
     /// @notice Interface for exchange on v2
@@ -94,6 +101,42 @@ contract SocialTraderToken is ERC20, ISocialTraderToken {
         return !positions[_timestamp].closed;
     }
 
+    /// @notice Mints social tokens by depositing a proportion of pooled tokens
+    /// @dev Mints new social tokens, requiring collateral/underlying; minting is disallowed if withdrawalWindowActive is false
+    /// @param _amount amount of tokens to mint
+    function mint(uint256 _amount) public {
+        if(!withdrawalWindowActive)
+            revert WithdrawalWindowIsInactive();
+        
+        if(_amount < minimumMint)
+            revert TooLowMintingAmount();
+
+        // NOTE: There was slippage worries if the pool ratio did change, but the pool ratio shouldn't change...
+        // ... if there's no active positions. If the unsafe module is active, slippage could be a concern.
+
+        bool nonZeroAmount;
+        // Loop through the current array of pooled tokens
+        for(uint256 i; i < pooledTokens.length; i++) {
+            ERC20 token = ERC20(pooledTokens[i]);
+
+            if(!nonZeroAmount && token.balanceOf(address(this)) != 0) {
+                nonZeroAmount = true;
+            }
+        }
+
+        if(!nonZeroAmount) {
+            revert RatioNotDefined();
+        }
+        
+    }
+
+    /// @notice Burns social tokens in return for the pooled funds
+    /// @dev Burns social tokens during inactive period
+    /// @param _amount amount of tokens to burn (amount must be approved!)
+    function burn(uint256 _amount) public {
+
+    }
+    
     /// @notice Open a new position
     /// @dev Opens a new position with the given strategy, oToken, and style
     /// @param _openingStrategy string for the strategy name in the mapping to be used to execute the trade
@@ -193,14 +236,20 @@ contract SocialTraderToken is ERC20, ISocialTraderToken {
     /// @dev Add an unsafe module to the token; NOT RECOMMENDED, USE AT YOUR OWN RISK
     /// @param _module address of the unsafe module
     function addUnsafeModule(address _module) external override onlyAdmin {
+        if(_module == address(0))
+            revert ZeroAddress();
 
+        approvedUnsafeModules[_module] = true;
     }
 
     /// @notice Allows the social trader to remove an UNSAFE module
     /// @dev Remove an unsafe module from the token
     /// @param _module address of the unsafe module (that's added)
     function removeUnsafeModule(address _module) external override onlyAdmin {
+        if(_module == address(0))
+            revert ZeroAddress();
 
+        approvedUnsafeModules[_module] = false;
     }
 
     /// @notice Allows the social trader to interact with an UNSAFE module
@@ -244,6 +293,14 @@ contract SocialTraderToken is ERC20, ISocialTraderToken {
         } else {
             
         }
+    }
+
+    /// @notice Calculate the ratio of given token to total supply of social tokens
+    /// @dev Calculation of the ratio
+    /// @param _token address of the token (in the pool)
+    /// @return token ratio
+    function _calculateTokenRatio(address _token) internal view returns(uint256) {
+        return (10e18 * ERC20(_token).totalSupply())/(10e18 * this.totalSupply());
     }
 
     /// @notice Execution of trades

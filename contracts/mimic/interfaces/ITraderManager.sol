@@ -34,6 +34,7 @@ interface ITraderManager {
         string closingStrategy;
         OptionStyle style;
         address oToken;
+        address underlying;
         address numeraire;
         bool closed;
     }
