@@ -15,6 +15,7 @@ interface ITraderManager {
     enum TradeOperation {
         BUY,
         SELL,
+        OPENVAULT,
         WRITE,
         BURN,
         EXERCISE,

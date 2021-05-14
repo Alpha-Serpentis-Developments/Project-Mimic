@@ -5,11 +5,11 @@ interface ISocialHub {
     function receiveTransferDetails(
         address _token,
         address _socialTrader,
-        string memory _twitterHandle,
+        bytes32 _twitterHandle,
         bool _verified,
         bool _generateNewToken,
-        string memory _newName,
-        string memory _newSymbol,
+        bytes32 _newName,
+        bytes32 _newSymbol,
         uint16 _newMintingFee,
         uint16 _newProfitTakeFee,
         uint16 _newWithdrawalFee
@@ -18,17 +18,17 @@ interface ISocialHub {
     function transferDetailsToSuccessor(
         address _trader,
         bool _generateNewToken,
-        string memory _newName,
-        string memory _newSymbol,
+        bytes32 _newName,
+        bytes32 _newSymbol,
         uint16 _newMintingFee,
         uint16 _newProfitTakeFee,
         uint16 _newWithdrawalFee
     ) external;
 
     function becomeSocialTrader(
-        string memory _tokenName,
-        string memory _symbol,
-        string memory _twitterHandle,
+        bytes32 _tokenName,
+        bytes32 _symbol,
+        bytes32 _twitterHandle,
         uint16 _mintingFee,
         uint16 _profitTakeFee,
         uint16 _withdrawalFee

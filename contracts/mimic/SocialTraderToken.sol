@@ -62,7 +62,7 @@ contract SocialTraderToken is ERC20, ISocialTraderToken {
         mintingFee = _mintingFee;
         takeProfitFee = _takeProfitFee;
         withdrawalFee = _withdrawalFee;
-        socialHub = msg.sender;
+        socialHub = msg.sender; // Assumes that the token was deployed from the social hub
         admin = _admin;
     }
 
@@ -112,8 +112,8 @@ contract SocialTraderToken is ERC20, ISocialTraderToken {
     /// @param _newWithdrawalFee new withdrawal fees of the new token
     function changeSocialHubs(
         bool _generateNewToken,
-        string memory _newName,
-        string memory _newSymbol,
+        bytes32 _newName,
+        bytes32 _newSymbol,
         uint16 _newMintingFee,
         uint16 _newProfitTakeFee,
         uint16 _newWithdrawalFee
@@ -127,6 +127,13 @@ contract SocialTraderToken is ERC20, ISocialTraderToken {
             _newProfitTakeFee,
             _newWithdrawalFee
         );
+    }
+    
+    /// @notice Assign the initial ratio
+    /// @dev Assigns the initial ratio of the pool; only done once or if the pool becomes empty
+    function assignRatio() public {
+        
+    
     }
 
     /// @notice Mints social tokens by depositing a proportion of pooled tokens

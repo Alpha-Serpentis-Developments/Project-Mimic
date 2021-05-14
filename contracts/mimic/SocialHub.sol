@@ -16,7 +16,7 @@ contract SocialHub is ISocialHub {
     /// @notice Struct that outlines the Social Trader
     struct SocialTrader {
         SocialTraderToken token;
-        string twitterHandle;
+        bytes32 twitterHandle;
         bool verified;
     }
     /// @notice Mapping of social traders
@@ -28,11 +28,11 @@ contract SocialHub is ISocialHub {
     /// @notice Protocol withdrawal fee
     uint16 public withdrawalFee;
     /// @notice Address of the predecessor
-    address public predecessor;
+    address private predecessor;
     /// @notice Address of the successor
-    address public successor;
+    address private successor;
     /// @notice Address of the admin of the SocialHub
-    address public admin;
+    address private admin;
     /// @notice UNIX time of deployment (used for version checking)
     uint256 private immutable deploymentTime;
 
@@ -112,11 +112,11 @@ contract SocialHub is ISocialHub {
     function receiveTransferDetails(
         address _token,
         address _socialTrader,
-        string memory _twitterHandle,
+        bytes32 _twitterHandle,
         bool _verified,
         bool _generateNewToken,
-        string memory _newName,
-        string memory _newSymbol,
+        bytes32 _newName,
+        bytes32 _newSymbol,
         uint16 _newMintingFee,
         uint16 _newProfitTakeFee,
         uint16 _newWithdrawalFee
@@ -128,7 +128,7 @@ contract SocialHub is ISocialHub {
         SocialTrader storage st = listOfSocialTraders[_socialTrader];
         
         if(_generateNewToken) {
-            st.token = new SocialTraderToken(_newName, _newSymbol, _newMintingFee, _newProfitTakeFee, _newWithdrawalFee, _socialTrader);
+            st.token = new SocialTraderToken(bytes32ToString(_newName), bytes32ToString(_newSymbol), _newMintingFee, _newProfitTakeFee, _newWithdrawalFee, _socialTrader);
         } else {
             st.token = SocialTraderToken(_token);
         }
@@ -151,8 +151,8 @@ contract SocialHub is ISocialHub {
     function transferDetailsToSuccessor(
         address _socialTrader,
         bool _generateNewToken,
-        string memory _newName,
-        string memory _newSymbol,
+        bytes32 _newName,
+        bytes32 _newSymbol,
         uint16 _newMintingFee,
         uint16 _newProfitTakeFee,
         uint16 _newWithdrawalFee
@@ -188,9 +188,9 @@ contract SocialHub is ISocialHub {
      * @dev Register to become a social trader
      */
     function becomeSocialTrader(
-        string memory _tokenName,
-        string memory _symbol,
-        string memory _twitterHandle,
+        bytes32 _tokenName,
+        bytes32 _symbol,
+        bytes32 _twitterHandle,
         uint16 _mintingFee,
         uint16 _profitTakeFee,
         uint16 _withdrawalFee
@@ -201,7 +201,7 @@ contract SocialHub is ISocialHub {
     {
         SocialTrader storage st = listOfSocialTraders[msg.sender];
 
-        st.token = new SocialTraderToken(_tokenName, _symbol, _mintingFee, _profitTakeFee, _withdrawalFee, msg.sender);
+        st.token = new SocialTraderToken(bytes32ToString(_tokenName), bytes32ToString(_symbol), _mintingFee, _profitTakeFee, _withdrawalFee, msg.sender);
         st.twitterHandle = _twitterHandle;
 
         emit SocialTraderRegistered(address(st.token), msg.sender);
@@ -258,5 +258,19 @@ contract SocialHub is ISocialHub {
     function _onlyAdmin() internal view {
         if(msg.sender != admin)
             revert Unauthorized();
+    }
+    
+    /// @notice bytes32 to string
+    /// @dev Converts bytes32 to a string memory type
+    function bytes32ToString(bytes32 _bytes32) public pure returns (string memory) {
+        uint8 i = 0;
+        while(i < 32 && _bytes32[i] != 0) {
+            i++;
+        }
+        bytes memory bytesArray = new bytes(i);
+        for (i = 0; i < 32 && _bytes32[i] != 0; i++) {
+            bytesArray[i] = _bytes32[i];
+        }
+        return string(bytesArray);
     }
 }
