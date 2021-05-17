@@ -8,14 +8,14 @@ Each social trading token has a unique style based on the trader's strategies. F
 
 # People Involved
 
-Amethyst C. (AlphaSerpentis)
+**Amethyst C. (AlphaSerpentis)**
 - Founder of Alpha Serpentis Developments
 - Smart contract programmer of Mimic/Optional
 
-Yvonne
+**Yvonne**
 - Frontend developer of Mimic/Optional
 
-Opyn
+**Opyn**
 - Decentralized options platform that built Convexity (v1) and Gamma (v2) powering Mimic/Optional.
 
 # Contributing
