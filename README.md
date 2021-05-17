@@ -6,13 +6,27 @@ Optional allows option traders to become social traders or follow other social t
 
 Each social trading token has a unique style based on the trader's strategies. Followers can limit their risk to certain traders or tokens based on their predetermined moves.
 
+# People Involved
+
+Amethyst C. (AlphaSerpentis)
+- Founder of Alpha Serpentis Developments
+- Smart contract programmer of Mimic/Optional
+
+Yvonne
+- Frontend developer of Mimic/Optional
+
+Opyn
+- Decentralized options platform that built Convexity (v1) and Gamma (v2) powering Mimic/Optional.
+
 # Contributing
 
 If you wish to contribute to the code, feel free to submit issues, pull requests, or reach out to me.
 
-Discord: AlphaSerpentis#3203 (216037365829992448)
+Discord: [Alpha Serpentis Developments Discord Server](https://discord.gg/M8Hs5Dg)
 
-Twitter: [@AlphaSerpentis_](https://twitter.com/AlphaSerpentis_)
+Twitter (Amethyst): [@AlphaSerpentis_](https://twitter.com/AlphaSerpentis_)
+
+Twitter (Alpha Serpentis Developments): [@Official_ASDev](https://twitter.com/Official_ASDev)
 
 # Notice
 
