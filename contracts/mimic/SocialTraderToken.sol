@@ -39,7 +39,7 @@ contract SocialTraderToken is ERC20, ISocialTraderToken {
     /// @notice Withdrawal fee represented in % (100.00%)
     uint16 private withdrawalFee;
     /// @notice Minimum minting (default is 1e18)
-    uint256 private minimumMint;
+    uint256 private minimumMint = 1e18;
     /// @notice Interface for exchange on v1
     IExchange private exchangev1;
     /// @notice Interface for exchange on v2

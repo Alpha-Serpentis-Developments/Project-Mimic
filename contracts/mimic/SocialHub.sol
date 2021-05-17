@@ -8,6 +8,7 @@ import {SocialTraderToken} from "./SocialTraderToken.sol";
 contract SocialHub is ISocialHub {
     error Unauthorized();
     error NotASocialTrader(address trader);
+    error AlreadyASocialTrader();
     error OutOfBounds(uint256 max, uint256 given);
     error NotDeprecated();
     error Deprecated(address _succesor);
@@ -21,6 +22,8 @@ contract SocialHub is ISocialHub {
     }
     /// @notice Mapping of social traders
     mapping(address => SocialTrader) private listOfSocialTraders;
+    /// @notice Mapping of whitelisted addresses (used for SocialTraderToken on non-unsafe modules)
+    mapping(address => bool) public whitelisted;
     /// @notice Protocol minting fee
     uint16 public mintingFee;
     /// @notice Protocol take profit fee
@@ -39,6 +42,8 @@ contract SocialHub is ISocialHub {
     event MintingFeeChanged(uint16 newFee);
     event TakeProfitFeeChanged(uint16 newFee);
     event WithdrawalFeeChanged(uint16 newFee);
+    event AddressAddedToWhitelist(address indexed addedAddress);
+    event AddressRemovedFromWhitelist(address indexed removedAddress);
     event AdminChanged(address newAdmin);
     event SocialTraderRegistered(address indexed token, address indexed trader);
     event SocialTraderVerified(address indexed token);
@@ -95,6 +100,22 @@ contract SocialHub is ISocialHub {
         successor = _newAddress;
 
         emit SocialHubDeprecated(_newAddress);
+    }
+
+    /// @notice bytes32 to string
+    /// @dev Converts bytes32 to a string memory type
+    /// @param _bytes32 bytes32 type to convert into a string
+    /// @return a string memory type 
+    function bytes32ToString(bytes32 _bytes32) public pure returns (string memory) {
+        uint8 i = 0;
+        while(i < 32 && _bytes32[i] != 0) {
+            i++;
+        }
+        bytes memory bytesArray = new bytes(i);
+        for (i = 0; i < 32 && _bytes32[i] != 0; i++) {
+            bytesArray[i] = _bytes32[i];
+        }
+        return string(bytesArray);
     }
 
     /// @notice Transfer social trader details to the current social hub
@@ -201,6 +222,9 @@ contract SocialHub is ISocialHub {
     {
         SocialTrader storage st = listOfSocialTraders[msg.sender];
 
+        if(address(st.token) != address(0))
+            revert AlreadyASocialTrader();
+
         st.token = new SocialTraderToken(bytes32ToString(_tokenName), bytes32ToString(_symbol), _mintingFee, _profitTakeFee, _withdrawalFee, msg.sender);
         st.twitterHandle = _twitterHandle;
 
@@ -260,17 +284,4 @@ contract SocialHub is ISocialHub {
             revert Unauthorized();
     }
     
-    /// @notice bytes32 to string
-    /// @dev Converts bytes32 to a string memory type
-    function bytes32ToString(bytes32 _bytes32) public pure returns (string memory) {
-        uint8 i = 0;
-        while(i < 32 && _bytes32[i] != 0) {
-            i++;
-        }
-        bytes memory bytesArray = new bytes(i);
-        for (i = 0; i < 32 && _bytes32[i] != 0; i++) {
-            bytesArray[i] = _bytes32[i];
-        }
-        return string(bytesArray);
-    }
 }
