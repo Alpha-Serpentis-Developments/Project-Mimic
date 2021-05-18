@@ -40,5 +40,8 @@ interface ITraderManager {
         bool closed;
     }
 
-    function executeTrade(uint256 _timestamp, ITraderManager.TradeOperation[] memory _operations) external;
+    function executeTrade(
+        ITraderManager.TradeOperation[] memory _operations,
+        ITraderManager.Position memory _position
+    ) external;
 }

@@ -118,6 +118,19 @@ contract SocialHub is ISocialHub {
         }
         return string(bytesArray);
     }
+    
+    function addToWhitelist(address _add) external onlyAdmin {
+        if(_add == address(0))
+            revert ZeroAddress();
+            
+        whitelisted[_add] = true;
+        emit AddressAddedToWhitelist(_add);
+    }
+    
+    function removeFromWhitelist(address _remove) external onlyAdmin {
+        whitelisted[_remove] = false;
+        emit AddressRemovedFromWhitelist(_remove);
+    }
 
     /// @notice Transfer social trader details to the current social hub
     /// @dev Receives social trader details from the predecessor social hub
@@ -126,20 +139,14 @@ contract SocialHub is ISocialHub {
     /// @param _twitterHandle twitter handle of the social trader
     /// @param _verified verified status
     /// @param _generateNewToken boolean if the social trader wishes to create a new token
-    /// @param _newName memory-type string of the new token name
-    /// @param _newSymbol memory-type stirng of the new token symbol
-    /// @param _newFees is a Fees struct containing the new fees
-    /// @param _allowUnsafeModules boolean to determine if unsafe modules should be used
+    /// @param _tokenSettings struct that details the new token settings
     function receiveTransferDetails(
         address _token,
         address _socialTrader,
         bytes32 _twitterHandle,
         bool _verified,
         bool _generateNewToken,
-        bytes32 _newName,
-        bytes32 _newSymbol,
-        Fees memory _newFees,
-        bool _allowUnsafeModules
+        NewTokenSettings memory _tokenSettings
     ) external override {
         // Only allow the predecessor to send calls to the function
         if(msg.sender != predecessor)
@@ -148,7 +155,7 @@ contract SocialHub is ISocialHub {
         SocialTrader storage st = listOfSocialTraders[_socialTrader];
         
         if(_generateNewToken) {
-            st.token = new SocialTraderToken(bytes32ToString(_newName), bytes32ToString(_newSymbol), _newFees.mintingFee, _newFees.takeProfitFee, _newFees.withdrawalFee, _allowUnsafeModules, _socialTrader);
+            st.token = new SocialTraderToken(bytes32ToString(_tokenSettings.newName), bytes32ToString(_tokenSettings.newSymbol), _tokenSettings.mintingFee, _tokenSettings.takeProfitFee, _tokenSettings.withdrawalFee, _tokenSettings.allowUnsafeModules, _tokenSettings.traderManager, _socialTrader);
         } else {
             st.token = SocialTraderToken(_token);
         }
@@ -176,7 +183,8 @@ contract SocialHub is ISocialHub {
         uint16 _newMintingFee,
         uint16 _newProfitTakeFee,
         uint16 _newWithdrawalFee,
-        bool _allowUnsafeModules
+        bool _allowUnsafeModules,
+        address _traderManager
     ) external override {
         // Check if the SocialHub is deprecated
         if(!_deprecatedCheck(false))
@@ -188,10 +196,14 @@ contract SocialHub is ISocialHub {
         if(msg.sender != address(listOfSocialTraders[_socialTrader].token))
             revert Unauthorized();
             
-        Fees memory newFees;
-        newFees.mintingFee = _newMintingFee;
-        newFees.takeProfitFee = _newProfitTakeFee;
-        newFees.withdrawalFee = _newWithdrawalFee;
+        NewTokenSettings memory newTokenSettings;
+        newTokenSettings.mintingFee = _newMintingFee;
+        newTokenSettings.takeProfitFee = _newProfitTakeFee;
+        newTokenSettings.withdrawalFee = _newWithdrawalFee;
+        newTokenSettings.newName = _newName;
+        newTokenSettings.newSymbol = _newSymbol;
+        newTokenSettings.traderManager = _traderManager;
+        newTokenSettings.allowUnsafeModules = _allowUnsafeModules;
 
         ISocialHub(successor).receiveTransferDetails(
             address(st.token),
@@ -199,10 +211,7 @@ contract SocialHub is ISocialHub {
             st.twitterHandle,
             st.verified,
             _generateNewToken,
-            _newName,
-            _newSymbol,
-            newFees,
-            _allowUnsafeModules
+            newTokenSettings
         );
 
         delete listOfSocialTraders[_socialTrader];
@@ -219,7 +228,8 @@ contract SocialHub is ISocialHub {
         uint16 _mintingFee,
         uint16 _profitTakeFee,
         uint16 _withdrawalFee,
-        bool _allowUnsafeModules
+        bool _allowUnsafeModules,
+        address _traderManager
     )
         external
         override
@@ -230,7 +240,7 @@ contract SocialHub is ISocialHub {
         if(address(st.token) != address(0))
             revert AlreadyASocialTrader();
 
-        st.token = new SocialTraderToken(bytes32ToString(_tokenName), bytes32ToString(_symbol), _mintingFee, _profitTakeFee, _withdrawalFee, _allowUnsafeModules, msg.sender);
+        st.token = new SocialTraderToken(bytes32ToString(_tokenName), bytes32ToString(_symbol), _mintingFee, _profitTakeFee, _withdrawalFee, _allowUnsafeModules, _traderManager, msg.sender);
         st.twitterHandle = _twitterHandle;
 
         emit SocialTraderRegistered(address(st.token), msg.sender);

@@ -2,7 +2,11 @@
 pragma solidity ^0.8.4;
 
 interface ISocialHub {
-    struct Fees {
+    struct NewTokenSettings {
+        bytes32 newName;
+        bytes32 newSymbol;
+        address traderManager;
+        bool allowUnsafeModules;
         uint16 mintingFee;
         uint16 takeProfitFee;
         uint16 withdrawalFee;
@@ -14,10 +18,7 @@ interface ISocialHub {
         bytes32 _twitterHandle,
         bool _verified,
         bool _generateNewToken,
-        bytes32 _newName,
-        bytes32 _newSymbol,
-        Fees memory _newFees,
-        bool _allowUnsafeModules
+        NewTokenSettings memory _tokenSettings
     ) external;
 
     function transferDetailsToSuccessor(
@@ -28,7 +29,8 @@ interface ISocialHub {
         uint16 _newMintingFee,
         uint16 _newProfitTakeFee,
         uint16 _newWithdrawalFee,
-        bool _allowUnsafeModules
+        bool _allowUnsafeModules,
+        address _traderManager
     ) external;
 
     function becomeSocialTrader(
@@ -38,7 +40,8 @@ interface ISocialHub {
         uint16 _mintingFee,
         uint16 _profitTakeFee,
         uint16 _withdrawalFee,
-        bool _allowUnsafeModules
+        bool _allowUnsafeModules,
+        address _traderManager
     ) external;
 
     function verifySocialTrader(address _socialTrader) external;

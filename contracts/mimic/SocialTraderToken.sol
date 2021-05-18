@@ -47,6 +47,8 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
     IExchange private exchangev2;
     /// @notice Boolean if unsafe modules are activated or not (immutable at creation)
     bool private immutable allowUnsafeModules;
+    /// @notice Address of the TraderManager
+    ITraderManager private traderManager;
     /// @notice Address of the Social Hub (where protocol fees are deposited to)
     address private socialHub;
     /// @notice Address of the admin (the social trader)
@@ -60,14 +62,15 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
     event WithdrawalFeeModified(uint16 indexed newFee);
     event AdminChanged(address newAdmin);
 
-    constructor(string memory _name, string memory _symbol, uint16 _mintingFee, uint16 _takeProfitFee, uint16 _withdrawalFee, bool _allowUnsafeModules, address _admin) ERC20(_name, _symbol) {
-        if(_admin == address(0))
+    constructor(string memory _name, string memory _symbol, uint16 _mintingFee, uint16 _takeProfitFee, uint16 _withdrawalFee, bool _allowUnsafeModules, address _traderManager, address _admin) ERC20(_name, _symbol) {
+        if(_admin == address(0) || _traderManager == address(0))
             revert ZeroAddress();
         mintingFee = _mintingFee;
         takeProfitFee = _takeProfitFee;
         withdrawalFee = _withdrawalFee;
         socialHub = msg.sender; // Assumes that the token was deployed from the social hub
         allowUnsafeModules = _allowUnsafeModules;
+        traderManager = ITraderManager(_traderManager);
         admin = _admin;
     }
 
@@ -146,7 +149,8 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
             _newMintingFee,
             _newProfitTakeFee,
             _newWithdrawalFee,
-            _allowUnsafeModules
+            _allowUnsafeModules,
+            address(traderManager)
         );
     }
     
@@ -235,6 +239,8 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
 
         pos.closingStrategy = _closingStrategy;
         pos.closed = true;
+        
+        
 
         emit PositionClosed(block.timestamp, _closingStrategy);
     }
