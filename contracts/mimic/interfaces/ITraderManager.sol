@@ -40,11 +40,8 @@ interface ITraderManager {
         bool closed;
     }
 
-    function openPosition(
-        bytes32 _openingStrategy,
-        address _oToken,
-        OptionStyle _style
-    ) external returns(uint256);
-    function closePosition(uint256 _timestamp, bytes32 _closingStrategy) external;
-    function changeAdmin(address _admin) external;
+    function executeTrade(
+        ITraderManager.TradeOperation[] memory _operations,
+        ITraderManager.Position memory _position
+    ) external;
 }

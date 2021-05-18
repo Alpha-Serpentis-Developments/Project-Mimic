@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import {ISocialTraderToken} from "./interfaces/ISocialTraderToken.sol";
+import {ITraderManager} from "./interfaces/ITraderManager.sol";
 import {IExchange} from "./interfaces/IExchange.sol";
 import {IERC20} from "../oz/token/ERC20/IERC20.sol";
 import {SocialHub} from "./SocialHub.sol";
@@ -19,9 +20,9 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
     error WithdrawalWindowIsInactive();
 
     /// @notice Mapping of a strategy to execute predefined
-    mapping(bytes32 => TradeOperation[]) private strategies;
+    mapping(bytes32 => ITraderManager.TradeOperation[]) private strategies;
     /// @notice Mapping of a position (timestamp => position)
-    mapping(uint256 => Position) private positions;
+    mapping(uint256 => ITraderManager.Position) private positions;
     /// @notice Mapping of token addresses representing how much fees are obligated to the owner
     mapping(address => uint256) private obligatedFees;
     /// @notice Array of pooled tokens currently
@@ -31,7 +32,7 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
     /// @notice Active positions (in UNIX) if any
     uint256[] private activePositions;
     /// @notice Boolean representing if the token is under a withdrawal window
-    bool private withdrawalWindowActive;
+    bool private withdrawalWindowActive = true;
     /// @notice Minting fee in either the underlying or numeraire represented in % (100.00%)
     uint16 private mintingFee;
     /// @notice Profit take fee represented in % (100.00%)
@@ -46,6 +47,8 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
     IExchange private exchangev2;
     /// @notice Boolean if unsafe modules are activated or not (immutable at creation)
     bool private immutable allowUnsafeModules;
+    /// @notice Address of the TraderManager
+    ITraderManager private traderManager;
     /// @notice Address of the Social Hub (where protocol fees are deposited to)
     address private socialHub;
     /// @notice Address of the admin (the social trader)
@@ -53,20 +56,21 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
 
     event PositionOpened(uint256 indexed timestamp, bytes32 indexed openingStrategy);
     event PositionClosed(uint256 indexed timestamp, bytes32 indexed closingStrategy);
-    event PredeterminedStrategyAdded(bytes32 indexed strategy, TradeOperation[] indexed operations);
+    event PredeterminedStrategyAdded(bytes32 indexed strategy, ITraderManager.TradeOperation[] indexed operations);
     event MintingFeeModified(uint16 indexed newFee);
     event TakeProfitFeeModified(uint16 indexed newFee);
     event WithdrawalFeeModified(uint16 indexed newFee);
     event AdminChanged(address newAdmin);
 
-    constructor(string memory _name, string memory _symbol, uint16 _mintingFee, uint16 _takeProfitFee, uint16 _withdrawalFee, bool _allowUnsafeModules, address _admin) ERC20(_name, _symbol) {
-        if(_admin == address(0))
+    constructor(string memory _name, string memory _symbol, uint16 _mintingFee, uint16 _takeProfitFee, uint16 _withdrawalFee, bool _allowUnsafeModules, address _traderManager, address _admin) ERC20(_name, _symbol) {
+        if(_admin == address(0) || _traderManager == address(0))
             revert ZeroAddress();
         mintingFee = _mintingFee;
         takeProfitFee = _takeProfitFee;
         withdrawalFee = _withdrawalFee;
         socialHub = msg.sender; // Assumes that the token was deployed from the social hub
         allowUnsafeModules = _allowUnsafeModules;
+        traderManager = ITraderManager(_traderManager);
         admin = _admin;
     }
 
@@ -145,7 +149,8 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
             _newMintingFee,
             _newProfitTakeFee,
             _newWithdrawalFee,
-            _allowUnsafeModules
+            _allowUnsafeModules,
+            address(traderManager)
         );
     }
     
@@ -168,7 +173,7 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
     /// @notice Mints social tokens by depositing a proportion of pooled tokens
     /// @dev Mints new social tokens, requiring collateral/underlying; minting is disallowed if withdrawalWindowActive is false
     /// @param _amount amount of tokens to mint
-    function mint(uint256 _amount) public {
+    function mint(uint256 _amount) external {
         if(!withdrawalWindowActive)
             revert WithdrawalWindowIsInactive();
         
@@ -177,19 +182,17 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
 
         // NOTE: There was slippage worries if the pool ratio did change, but the pool ratio shouldn't change...
         // ... if there's no active positions. If the unsafe module is active, slippage could be a concern.
+        // Could be resolved by using some overhead in the approval/allowance, but isn't ideal.
 
-        bool nonZeroAmount;
+        if(pooledTokens.length == 0 || ERC20(this).totalSupply() == 0)
+            revert RatioNotDefined();
+
         // Loop through the current array of pooled tokens
         for(uint256 i; i < pooledTokens.length; i++) {
-            ERC20 token = ERC20(pooledTokens[i]);
+            IERC20 token = ERC20(pooledTokens[i]);
 
-            if(!nonZeroAmount && token.balanceOf(address(this)) != 0) {
-                nonZeroAmount = true;
-            }
-        }
-
-        if(!nonZeroAmount) {
-            revert RatioNotDefined();
+            token.safeTransferFrom(msg.sender, address(this), _calculateTokenRatio(pooledTokens[i]) * _amount);
+            super._mint(msg.sender, _amount);
         }
         
     }
@@ -197,8 +200,8 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
     /// @notice Burns social tokens in return for the pooled funds
     /// @dev Burns social tokens during inactive period
     /// @param _amount amount of tokens to burn (amount must be approved!)
-    function burn(uint256 _amount) public {
-
+    function burn(uint256 _amount) external {
+        // TODO: Add logic to check positions and pull necessary oToken to burn and redeem collateral (IF IN A SHORT POSITION)
     }
     
     /// @notice Open a new position
@@ -210,16 +213,16 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
     function openPosition(
         bytes32 _openingStrategy,
         address _oToken,
-        OptionStyle _style
+        ITraderManager.OptionStyle _style
     ) external override onlyAdmin returns(uint256) {
-        Position storage pos = positions[block.timestamp];
+        ITraderManager.Position storage pos = positions[block.timestamp];
 
         pos.openingStrategy = _openingStrategy;
         pos.oToken = _oToken;
         pos.style = _style;
         pos.numeraire = _determineNumeraire(_oToken, _style);
 
-        _executeTradingOperation(strategies[_openingStrategy], pos);
+        //_executeTradingOperation(strategies[_openingStrategy], pos);
         
         emit PositionOpened(block.timestamp, _openingStrategy);
     }
@@ -232,10 +235,12 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
         if(!isInActivePosition(_timestamp))
             revert PositionNotActive(_timestamp);
 
-        Position storage pos = positions[_timestamp];
+        ITraderManager.Position storage pos = positions[_timestamp];
 
         pos.closingStrategy = _closingStrategy;
         pos.closed = true;
+        
+        
 
         emit PositionClosed(block.timestamp, _closingStrategy);
     }
@@ -256,8 +261,8 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
     /// @dev Create a new strategy paired with a string key and an array of trading operations
     /// @param _strategy string of the predetermined strategy
     /// @param _operations memory array of TradeOperation that will be used to execute a trade
-    function createPredeterminedStrategy(bytes32 _strategy, TradeOperation[] memory _operations) external override onlyAdmin {
-        TradeOperation[] storage strategy = strategies[_strategy];
+    function createPredeterminedStrategy(bytes32 _strategy, ITraderManager.TradeOperation[] memory _operations) external override onlyAdmin {
+        ITraderManager.TradeOperation[] storage strategy = strategies[_strategy];
 
         if(strategy.length != 0)
             revert PredeterminedStrategyExists(_strategy);
@@ -271,10 +276,10 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
     /// @dev Allow manual trading of an active position with an array of custom operations
     /// @param _timestamp UNIX value of when the position was opened
     /// @param _operations memory array of TradeOperation that will be used to execute a trade
-    function executeTrade(uint256 _timestamp, TradeOperation[] memory _operations) external override onlyAdmin {
-        Position storage pos = positions[_timestamp];
+    function executeTrade(uint256 _timestamp, ITraderManager.TradeOperation[] memory _operations) external onlyAdmin {
+        ITraderManager.Position storage pos = positions[_timestamp];
         
-        _executeTradingOperation(_operations, pos);
+        //_executeTradingOperation(_operations, pos);
     }
 
     /// @notice Allows the social trader to make a trade on an active position with a predetermined strategy
@@ -282,9 +287,9 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
     /// @param _timestamp UNIX value of when the position was opened
     /// @param _strategy string of the predetermined strategy
     function executePredeterminedStrategy(uint256 _timestamp, bytes32 _strategy) external override onlyAdmin {
-        Position storage pos = positions[_timestamp];
+        ITraderManager.Position storage pos = positions[_timestamp];
         
-        _executeTradingOperation(strategies[_strategy], pos);
+        //_executeTradingOperation(strategies[_strategy], pos);
     }
 
     /// @notice Social trader can collect fees generated
@@ -356,8 +361,8 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
     /// @param _oToken address of the oToken
     /// @param _style Enum of OptionStyle.AMERICAN or OptionStyle.EUROPEAN
     /// @return numeraire address of the numeraire
-    function _determineNumeraire(address _oToken, OptionStyle _style) internal view returns(address numeraire) {
-        if(_style == OptionStyle.AMERICAN) {
+    function _determineNumeraire(address _oToken, ITraderManager.OptionStyle _style) internal view returns(address numeraire) {
+        if(_style == ITraderManager.OptionStyle.AMERICAN) {
             
         } else {
             
@@ -379,40 +384,6 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
             revert ZeroAddress();
             
         pooledTokens.push(_token);
-    }
-
-    /// @notice Execution of trades
-    /// @dev Provided a position and operations, it will execute the trades in the provided order in the array
-    /// @param _operations memory array of TradeOperation that will be used to execute a trade
-    /// @param _position storage-type of Position 
-    function _executeTradingOperation(
-        TradeOperation[] memory _operations,
-        Position storage _position
-    )
-        internal
-    {
-        for(uint256 i; i < _operations.length; i++) {
-            TradeOperation operation = _operations[i];
-            // BUY
-            if(operation == TradeOperation.BUY) {
-
-            // SELL
-            } else if(operation == TradeOperation.SELL) {
-            
-            // WRITE
-            } else if(operation == TradeOperation.WRITE) {
-
-            // BURN
-            } else if(operation == TradeOperation.BURN) {
-
-            // EXERCISE
-            } else if(operation == TradeOperation.EXERCISE) {
-
-            // REDEEM COLLATERAL
-            } else if(operation == TradeOperation.REDEEM_COLLATERAL) {
-
-            }
-        }
     }
 
 }
