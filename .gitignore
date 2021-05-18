@@ -2,3 +2,4 @@
 node_modules/
 bin/
 contracts/mimic/artifacts/*
+contracts/mimic/interfaces/artifacts/*

@@ -31,8 +31,8 @@ interface ITraderManager {
      * - closed represents if the position is closed
      */
     struct Position {
-        string openingStrategy;
-        string closingStrategy;
+        bytes32 openingStrategy;
+        bytes32 closingStrategy;
         OptionStyle style;
         address oToken;
         address underlying;
@@ -41,10 +41,10 @@ interface ITraderManager {
     }
 
     function openPosition(
-        string memory _openingStrategy,
+        bytes32 _openingStrategy,
         address _oToken,
         OptionStyle _style
     ) external returns(uint256);
-    function closePosition(uint256 _timestamp, string memory _closingStrategy) external;
+    function closePosition(uint256 _timestamp, bytes32 _closingStrategy) external;
     function changeAdmin(address _admin) external;
 }
