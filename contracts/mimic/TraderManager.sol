@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import {ITraderManager} from "./interfaces/ITraderManager.sol";
+import {ISocialTraderToken} from "./interfaces/ISocialTraderToken.sol";
 
 contract TraderManager is ITraderManager {
     function executeTrade(
@@ -40,6 +41,9 @@ contract TraderManager is ITraderManager {
             } else if(operation == TradeOperation.REDEEM_COLLATERAL) {
 
             }
+
+            // TODO: If a trading operation fails for whatever reason, revert with this error
+            // revert ISocialTraderToken.TradingOperationFailed(operation);
         }
     }
 }

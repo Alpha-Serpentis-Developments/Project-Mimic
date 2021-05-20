@@ -60,7 +60,6 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
     event MintingFeeModified(uint16 indexed newFee);
     event TakeProfitFeeModified(uint16 indexed newFee);
     event WithdrawalFeeModified(uint16 indexed newFee);
-    event AdminChanged(address newAdmin);
 
     constructor(string memory _name, string memory _symbol, uint16 _mintingFee, uint16 _takeProfitFee, uint16 _withdrawalFee, bool _allowUnsafeModules, address _traderManager, address _admin) ERC20(_name, _symbol) {
         if(_admin == address(0) || _traderManager == address(0))

@@ -33,11 +33,11 @@ interface ITraderManager {
     struct Position {
         bytes32 openingStrategy;
         bytes32 closingStrategy;
-        OptionStyle style;
         address oToken;
         address underlying;
         address numeraire;
         bool closed;
+        OptionStyle style;
     }
 
     function executeTrade(
