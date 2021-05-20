@@ -27,5 +27,4 @@ interface ISocialTraderToken {
     function addUnsafeModule(address _module) external;
     function removeUnsafeModule(address _module) external;
     function interactWithUnsafeModule(address _module, bytes memory _function, bool _revertIfUnsuccessful) external payable returns(bool success, bytes memory returnData);
-    function changeAdmin(address _admin) external;
 }

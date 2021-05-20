@@ -52,7 +52,7 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
     /// @notice Address of the Social Hub (where protocol fees are deposited to)
     address private socialHub;
     /// @notice Address of the admin (the social trader)
-    address public admin;
+    address public immutable admin;
 
     event PositionOpened(uint256 indexed timestamp, bytes32 indexed openingStrategy);
     event PositionClosed(uint256 indexed timestamp, bytes32 indexed closingStrategy);
@@ -243,18 +243,6 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
         
 
         emit PositionClosed(block.timestamp, _closingStrategy);
-    }
-
-    /// @notice Changes the admin/social trader of the token
-    /// @dev Hand over control of the trading token to a new address
-    /// @param _admin address of the new admin
-    function changeAdmin(address _admin) external override onlyAdmin {
-        if(_admin == address(0))
-            revert ZeroAddress();
-        
-        admin = _admin;
-
-        emit AdminChanged(_admin);
     }
 
     /// @notice Allows the social trader to create a new predetermined strategy
