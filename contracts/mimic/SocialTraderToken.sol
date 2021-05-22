@@ -164,7 +164,7 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
             revert ZeroAddress();
             
         IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
-        super._mint(msg.sender, _mint);
+        super._mint(address(0), _mint); // Prevents collapse of the initial ratio
 
         return _calculateTokenRatio(_token);
     }

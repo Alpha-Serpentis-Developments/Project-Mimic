@@ -3,3 +3,5 @@ node_modules/
 bin/
 contracts/mimic/artifacts/*
 contracts/mimic/interfaces/artifacts/*
+contracts/experimenting/artifacts/*
+contracts/oz/token/ERC20/artifacts/*
