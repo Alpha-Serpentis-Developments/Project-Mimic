@@ -15,6 +15,7 @@ contract VaultToken is ERC20 {
     error RatioNotDefined();
     error WithdrawalWindowNotActive();
     error WithdrawalWindowActive();
+    error oTokenNotCleared();
     error SettlementNotReady();
 
     /// @notice Time in which the withdrawal window expires
@@ -35,7 +36,7 @@ contract VaultToken is ERC20 {
     address public immutable manager;
 
     event WithdrawalWindowActivated(uint256 closesAfter);
-    event CallsMinted(uint256 collateralDeposited, uint256 vaultId);
+    event CallsMinted(uint256 collateralDeposited, address indexed newOtoken, uint256 vaultId);
 
     constructor(string memory _name, string memory _symbol, address _controller, address _asset, address _manager) ERC20(_name, _symbol) {
         controller = IController(_controller);
@@ -53,33 +54,14 @@ contract VaultToken is ERC20 {
         _;
     }
     
-    function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
-        if(msg.sender == manager)
-            require(balanceOf(msg.sender) - amount < 1e18, "VaultToken: Cannot withdraw initial tokens");
-            
-        _transfer(_msgSender(), recipient, amount);
-        return true;
-    }
-    
-    function transferFrom(address sender, address recipient, uint256 amount) public virtual override returns (bool) {
-        if(sender == manager)
-            require(balanceOf(sender) - amount >= 1e18, "VaultToken: Cannot withdraw initial tokens");
-            
-        _transfer(sender, recipient, amount);
-
-        uint256 currentAllowance = allowance(sender, _msgSender());
-        require(currentAllowance >= amount, "ERC20: transfer amount exceeds allowance");
-        _approve(sender, _msgSender(), currentAllowance - amount);
-
-        return true;
-    }
-    
     /// @notice Deposit assets and receive vault tokens to represent a share
     /// @dev Deposits an amount of assets specified then mints vault tokens to the msg.sender
-    /// @param _amount deposit amount for the ASSET
+    /// @param _amount amount to deposit of ASSET
     function deposit(uint256 _amount) external {
         if(_amount == 0)
             revert Invalid();
+        if(totalSupply() == 0)
+            revert RatioNotDefined();
             
         uint256 normalizedAssetBalance = _normalize(IERC20(asset).balanceOf(address(this)), ERC20(asset).decimals(), 18);
         uint256 normalizedAmount = _normalize(_amount, ERC20(asset).decimals(), 18);
@@ -90,7 +72,7 @@ contract VaultToken is ERC20 {
 
     /// @notice Redeem vault tokens for assets
     /// @dev Burns vault tokens in redemption for the assets to msg.sender
-    /// @param _amount withdrawal amount for the VAULT TOKENS
+    /// @param _amount amount of VAULT TOKENS to burn
     function withdraw(uint256 _amount) external withdrawalWindowCheck(true) {
         if(msg.sender == manager && balanceOf(msg.sender) - _amount < 1e18)
             revert Unauthorized();
@@ -101,8 +83,10 @@ contract VaultToken is ERC20 {
         _burn(address(msg.sender), _amount);
     }
 
-
-    function initializeRatio(uint256 _amount) external onlyManager {
+    /// @notice Sets the ratio between the asset and vault token
+    /// @dev Allows anyone to set the ratio 1:1 if total supply is 0 for whatever reason
+    /// @param _amount amount of the asset to mint
+    function initializeRatio(uint256 _amount) external {
         if(totalSupply() > 0)
             revert RatioAlreadyDefined();
 
@@ -114,11 +98,17 @@ contract VaultToken is ERC20 {
         emit WithdrawalWindowActivated(withdrawalWindowExpires);
     }
 
+    /// @notice Write calls for an _amount of asset for the specified oToken
+    /// @dev Allows the manager to write calls for an x 
+    /// @param _amount amount of the asset to deposit as collateral
+    /// @param _oToken address of the oToken
     function writeCalls(uint256 _amount, address _oToken) external onlyManager {
         if(_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
-        if(_amount == 0)
+        if(_amount == 0 && _oToken == address(0))
             revert Invalid();
+        if(_oToken != oToken && oToken != address(0))
+            revert oTokenNotCleared();
 
         IController.ActionArgs[] memory actions;
         GammaTypes.Vault memory vault;
@@ -177,9 +167,12 @@ contract VaultToken is ERC20 {
         collateralAmount += _amount;
         oToken = _oToken;
 
-        emit CallsMinted(_amount, controller.getAccountVaultCounter(address(this)));
+        emit CallsMinted(_amount, oToken, controller.getAccountVaultCounter(address(this)));
     }
     
+    /// @notice Operation to sell calls
+    /// @dev Sells calls to the designated exchange
+    /// @param _amount Amount of calls to sell to the exchange
     function sellCalls(uint256 _amount) external onlyManager {
         if(_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
@@ -187,6 +180,8 @@ contract VaultToken is ERC20 {
         // Sell x amount of calls to [exchange]
     }
 
+    /// @notice Operation to settle the vault
+    /// @dev Settles the currently open vault and opens the withdrawal window
     function settleVault() external onlyManager {
         if(_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
@@ -208,9 +203,12 @@ contract VaultToken is ERC20 {
             ""
         );
 
+        controller.operate(action);
+
         // Withdrawal window opens
         withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
         collateralAmount = 0;
+        oToken = address(0);
         
         emit WithdrawalWindowActivated(withdrawalWindowExpires);
     }
