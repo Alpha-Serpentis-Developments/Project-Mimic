@@ -176,8 +176,16 @@ contract VaultToken is ERC20 {
     function sellCalls(uint256 _amount) external onlyManager {
         if(_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
+        if(_amount > IERC20(oToken).balanceOf(address(this)))
+            revert Invalid();
 
         // Sell x amount of calls to [exchange]
+    }
+
+    /// @notice Converts the premiums of selling calls to the asset
+    /// @dev Converts the vault's premiums into the asset
+    function convertPremiums() external onlyManager {
+
     }
 
     /// @notice Operation to settle the vault
