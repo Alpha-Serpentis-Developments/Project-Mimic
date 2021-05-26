@@ -34,7 +34,9 @@ contract VaultToken is ERC20 {
     /// @notice Nonce for the exchange
     uint256 internal airswapNonce;
     /// @notice Address of the exchange
-    address private immutable exchange;
+    address private immutable AIRSWAP_EXCHANGE;
+    /// @notice Address of the uniswap v2 exchange
+    address private immutable UNISWAP_EXCHANGE;
     /// @notice Address of the underlying asset to trade
     address public immutable asset;
     /// @notice Address of the manager (admin)
@@ -46,9 +48,10 @@ contract VaultToken is ERC20 {
     event CallsMinted(uint256 collateralDeposited, address indexed newOtoken, uint256 vaultId);
     event CallsSold(uint256 amountSold, address indexed premiumToken, uint256 premiumReceived);
 
-    constructor(string memory _name, string memory _symbol, address _controller, address _exchange, address _asset, address _manager) ERC20(_name, _symbol) {
+    constructor(string memory _name, string memory _symbol, address _controller, address _airswap, address _uniswap, address _asset, address _manager) ERC20(_name, _symbol) {
         controller = IController(_controller);
-        exchange = _exchange;
+        AIRSWAP_EXCHANGE = _airswap;
+        UNISWAP_EXCHANGE = _uniswap;
         asset = _asset;
         manager = _manager;
     }
@@ -61,6 +64,13 @@ contract VaultToken is ERC20 {
     modifier withdrawalWindowCheck(bool _revertIfClosed) {
         _withdrawalWindowCheck(_revertIfClosed);
         _;
+    }
+    
+    function TEST_forceWithdrawalWindowToClose() external onlyManager {
+        withdrawalWindowExpires = block.timestamp;
+    }
+    function TEST_forceWithdrawalWindowToOpen() external onlyManager {
+        withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
     }
     
     /// @notice Deposit assets and receive vault tokens to represent a share
@@ -83,8 +93,6 @@ contract VaultToken is ERC20 {
     /// @dev Burns vault tokens in redemption for the assets to msg.sender
     /// @param _amount amount of VAULT TOKENS to burn
     function withdraw(uint256 _amount) external withdrawalWindowCheck(true) {
-        if(msg.sender == manager && balanceOf(msg.sender) - _amount < 1e18)
-            revert Unauthorized();
         if(_amount == 0)
             revert Invalid();
 
@@ -100,9 +108,9 @@ contract VaultToken is ERC20 {
             revert RatioAlreadyDefined();
 
         _mint(address(msg.sender), _amount);
-        IERC20(asset).safeTransferFrom(msg.sender, address(this), _amount**ERC20(asset).decimals());
+        IERC20(asset).safeTransferFrom(msg.sender, address(this), _normalize(_amount, ERC20(asset).decimals(), 18));
         
-        withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
+        withdrawalWindowExpires = block.timestamp + withdrawalWindowLength; // This WILL reset the withdrawal window if the supply was zero
         
         emit WithdrawalWindowActivated(withdrawalWindowExpires);
     }
@@ -111,8 +119,9 @@ contract VaultToken is ERC20 {
     /// @dev Allows the manager to write calls for an x 
     /// @param _amount amount of the asset to deposit as collateral
     /// @param _oToken address of the oToken
-    function writeCalls(uint256 _amount, address _oToken) external onlyManager {
-        if(_withdrawalWindowCheck(false))
+    /// @param _marginPool address of the margin pool
+    function writeCalls(uint256 _amount, address _oToken, address _marginPool) external onlyManager {
+        if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
         if(_amount == 0 && _oToken == address(0))
             revert Invalid();
@@ -165,10 +174,12 @@ contract VaultToken is ERC20 {
                 address(this),
                 _oToken,
                 currentVaultId,
-                _amount,
+                _normalize(_amount, ERC20(asset).decimals(), 8),
                 0,
                 ""
             );
+        // Approve the tokens to be moved
+        IERC20(asset).approve(_marginPool, _amount);
         
         // Submit the operations to the controller contract
         controller.operate(actions);
@@ -184,7 +195,7 @@ contract VaultToken is ERC20 {
     /// @param _amount Amount of calls to sell to the exchange
     /// @param _premiumIn Token address of the premium
     function sellCalls(uint256 _amount, address _premiumIn, uint256 _premiumAmount) external onlyManager {
-        if(_withdrawalWindowCheck(false))
+        if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
         if(_amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
             revert Invalid();
@@ -211,8 +222,11 @@ contract VaultToken is ERC20 {
         sellOrder.expiry = block.timestamp + 1 days;
         sellOrder.signer = signer;
         sellOrder.sender = sender;
+        
+        // Approve
+        IERC20(oToken).approve(AIRSWAP_EXCHANGE, _amount);
 
-        ISwap(exchange).swap(sellOrder);
+        ISwap(AIRSWAP_EXCHANGE).swap(sellOrder);
     }
 
     /// @notice Converts the premiums of selling calls to the asset
