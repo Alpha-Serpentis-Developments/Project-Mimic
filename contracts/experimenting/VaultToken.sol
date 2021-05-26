@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity =0.8.4;
 
+import {ISwap, Types} from "./airswap/interfaces/ISwap.sol";
 import {GammaTypes, IController} from "./gamma/interfaces/IController.sol";
 import {OtokenInterface} from "./gamma/interfaces/OtokenInterface.sol";
 import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
@@ -30,16 +31,24 @@ contract VaultToken is ERC20 {
     IController private immutable controller;
     /// @notice Address of the current oToken
     address private oToken;
+    /// @notice Nonce for the exchange
+    uint256 internal airswapNonce;
+    /// @notice Address of the exchange
+    address private immutable exchange;
     /// @notice Address of the underlying asset to trade
     address public immutable asset;
     /// @notice Address of the manager (admin)
     address public immutable manager;
 
+    event Deposit(uint256 assetDeposited, uint256 vaultTokensMinted);
+    event Withdrawal(uint256 assetWithdrew, uint256 vaultTokensBurned);
     event WithdrawalWindowActivated(uint256 closesAfter);
     event CallsMinted(uint256 collateralDeposited, address indexed newOtoken, uint256 vaultId);
+    event CallsSold(uint256 amountSold, address indexed premiumToken, uint256 premiumReceived);
 
-    constructor(string memory _name, string memory _symbol, address _controller, address _asset, address _manager) ERC20(_name, _symbol) {
+    constructor(string memory _name, string memory _symbol, address _controller, address _exchange, address _asset, address _manager) ERC20(_name, _symbol) {
         controller = IController(_controller);
+        exchange = _exchange;
         asset = _asset;
         manager = _manager;
     }
@@ -173,19 +182,43 @@ contract VaultToken is ERC20 {
     /// @notice Operation to sell calls
     /// @dev Sells calls to the designated exchange
     /// @param _amount Amount of calls to sell to the exchange
-    function sellCalls(uint256 _amount) external onlyManager {
+    /// @param _premiumIn Token address of the premium
+    function sellCalls(uint256 _amount, address _premiumIn, uint256 _premiumAmount) external onlyManager {
         if(_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
-        if(_amount > IERC20(oToken).balanceOf(address(this)))
+        if(_amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
             revert Invalid();
 
-        // Sell x amount of calls to [exchange]
+        // Prepare the AirSwap order
+        Types.Order memory sellOrder;
+        Types.Party memory signer;
+        Types.Party memory sender;
+
+        // Prepare the signer Types.Party portion of the order
+        signer.kind = 0x36372b07; // ERC20_INTERFACE_ID
+        signer.wallet = address(this);
+        signer.token = _premiumIn;
+        signer.amount = _premiumAmount;
+
+        // Prepare the sender Types.Party portion of the order
+        sender.kind = 0x36372b07; // ERC20_INTERFACE_ID
+        sender.token = oToken;
+        sender.amount = _amount;
+        // signer.wallet = address(this); -- DO NOT UNCOMMENT, SENDER WILL USE THE SMART CONTRACT ADDRESS AUTOMATICALLY
+
+        // Define Types.Order
+        sellOrder.nonce = airswapNonce++;
+        sellOrder.expiry = block.timestamp + 1 days;
+        sellOrder.signer = signer;
+        sellOrder.sender = sender;
+
+        ISwap(exchange).swap(sellOrder);
     }
 
     /// @notice Converts the premiums of selling calls to the asset
     /// @dev Converts the vault's premiums into the asset
     function convertPremiums() external onlyManager {
-
+        
     }
 
     /// @notice Operation to settle the vault
