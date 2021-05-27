@@ -11,6 +11,7 @@ contract VaultToken is ERC20 {
     using SafeERC20 for IERC20;
 
     error Unauthorized();
+    error Unauthorized_COUNTERPARTY_DID_NOT_SIGN();
     error Invalid();
     error RatioAlreadyDefined();
     error RatioNotDefined();
@@ -190,28 +191,32 @@ contract VaultToken is ERC20 {
         emit CallsMinted(_amount, oToken, controller.getAccountVaultCounter(address(this)));
     }
     
-    /// @notice Operation to sell calls
-    /// @dev Sells calls to the designated exchange
+    /// @notice Operation to sell calls to an EXISTING order on AirSwap
+    /// @dev Sells calls via AirSwap that exists by the counterparty
     /// @param _amount Amount of calls to sell to the exchange
     /// @param _premiumIn Token address of the premium
+    /// @param _premiumAmount Token amount to receive of the premium
+    /// @param _otherParty Address of the counterparty
     function sellCalls(uint256 _amount, address _premiumIn, uint256 _premiumAmount, address _otherParty) external onlyManager {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
         if(_amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
             revert Invalid();
+        if(!ISwap(AIRSWAP_EXCHANGE).signerAuthorizations(_otherParty, address(this)))
+            revert Unauthorized_COUNTERPARTY_DID_NOT_SIGN();
 
         // Prepare the AirSwap order
         Types.Order memory sellOrder;
         Types.Party memory signer;
         Types.Party memory sender;
 
-        // Prepare the signer Types.Party portion of the order
+        // Prepare the signer Types.Party portion (counterparty) of the order
         signer.kind = 0x36372b07; // ERC20_INTERFACE_ID
         signer.wallet = _otherParty;
         signer.token = _premiumIn;
         signer.amount = _premiumAmount;
 
-        // Prepare the sender Types.Party portion of the order
+        // Prepare the sender Types.Party portion (this contract) of the order
         sender.kind = 0x36372b07; // ERC20_INTERFACE_ID
         sender.token = oToken;
         sender.amount = _amount;
