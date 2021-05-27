@@ -123,7 +123,7 @@ contract VaultToken is ERC20 {
     function writeCalls(uint256 _amount, address _oToken, address _marginPool) external onlyManager {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
-        if(_amount == 0 && _oToken == address(0))
+        if(_amount == 0 || _oToken == address(0) || _marginPool == address(0))
             revert Invalid();
         if(_oToken != oToken && oToken != address(0))
             revert oTokenNotCleared();
@@ -194,7 +194,7 @@ contract VaultToken is ERC20 {
     /// @dev Sells calls to the designated exchange
     /// @param _amount Amount of calls to sell to the exchange
     /// @param _premiumIn Token address of the premium
-    function sellCalls(uint256 _amount, address _premiumIn, uint256 _premiumAmount) external onlyManager {
+    function sellCalls(uint256 _amount, address _premiumIn, uint256 _premiumAmount, address _otherParty) external onlyManager {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
         if(_amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
@@ -207,7 +207,7 @@ contract VaultToken is ERC20 {
 
         // Prepare the signer Types.Party portion of the order
         signer.kind = 0x36372b07; // ERC20_INTERFACE_ID
-        signer.wallet = address(this);
+        signer.wallet = _otherParty;
         signer.token = _premiumIn;
         signer.amount = _premiumAmount;
 
@@ -215,7 +215,6 @@ contract VaultToken is ERC20 {
         sender.kind = 0x36372b07; // ERC20_INTERFACE_ID
         sender.token = oToken;
         sender.amount = _amount;
-        // signer.wallet = address(this); -- DO NOT UNCOMMENT, SENDER WILL USE THE SMART CONTRACT ADDRESS AUTOMATICALLY
 
         // Define Types.Order
         sellOrder.nonce = airswapNonce++;
@@ -238,7 +237,7 @@ contract VaultToken is ERC20 {
     /// @notice Operation to settle the vault
     /// @dev Settles the currently open vault and opens the withdrawal window
     function settleVault() external onlyManager {
-        if(_withdrawalWindowCheck(false))
+        if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
 
         // Check if ready to settle otherwise revert
