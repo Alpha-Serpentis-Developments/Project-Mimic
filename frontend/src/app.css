@@ -1,0 +1,28 @@
+.content {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.content div {
+  margin: 10px 10px;
+}
+.totalSupp {
+  background-color: teal;
+  padding: 5px 35px;
+  border-radius: 15px;
+  color: white;
+  cursor: pointer;
+}
+
+.initialize {
+  padding: 5px 15px;
+  background-color: orange;
+  border-radius: 5px;
+  text-align: center;
+  cursor: pointer;
+}
+.initialize:hover {
+  background-color: orangered;
+  color: white;
+}
