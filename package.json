@@ -1,25 +1,32 @@
 {
-  "name": "hardhat-tutorial",
+  "name": "Project-Mimic",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Project Mimic (Optional) is a decentralized social trading platform that uses [Opyn v1](https://v1.opyn.co) and [Opyn v2](https://opyn.co) as the underlying on the Ethereum network.",
+  "main": "hardhat.config.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "chai": "^4.3.4",
+    "ethereum-waffle": "^3.3.0",
+    "ethers": "^5.2.0",
+    "hardhat": "^2.3.0"
+  },
   "scripts": {
-    "test": "npx hardhat test",
-    "node": "npx hardhat node"
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Alpha-Serpentis-Developments/Project-Mimic.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "@nomiclabs/buidler": "^1.4.8",
-    "hardhat": "^2.3.0"
+  "bugs": {
+    "url": "https://github.com/Alpha-Serpentis-Developments/Project-Mimic/issues"
   },
-  "dependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.0.1",
-    "@nomiclabs/hardhat-waffle": "^2.0.1",
-    "@openzeppelin/contracts": "^4.1.0",
-    "chai": "^4.2.0",
-    "ethereum-waffle": "^3.2.1",
-    "ethers": "^5.2.0"
-  }
+  "homepage": "https://github.com/Alpha-Serpentis-Developments/Project-Mimic#readme"
 }

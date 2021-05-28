@@ -49,7 +49,15 @@ contract VaultToken is ERC20 {
     event CallsMinted(uint256 collateralDeposited, address indexed newOtoken, uint256 vaultId);
     event CallsSold(uint256 amountSold, address indexed premiumToken, uint256 premiumReceived);
 
-    constructor(string memory _name, string memory _symbol, address _controller, address _airswap, address _uniswap, address _asset, address _manager) ERC20(_name, _symbol) {
+    constructor(
+        string memory _name,
+        string memory _symbol,
+        address _controller,
+        address _airswap,
+        address _uniswap,
+        address _asset,
+        address _manager
+    ) ERC20(_name, _symbol) {
         controller = IController(_controller);
         AIRSWAP_EXCHANGE = _airswap;
         UNISWAP_EXCHANGE = _uniswap;

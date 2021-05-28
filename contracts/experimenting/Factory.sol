@@ -5,6 +5,7 @@ import {VaultToken} from "./VaultToken.sol";
 
 contract Factory {
     error ContractCreationFailed();
+    error ZeroAddress();
 
     /// @notice Address of the airswap exchange
     address private immutable AIRSWAP_EXCHANGE;
@@ -24,6 +25,8 @@ contract Factory {
     /// @param _uniswap address of the uniswap pair
     /// @param _asset address of the asset token (what the vault is denominated in)
     function deployNewVaultToken(string memory _name, string memory _symbol, address _controller, address _uniswap, address _asset) external {
+        if(_controller == address(0) || _asset == address(0))
+            revert ZeroAddress();
         VaultToken vToken = new VaultToken(_name, _symbol, _controller, AIRSWAP_EXCHANGE, _uniswap, _asset, msg.sender);
 
         if(address(vToken) == address(0))
