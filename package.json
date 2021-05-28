@@ -11,14 +11,15 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "hardhat": "^2.0.7"
+    "@nomiclabs/buidler": "^1.4.8",
+    "hardhat": "^2.3.0"
   },
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
-    "@openzeppelin/contracts": "^4.0.0",
+    "@openzeppelin/contracts": "^4.1.0",
     "chai": "^4.2.0",
     "ethereum-waffle": "^3.2.1",
-    "ethers": "^5.0.25"
+    "ethers": "^5.2.0"
   }
 }
