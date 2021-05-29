@@ -90,9 +90,14 @@ contract VaultToken is ERC20 {
             revert Invalid();
         if(totalSupply() == 0)
             revert RatioNotDefined();
-            
+
         uint256 normalizedAssetBalance = _normalize(IERC20(asset).balanceOf(address(this)), ERC20(asset).decimals(), 18);
         uint256 normalizedAmount = _normalize(_amount, ERC20(asset).decimals(), 18);
+
+        uint256 vaultMint = (normalizedAssetBalance + collateralAmount) * normalizedAmount / totalSupply();
+
+        if(vaultMint == 0) // Safety check for rounding errors
+            revert Invalid();
 
         IERC20(asset).safeTransferFrom(msg.sender, address(this), _amount);
         _mint(msg.sender, (normalizedAssetBalance + collateralAmount) * normalizedAmount / totalSupply()); // (Balance of Vault for Asset + Collateral Amount of Asset) * Amount of Asset to Deposit / Total Vault Token Supply
@@ -111,13 +116,18 @@ contract VaultToken is ERC20 {
 
     /// @notice Sets the ratio between the asset and vault token
     /// @dev Allows anyone to set the ratio 1:1 if total supply is 0 for whatever reason
-    /// @param _amount amount of the asset to mint
+    /// @param _amount amount of the VAULT TOKEN to mint
     function initializeRatio(uint256 _amount) external {
         if(totalSupply() > 0)
             revert RatioAlreadyDefined();
 
+        uint256 normalizedAssetAmount = _normalize(_amount, decimals(), ERC20(asset).decimals());
+        
+        if(normalizedAssetAmount == 0) // Safety check for rounding errors
+            revert Invalid();
+
         _mint(address(msg.sender), _amount);
-        IERC20(asset).safeTransferFrom(msg.sender, address(this), _normalize(_amount, ERC20(asset).decimals(), 18));
+        IERC20(asset).safeTransferFrom(msg.sender, address(this), normalizedAssetAmount);
         
         withdrawalWindowExpires = block.timestamp + withdrawalWindowLength; // This WILL reset the withdrawal window if the supply was zero
         

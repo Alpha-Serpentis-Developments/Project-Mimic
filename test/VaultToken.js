@@ -4,7 +4,7 @@ const { ethers } = require("hardhat");
 describe('VaultToken contract', () => {
     let VaultToken, TestToken, vaultToken, testToken, manager, depositor, fake_controller, fake_airswap, fake_uniswap;
 
-    beforeEach(async () => {
+    before(async () => {
         VaultToken = await ethers.getContractFactory('VaultToken');
         TestToken = await ethers.getContractFactory('TestToken');
         [manager, depositor, fake_controller, fake_airswap, fake_uniswap] = await ethers.getSigners();
@@ -35,14 +35,16 @@ describe('VaultToken contract', () => {
 
     describe("Initialize the Vault", () => {
         it('Ratio should be initialized', async () => {
-            await testToken.connect(manager).approve(vaultToken.address, 1e6);
+            const vaultTokenConnectedToManager = await vaultToken.connect(manager);
+            const testTokenConnectedToManager = await testToken.connect(manager);
 
-            const amount = ethers.utils.parseUnits('1', 18);
-            (await vaultToken.connect(manager)).initializeRatio(amount);
+            await testTokenConnectedToManager.approve(vaultToken.address, 1e6);
+            await vaultTokenConnectedToManager.initializeRatio(ethers.utils.parseUnits('1', 18));
+
             const vaultTokenSupply = await vaultToken.totalSupply();
             const vaultBalance = await testToken.balanceOf(vaultToken.address);
 
-            expect(vaultTokenSupply).to.equal(amount);
+            expect(vaultTokenSupply).to.equal(ethers.utils.parseUnits('1', 18));
             expect(vaultBalance).to.equal(1e6);
         });
     });

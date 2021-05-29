@@ -7,11 +7,13 @@ import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
 contract TestToken is ERC20 {
     error Unauthorized();
     
+    uint8 private immutable _decimals;
     address private immutable admin;
     
-    constructor(string memory _name, string memory _symbol, uint256 _initialMint) ERC20(_name, _symbol) {
+    constructor(string memory _name, string memory _symbol, uint8 _decimalPrecision, uint256 _initialMint) ERC20(_name, _symbol) {
         _mint(msg.sender, _initialMint);
         admin = msg.sender;
+        _decimals = _decimalPrecision;
     }
     
     modifier onlyAdmin {
@@ -24,7 +26,7 @@ contract TestToken is ERC20 {
     }
     
     function decimals() public view override returns(uint8) {
-        return 6;
+        return _decimals;
     }
     
     function _onlyAdmin() internal view {
