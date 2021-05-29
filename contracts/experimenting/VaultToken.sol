@@ -93,14 +93,13 @@ contract VaultToken is ERC20 {
 
         uint256 normalizedAssetBalance = _normalize(IERC20(asset).balanceOf(address(this)), ERC20(asset).decimals(), 18);
         uint256 normalizedAmount = _normalize(_amount, ERC20(asset).decimals(), 18);
-
-        uint256 vaultMint = (normalizedAssetBalance + collateralAmount) * normalizedAmount / totalSupply();
+        uint256 vaultMint = (normalizedAssetBalance + _normalize(collateralAmount, ERC20(asset).decimals(), 18)) * normalizedAmount / totalSupply();
 
         if(vaultMint == 0) // Safety check for rounding errors
             revert Invalid();
 
         IERC20(asset).safeTransferFrom(msg.sender, address(this), _amount);
-        _mint(msg.sender, (normalizedAssetBalance + collateralAmount) * normalizedAmount / totalSupply()); // (Balance of Vault for Asset + Collateral Amount of Asset) * Amount of Asset to Deposit / Total Vault Token Supply
+        _mint(msg.sender, vaultMint); // (Balance of Vault for Asset + Collateral Amount of Asset) * Amount of Asset to Deposit / Total Vault Token Supply
     }
 
     /// @notice Redeem vault tokens for assets

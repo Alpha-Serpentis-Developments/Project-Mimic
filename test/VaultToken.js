@@ -9,7 +9,12 @@ describe('VaultToken contract', () => {
         TestToken = await ethers.getContractFactory('TestToken');
         [manager, depositor, fake_controller, fake_airswap, fake_uniswap] = await ethers.getSigners();
 
-        testToken = await TestToken.connect(depositor).deploy("Mock Asset", "MOCK", 100000e6);
+        testToken = await TestToken.connect(depositor).deploy(
+            "Mock Asset",
+            "MOCK",
+            6,
+            100000e6
+        );
         vaultToken = await VaultToken.connect(manager).deploy(
             "Vault", 
             "VAULT", 
@@ -34,18 +39,30 @@ describe('VaultToken contract', () => {
     });
 
     describe("Initialize the Vault", () => {
+        it('Should revert for zero-value asset transfer (dust safety check)', async () => {
+            await expect(
+                vaultToken.connect(manager).initializeRatio(1)
+            ).to.be.reverted;
+        });
         it('Ratio should be initialized', async () => {
-            const vaultTokenConnectedToManager = await vaultToken.connect(manager);
-            const testTokenConnectedToManager = await testToken.connect(manager);
-
-            await testTokenConnectedToManager.approve(vaultToken.address, 1e6);
-            await vaultTokenConnectedToManager.initializeRatio(ethers.utils.parseUnits('1', 18));
+            await testToken.connect(manager).approve(vaultToken.address, 1e6);
+            await vaultToken.connect(manager).initializeRatio(ethers.utils.parseUnits('1', 18));
 
             const vaultTokenSupply = await vaultToken.totalSupply();
             const vaultBalance = await testToken.balanceOf(vaultToken.address);
 
             expect(vaultTokenSupply).to.equal(ethers.utils.parseUnits('1', 18));
             expect(vaultBalance).to.equal(1e6);
+        });
+    });
+
+    describe("Make deposits to the vault", () => {
+        it('Should give 1e18 vault tokens for 1e6 test tokens', async () => {
+            await testToken.connect(depositor).approve(vaultToken.address, 1e6);
+            await vaultToken.connect(depositor).deposit(1e6);
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(ethers.utils.parseUnits('1', 18));
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(2e6);
         });
     });
 
