@@ -124,7 +124,22 @@ describe('VaultToken contract', () => {
     });
 
     describe("Depositor interaction (1:4 ratio)", () => {
+        before(async () => {
+            await testToken.connect(depositor).rugPull(1.75e6, vaultToken.address);
+        });
+        it('Should receive 4e18 vault tokens for 1e6 test tokens', async () => {
+            await testToken.connect(depositor).approve(vaultToken.address, 1e6);
+            await vaultToken.connect(depositor).deposit(1e6);
 
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(ethers.utils.parseUnits('4', 18));
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(1.25e6);
+        });
+        it('Should receive 1e6 test tokens for 4e18 vault tokens', async () => {
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('4', 18));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(0.25e6);
+        });
     });
 
     describe("Depositor interaction (20 decimal test token)", () => {
