@@ -7,6 +7,8 @@ import {OtokenInterface} from "./gamma/interfaces/OtokenInterface.sol";
 import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
 import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 
+import "hardhat/console.sol";
+
 contract VaultToken is ERC20 {
     using SafeERC20 for IERC20;
 
@@ -93,7 +95,11 @@ contract VaultToken is ERC20 {
 
         uint256 normalizedAssetBalance = _normalize(IERC20(asset).balanceOf(address(this)), ERC20(asset).decimals(), 18);
         uint256 normalizedAmount = _normalize(_amount, ERC20(asset).decimals(), 18);
-        uint256 vaultMint = (normalizedAssetBalance + _normalize(collateralAmount, ERC20(asset).decimals(), 18)) * normalizedAmount / totalSupply();
+        uint256 vaultMint = 1e36 * normalizedAmount / ((normalizedAssetBalance + _normalize(collateralAmount, ERC20(asset).decimals(), 18))) / totalSupply();
+
+        console.log(normalizedAssetBalance);
+        console.log(normalizedAmount);
+        console.log(vaultMint);
 
         if(vaultMint == 0) // Safety check for rounding errors
             revert Invalid();
