@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe('VaultToken contract', () => {
+describe('VaultToken contract (simple test)', () => {
     let VaultToken, TestToken, vaultToken, testToken, manager, depositor, fake_controller, fake_airswap, fake_uniswap;
 
     before(async () => {
@@ -175,6 +175,43 @@ describe('VaultToken contract', () => {
             await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 20));
 
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('2', 20));
+            expect(await vaultToken.totalSupply()).to.equal(ethers.utils.parseUnits('2', 18));
+        });
+    });
+
+    describe("Depositor interaction (18 decimal test token)", () => {
+        before(async () => {
+            testToken = await TestToken.connect(depositor).deploy(
+                "Mock Asset",
+                "MOCK",
+                18,
+                ethers.utils.parseUnits('100000', 20)
+            );
+            vaultToken = await VaultToken.connect(manager).deploy(
+                "Vault", 
+                "VAULT", 
+                fake_controller.address, 
+                fake_airswap.address, 
+                fake_uniswap.address, 
+                testToken.address, 
+                manager.address
+            );
+
+            await testToken.connect(depositor).transfer(manager.address, ethers.utils.parseUnits('1', 18));
+        });
+
+        it('Should initialize the vault correctly', async () => {
+            await testToken.connect(manager).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
+            await vaultToken.connect(manager).initializeRatio(ethers.utils.parseUnits('1', 18));
+
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('1', 18));
+            expect(await vaultToken.totalSupply()).to.equal(ethers.utils.parseUnits('1', 18));
+        });
+        it('Should receive 1e18 vault tokens for 1e18 test tokens', async () => {
+            await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18));
+
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('2', 18));
             expect(await vaultToken.totalSupply()).to.equal(ethers.utils.parseUnits('2', 18));
         });
     });

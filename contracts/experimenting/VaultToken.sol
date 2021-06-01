@@ -7,7 +7,7 @@ import {OtokenInterface} from "./gamma/interfaces/OtokenInterface.sol";
 import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
 import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 
-//import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract VaultToken is ERC20 {
     using SafeERC20 for IERC20;
@@ -93,21 +93,22 @@ contract VaultToken is ERC20 {
         if(totalSupply() == 0)
             revert RatioNotDefined();
 
-        uint256 normalizedAssetBalance = _normalize(IERC20(asset).balanceOf(address(this)), ERC20(asset).decimals(), 18);
+        uint256 normalizedAssetBalance = _normalize(IERC20(asset).balanceOf(address(this)), ERC20(asset).decimals(), 18) + _normalize(collateralAmount, ERC20(asset).decimals(), 18);
         uint256 normalizedAmount = _normalize(_amount, ERC20(asset).decimals(), 18);
-        uint256 vaultMint = 1e36 * normalizedAmount / ((normalizedAssetBalance + _normalize(collateralAmount, ERC20(asset).decimals(), 18))) / totalSupply();
+        uint256 vaultMint = totalSupply() * normalizedAmount / normalizedAssetBalance;
 
-        /*
-        console.log(normalizedAssetBalance);
         console.log(normalizedAmount);
+        console.log(normalizedAssetBalance);
+        console.log(totalSupply());
+        console.log(totalSupply() * normalizedAmount / normalizedAssetBalance);
         console.log(vaultMint);
-        */
+        
 
         if(vaultMint == 0) // Safety check for rounding errors
             revert Invalid();
 
         IERC20(asset).safeTransferFrom(msg.sender, address(this), _amount);
-        _mint(msg.sender, vaultMint); // (Balance of Vault for Asset + Collateral Amount of Asset) * Amount of Asset to Deposit / Total Vault Token Supply
+        _mint(msg.sender, vaultMint); // (Normalized Amount / ((Normalized Asset Bal. + Normalized Collateral Amt.) / Vault Token Total Supply)
     }
 
     /// @notice Redeem vault tokens for assets

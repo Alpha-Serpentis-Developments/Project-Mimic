@@ -7,16 +7,29 @@ const INFURA_URL = '';
 const PRIVATE_KEY = '';
 
 module.exports = {
-  paths: { // THIS IS FOR THIS BRANCH ONLY
-    sources: "./contracts/experimenting"
+  paths: {
+    sources: "./contracts"
   },
   solidity: {
-    version: "0.8.4",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200
+    compilers: [
+      {
+        version: "0.8.4",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          }
+        }
+      },
+      {
+        version: "0.6.10",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          }
+        }
       }
-    }
+    ],
   }
 };
