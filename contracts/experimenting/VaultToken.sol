@@ -151,7 +151,8 @@ contract VaultToken is ERC20 {
     /// @param _oToken address of the oToken
     /// @param _marginPool address of the margin pool
     function writeCalls(uint256 _amount, address _oToken, address _marginPool) external onlyManager {
-        console.log(block.timestamp);
+        console.log(_withdrawalWindowCheck(false));
+        console.log(block.number);
         
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();

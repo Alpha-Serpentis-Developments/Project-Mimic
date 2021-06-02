@@ -3,7 +3,7 @@ const { ethers, network } = require("hardhat");
 
 describe('VaultToken contract (full test)', () => {
     let VaultToken, TestToken, OtokenFactory, Otoken, Whitelist, Oracle, MarginPool, MarginCalculator, AddressBook, Controller, MarginVault;
-    let vaultToken, mockUSDC, mockWETH, mockOtoken, otokenFactory, otokenImpl, whitelist, oracle, marginPool, marginCalculator, addressBook, controller, marginVault;
+    let vaultToken, mockUSDC, mockWETH, mockOtokenAddr, otokenFactory, otokenImpl, whitelist, oracle, marginPool, marginCalculator, addressBook, controller, marginVault;
     let manager, depositor, deployer, pricer;
 
     before(async () => {
@@ -88,7 +88,7 @@ describe('VaultToken contract (full test)', () => {
         );
 
         // Prepare the oToken
-        mockOtoken = await otokenFactory.connect(deployer).createOtoken(
+        mockOtokenTransaction = await otokenFactory.connect(deployer).createOtoken(
             mockWETH.address,
             mockUSDC.address,
             mockWETH.address,
@@ -96,6 +96,9 @@ describe('VaultToken contract (full test)', () => {
             1640937600, // 2021 Dec. 31 @ 8 UTC
             false
         );
+
+        const mockOtokenReceipt = await mockOtokenTransaction.wait();
+        mockOtokenAddr = mockOtokenReceipt.logs[0].address;
     });
 
     describe("Verify Depositor's Balance", () => {
@@ -138,7 +141,7 @@ describe('VaultToken contract (full test)', () => {
             await expect(
                 vaultToken.connect(manager).writeCalls(
                     ethers.utils.parseUnits('10.01', 18),
-                    mockOtoken.address,
+                    mockOtokenAddr,
                     marginPool.address
                 )
             ).to.be.reverted;
@@ -153,7 +156,7 @@ describe('VaultToken contract (full test)', () => {
             //await expect(
                 await vaultToken.connect(manager).writeCalls(
                     ethers.utils.parseUnits('10.01', 18),
-                    mockOtoken.address,
+                    mockOtokenAddr,
                     marginPool.address
                 );
             //).to.not.be.reverted;
