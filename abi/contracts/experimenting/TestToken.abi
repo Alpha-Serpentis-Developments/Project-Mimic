@@ -12,6 +12,11 @@
 				"type": "string"
 			},
 			{
+				"internalType": "uint8",
+				"name": "_decimalPrecision",
+				"type": "uint8"
+			},
+			{
 				"internalType": "uint256",
 				"name": "_initialMint",
 				"type": "uint256"

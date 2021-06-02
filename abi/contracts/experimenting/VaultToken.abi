@@ -67,6 +67,11 @@
 	},
 	{
 		"inputs": [],
+		"name": "Unauthorized_COUNTERPARTY_DID_NOT_SIGN",
+		"type": "error"
+	},
+	{
+		"inputs": [],
 		"name": "WithdrawalWindowActive",
 		"type": "error"
 	},
