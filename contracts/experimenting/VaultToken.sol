@@ -7,7 +7,7 @@ import {OtokenInterface} from "./gamma/interfaces/OtokenInterface.sol";
 import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
 import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 
-//import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract VaultToken is ERC20 {
     using SafeERC20 for IERC20;
@@ -273,7 +273,7 @@ contract VaultToken is ERC20 {
             revert WithdrawalWindowActive();
 
         // Check if ready to settle otherwise revert
-        if(OtokenInterface(oToken).expiryTimestamp() <= block.timestamp)
+        if(OtokenInterface(oToken).expiryTimestamp() > block.timestamp)
             revert SettlementNotReady();
 
         // Settle the vault if ready
@@ -289,7 +289,9 @@ contract VaultToken is ERC20 {
             ""
         );
 
+        console.log("SUBMITTING TO CONTROLLER");
         controller.operate(action);
+        console.log("OPERATE IS DONE");
 
         // Withdrawal window opens
         withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;

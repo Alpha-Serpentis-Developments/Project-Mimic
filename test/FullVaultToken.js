@@ -83,6 +83,8 @@ describe('VaultToken contract (full test)', () => {
 
         // Prepare the oracle
         await oracle.connect(fake_multisig).setAssetPricer(mockWETH.address, pricer.address);
+        await oracle.connect(fake_multisig).setAssetPricer(mockUSDC.address, pricer.address);
+        //await oracle.connect(fake_multisig).setStablePrice(mockUSDC.address, 1e6)
 
         // Prepare the whitelist
         await whitelist.connect(fake_multisig).whitelistCollateral(mockWETH.address);
@@ -176,10 +178,45 @@ describe('VaultToken contract (full test)', () => {
             expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(0);
         });
         it('Should allow you to deposit funds', async () => {
+            await mockWETH.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18));
 
+            expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('1', 18));
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(ethers.utils.parseUnits('11', 18));
         });
         it('Should write calls again to the same vault', async () => {
+            await vaultToken.connect(manager).writeCalls(
+                ethers.utils.parseUnits('1', 18),
+                mockOtokenAddr,
+                marginPool.address
+            );
 
+            expect(await mockOtoken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('11.01', 8));
+            expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(0);
+        });
+    });
+
+    describe("Settle the vault", () => {
+        before(async () => {
+            await network.provider.send('evm_setNextBlockTimestamp', [1640937601]);
+            await oracle.connect(pricer).setExpiryPrice(
+                mockWETH.address,
+                1640937600,
+                999e8
+            );
+        });
+        it('Should REVERT in an attempt to settle the vault', async () => {
+            await expect(
+                vaultToken.connect(manager).settleVault()
+            ).to.be.revertedWith('Controller: asset prices not finalized yet');
+        });
+        it('Should settle the vault', async () => {
+            await oracle.connect(pricer).setExpiryPrice(
+                mockUSDC.address,
+                1640937600,
+                1e8
+            );
+            await vaultToken.connect(manager).settleVault();
         });
     });
 
