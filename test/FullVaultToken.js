@@ -3,7 +3,7 @@ const { ethers, network } = require("hardhat");
 
 describe('VaultToken contract (full test)', () => {
     let VaultToken, TestToken, OtokenFactory, Otoken, Whitelist, Oracle, MarginPool, MarginCalculator, AddressBook, Controller, MarginVault;
-    let vaultToken, mockUSDC, mockWETH, mockOtokenAddr, otokenFactory, otokenImpl, whitelist, oracle, marginPool, marginCalculator, addressBook, controller, marginVault;
+    let vaultToken, mockUSDC, mockWETH, mockOtoken, mockOtokenAddr, otokenFactory, otokenImpl, whitelist, oracle, marginPool, marginCalculator, addressBook, controller, marginVault;
     let manager, depositor, deployer, pricer;
 
     before(async () => {
@@ -20,7 +20,7 @@ describe('VaultToken contract (full test)', () => {
         MarginVault = await ethers.getContractFactory('MarginVault');
         AddressBook = await ethers.getContractFactory('AddressBook');
 
-        [manager, depositor, deployer, pricer, fake_airswap, fake_uniswap] = await ethers.getSigners();
+        [manager, depositor, deployer, pricer, fake_multisig, fake_airswap, fake_uniswap] = await ethers.getSigners();
 
         // Deploy all the addresses
         addressBook = await AddressBook.connect(deployer).deploy();
@@ -52,6 +52,12 @@ describe('VaultToken contract (full test)', () => {
         await addressBook.connect(deployer).setMarginCalculator(marginCalculator.address);
         await addressBook.connect(deployer).setController(controller.address);
 
+        // Transfer ownership
+        await addressBook.connect(deployer).transferOwnership(fake_multisig.address);
+        await whitelist.connect(deployer).transferOwnership(fake_multisig.address);
+        await oracle.connect(deployer).transferOwnership(fake_multisig.address);
+        await marginPool.connect(deployer).transferOwnership(fake_multisig.address);
+
         // Prepare the mock USDC (strike) token, mock WETH (asset) token and vault token
         mockUSDC = await TestToken.connect(depositor).deploy(
             "Mock USDC",
@@ -68,7 +74,7 @@ describe('VaultToken contract (full test)', () => {
         vaultToken = await VaultToken.connect(manager).deploy(
             "Vault", 
             "VAULT", 
-            controller.address, 
+            await addressBook.getController(), 
             fake_airswap.address, 
             fake_uniswap.address, 
             mockWETH.address, 
@@ -76,11 +82,11 @@ describe('VaultToken contract (full test)', () => {
         );
 
         // Prepare the oracle
-        await oracle.connect(deployer).setAssetPricer(mockWETH.address, pricer.address);
+        await oracle.connect(fake_multisig).setAssetPricer(mockWETH.address, pricer.address);
 
         // Prepare the whitelist
-        await whitelist.connect(deployer).whitelistCollateral(mockWETH.address);
-        await whitelist.connect(deployer).whitelistProduct(
+        await whitelist.connect(fake_multisig).whitelistCollateral(mockWETH.address);
+        await whitelist.connect(fake_multisig).whitelistProduct(
             mockWETH.address,
             mockUSDC.address,
             mockWETH.address,
@@ -88,7 +94,7 @@ describe('VaultToken contract (full test)', () => {
         );
 
         // Prepare the oToken
-        mockOtokenTransaction = await otokenFactory.connect(deployer).createOtoken(
+        mockOtokenTransaction = await otokenFactory.connect(fake_multisig).createOtoken(
             mockWETH.address,
             mockUSDC.address,
             mockWETH.address,
@@ -98,7 +104,13 @@ describe('VaultToken contract (full test)', () => {
         );
 
         const mockOtokenReceipt = await mockOtokenTransaction.wait();
-        mockOtokenAddr = mockOtokenReceipt.logs[0].address;
+        mockOtokenAddr = mockOtokenReceipt.events[1].args[0];
+
+        mockOtoken = await ethers.getContractAt(
+            'Otoken',
+            mockOtokenAddr,
+            fake_multisig
+        );
     });
 
     describe("Verify Depositor's Balance", () => {
@@ -148,18 +160,26 @@ describe('VaultToken contract (full test)', () => {
         });
     });
 
-    describe("Write options when the withdrawal window closes", () => {
+    describe("Interact after the withdrawal window closes", () => {
         before(async () => {
             await network.provider.send('evm_increaseTime', [86400]);
         });
         it('Should write calls when the withdrawal window is closed', async () => {
-            //await expect(
-                await vaultToken.connect(manager).writeCalls(
+            await expect(
+                vaultToken.connect(manager).writeCalls(
                     ethers.utils.parseUnits('10.01', 18),
                     mockOtokenAddr,
                     marginPool.address
-                );
-            //).to.not.be.reverted;
+                )
+            ).to.not.be.reverted;
+            expect(await mockOtoken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('10.01', 8));
+            expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(0);
+        });
+        it('Should allow you to deposit funds', async () => {
+
+        });
+        it('Should write calls again to the same vault', async () => {
+
         });
     });
 

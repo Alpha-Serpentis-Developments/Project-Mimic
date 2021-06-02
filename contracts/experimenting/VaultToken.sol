@@ -2,12 +2,12 @@
 pragma solidity =0.8.4;
 
 import {ISwap, Types} from "./airswap/interfaces/ISwap.sol";
-import {GammaTypes, IController} from "./gamma/interfaces/IController.sol";
+import {Actions, GammaTypes, IController} from "./gamma/interfaces/IController.sol";
 import {OtokenInterface} from "./gamma/interfaces/OtokenInterface.sol";
 import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
 import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 
-import "hardhat/console.sol";
+//import "hardhat/console.sol";
 
 contract VaultToken is ERC20 {
     using SafeERC20 for IERC20;
@@ -141,8 +141,6 @@ contract VaultToken is ERC20 {
         withdrawalWindowExpires = block.timestamp + withdrawalWindowLength; // This WILL reset the withdrawal window if the supply was zero
         
         emit WithdrawalWindowActivated(withdrawalWindowExpires);
-
-        console.log(withdrawalWindowExpires);
     }
 
     /// @notice Write calls for an _amount of asset for the specified oToken
@@ -151,9 +149,6 @@ contract VaultToken is ERC20 {
     /// @param _oToken address of the oToken
     /// @param _marginPool address of the margin pool
     function writeCalls(uint256 _amount, address _oToken, address _marginPool) external onlyManager {
-        console.log(_withdrawalWindowCheck(false));
-        console.log(block.number);
-        
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
         if(_amount == 0 || _oToken == address(0) || _marginPool == address(0))
@@ -161,7 +156,7 @@ contract VaultToken is ERC20 {
         if(_oToken != oToken && oToken != address(0))
             revert oTokenNotCleared();
 
-        IController.ActionArgs[] memory actions;
+        Actions.ActionArgs[] memory actions;
         GammaTypes.Vault memory vault;
 
         // Check if the vault is even open and open if no vault is open
@@ -170,11 +165,11 @@ contract VaultToken is ERC20 {
             vault.shortOtokens.length == 0 &&
             vault.collateralAssets.length == 0
         ) {
-            actions = new IController.ActionArgs[](3);
+            actions = new Actions.ActionArgs[](3);
             currentVaultId = controller.getAccountVaultCounter(address(this)) + 1;
 
-            actions[0] = IController.ActionArgs(
-                IController.ActionType.OpenVault,
+            actions[0] = Actions.ActionArgs(
+                Actions.ActionType.OpenVault,
                 address(this),
                 address(this),
                 address(0),
@@ -186,12 +181,12 @@ contract VaultToken is ERC20 {
             
 
         } else {
-            actions = new IController.ActionArgs[](2);
+            actions = new Actions.ActionArgs[](2);
         }
 
         // Deposit _amount of asset to the vault
-        actions[actions.length - 2] = IController.ActionArgs(
-                IController.ActionType.DepositCollateral,
+        actions[actions.length - 2] = Actions.ActionArgs(
+                Actions.ActionType.DepositCollateral,
                 address(this),
                 address(this),
                 asset,
@@ -201,8 +196,8 @@ contract VaultToken is ERC20 {
                 ""
             );
         // Write calls
-        actions[actions.length - 1] = IController.ActionArgs(
-                IController.ActionType.MintShortOption,
+        actions[actions.length - 1] = Actions.ActionArgs(
+                Actions.ActionType.MintShortOption,
                 address(this),
                 address(this),
                 _oToken,
@@ -282,9 +277,9 @@ contract VaultToken is ERC20 {
             revert SettlementNotReady();
 
         // Settle the vault if ready
-        IController.ActionArgs[] memory action = new IController.ActionArgs[](1);
-        action[0] = IController.ActionArgs(
-            IController.ActionType.SettleVault,
+        Actions.ActionArgs[] memory action = new Actions.ActionArgs[](1);
+        action[0] = Actions.ActionArgs(
+            Actions.ActionType.SettleVault,
             address(this),
             address(this),
             address(0),

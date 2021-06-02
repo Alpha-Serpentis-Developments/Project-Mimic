@@ -21,7 +21,7 @@ library GammaTypes {
     }
 }
 
-interface IController {
+library Actions {
     // possible actions that can be performed
     enum ActionType {
         OpenVault,
@@ -65,11 +65,14 @@ interface IController {
         // amount of oTokens that is to be redeemed
         uint256 amount;
     }
+}
+
+interface IController {
 
     function getVault(address _owner, uint256 _vaultId) external view returns(GammaTypes.Vault memory);
 
     function getAccountVaultCounter(address _accountOwner) external view returns(uint256);
 
-    function operate(ActionArgs[] memory _actions) external;
+    function operate(Actions.ActionArgs[] memory _actions) external;
 
 }
