@@ -1,5 +1,5 @@
 const { expect } = require("chai");
-const { ethers } = require("hardhat");
+const { ethers, network } = require("hardhat");
 
 describe('VaultToken contract (full test)', () => {
     let VaultToken, TestToken, OtokenFactory, Otoken, Whitelist, Oracle, MarginPool, MarginCalculator, AddressBook, Controller, MarginVault;
@@ -130,6 +130,33 @@ describe('VaultToken contract (full test)', () => {
 
             expect(await vaultToken.totalSupply()).to.equal(ethers.utils.parseUnits('10.01', 18));
             expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('10.01', 18));
+        });
+    });
+
+    describe("Fail to write options during the withdrawal window", () => {
+        it('Should revert on attempting to write options', async () => {
+            await expect(
+                vaultToken.connect(manager).writeCalls(
+                    ethers.utils.parseUnits('10.01', 18),
+                    mockOtoken.address,
+                    marginPool.address
+                )
+            ).to.be.reverted;
+        });
+    });
+
+    describe("Write options when the withdrawal window closes", () => {
+        before(async () => {
+            await network.provider.send('evm_increaseTime', [86400]);
+        });
+        it('Should write calls when the withdrawal window is closed', async () => {
+            //await expect(
+                await vaultToken.connect(manager).writeCalls(
+                    ethers.utils.parseUnits('10.01', 18),
+                    mockOtoken.address,
+                    marginPool.address
+                );
+            //).to.not.be.reverted;
         });
     });
 

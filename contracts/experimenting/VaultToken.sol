@@ -7,7 +7,7 @@ import {OtokenInterface} from "./gamma/interfaces/OtokenInterface.sol";
 import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
 import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 
-//import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract VaultToken is ERC20 {
     using SafeERC20 for IERC20;
@@ -141,6 +141,8 @@ contract VaultToken is ERC20 {
         withdrawalWindowExpires = block.timestamp + withdrawalWindowLength; // This WILL reset the withdrawal window if the supply was zero
         
         emit WithdrawalWindowActivated(withdrawalWindowExpires);
+
+        console.log(withdrawalWindowExpires);
     }
 
     /// @notice Write calls for an _amount of asset for the specified oToken
@@ -149,6 +151,8 @@ contract VaultToken is ERC20 {
     /// @param _oToken address of the oToken
     /// @param _marginPool address of the margin pool
     function writeCalls(uint256 _amount, address _oToken, address _marginPool) external onlyManager {
+        console.log(block.timestamp);
+        
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
         if(_amount == 0 || _oToken == address(0) || _marginPool == address(0))
