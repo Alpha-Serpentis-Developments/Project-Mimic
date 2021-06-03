@@ -109,7 +109,7 @@ contract VaultToken is ERC20 {
             revert Invalid();
 
         IERC20(asset).safeTransferFrom(msg.sender, address(this), _amount);
-        _mint(msg.sender, vaultMint); // (Normalized Amount / ((Normalized Asset Bal. + Normalized Collateral Amt.) / Vault Token Total Supply)
+        _mint(msg.sender, vaultMint);
     }
 
     /// @notice Redeem vault tokens for assets

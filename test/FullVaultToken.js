@@ -207,7 +207,7 @@ describe('VaultToken contract (full test)', () => {
         });
     });
 
-    describe("Settle the vault", () => {
+    describe("Settle the vault (OTM)", () => {
         before(async () => {
             await oracle.connect(pricer).setExpiryPrice(
                 mockWETH.address,
@@ -215,8 +215,10 @@ describe('VaultToken contract (full test)', () => {
                 999e8
             );
         });
-        it('Should settle the vault', async () => {
+        it('Should settle the vault with no exercise', async () => {
             await vaultToken.connect(manager).settleVault();
+
+            expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('11.01', 18));
         });
     });
 
