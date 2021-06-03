@@ -1,5 +1,6 @@
 .vscode/settings.json
 node_modules/
 bin/
-contracts/mimic/artifacts/*
-contracts/mimic/interfaces/artifacts/*
+contracts/*/artifacts
+artifacts/
+cache/
