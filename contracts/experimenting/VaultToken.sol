@@ -6,15 +6,18 @@ import {Actions, GammaTypes, IController} from "./gamma/interfaces/IController.s
 import {OtokenInterface} from "./gamma/interfaces/OtokenInterface.sol";
 import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
 import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
+import {Pausable} from "../oz/security/Pausable.sol";
+import {ReentrancyGuard} from "../oz/security/ReentrancyGuard.sol";
 
 //import "hardhat/console.sol";
 
-contract VaultToken is ERC20 {
+contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     error Unauthorized();
     error Unauthorized_COUNTERPARTY_DID_NOT_SIGN();
     error Invalid();
+    error MaximumFundsReached();
     error RatioAlreadyDefined();
     error RatioNotDefined();
     error WithdrawalWindowNotActive();
@@ -30,6 +33,8 @@ contract VaultToken is ERC20 {
     uint256 private collateralAmount;
     /// @notice Current active vault
     uint256 private currentVaultId;
+    /// @notice Maximum funds
+    uint256 public maximumAssets;
     /// @notice Address of the Gamma controller
     IController private immutable controller;
     /// @notice Address of the current oToken
@@ -42,12 +47,13 @@ contract VaultToken is ERC20 {
     address public immutable asset;
     /// @notice Address of the manager (admin)
     address public immutable manager;
+    /// @notice For emergency use 
 
     event Deposit(uint256 assetDeposited, uint256 vaultTokensMinted);
     event Withdrawal(uint256 assetWithdrew, uint256 vaultTokensBurned);
     event WithdrawalWindowActivated(uint256 closesAfter);
     event CallsMinted(uint256 collateralDeposited, address indexed newOtoken, uint256 vaultId);
-    event CallsSold(uint256 amountSold, address indexed premiumToken, uint256 premiumReceived);
+    event CallsSold(uint256 amountSold, uint256 premiumReceived);
 
     constructor(
         string memory _name,
@@ -55,32 +61,51 @@ contract VaultToken is ERC20 {
         address _controller,
         address _airswap,
         address _asset,
-        address _manager
+        address _manager,
+        uint256 _maximumAssets
     ) ERC20(_name, _symbol) {
         controller = IController(_controller);
         AIRSWAP_EXCHANGE = _airswap;
         asset = _asset;
         manager = _manager;
+        maximumAssets = _maximumAssets;
     }
 
     modifier onlyManager {
         _onlyManager();
         _;
     }
-
     modifier withdrawalWindowCheck(bool _revertIfClosed) {
         _withdrawalWindowCheck(_revertIfClosed);
         _;
+    }
+
+    /// @notice For emergency use
+    /// @param _pause true to pause the vault, false to unpause the vault
+    function emergency(bool _pause) public onlyManager {
+        if(_pause)
+            super._pause();
+        else
+            super._unpause();
+    }
+
+    /// @notice Changes the maximum allowed deposits under management
+    /// @dev Changes the maximumAssets to the new amount
+    /// @param _newValue new maximumAssets value
+    function adjustTheMaximumAssets(uint256 _newValue) public onlyManager nonReentrant() whenNotPaused() {
+        maximumAssets = _newValue;
     }
     
     /// @notice Deposit assets and receive vault tokens to represent a share
     /// @dev Deposits an amount of assets specified then mints vault tokens to the msg.sender
     /// @param _amount amount to deposit of ASSET
-    function deposit(uint256 _amount) external {
+    function deposit(uint256 _amount) external nonReentrant() whenNotPaused() {
         if(_amount == 0)
             revert Invalid();
         if(totalSupply() == 0)
             revert RatioNotDefined();
+        if(collateralAmount + IERC20(asset).balanceOf(address(this)) + _amount > maximumAssets)
+            revert MaximumFundsReached();
 
         uint256 normalizedAssetBalance = _normalize(IERC20(asset).balanceOf(address(this)), ERC20(asset).decimals(), 18) + _normalize(collateralAmount, ERC20(asset).decimals(), 18);
         uint256 normalizedAmount = _normalize(_amount, ERC20(asset).decimals(), 18);
@@ -99,23 +124,29 @@ contract VaultToken is ERC20 {
 
         IERC20(asset).safeTransferFrom(msg.sender, address(this), _amount);
         _mint(msg.sender, vaultMint);
+
+        emit Deposit(_amount, vaultMint);
     }
 
     /// @notice Redeem vault tokens for assets
     /// @dev Burns vault tokens in redemption for the assets to msg.sender
     /// @param _amount amount of VAULT TOKENS to burn
-    function withdraw(uint256 _amount) external withdrawalWindowCheck(true) {
+    function withdraw(uint256 _amount) external withdrawalWindowCheck(true) nonReentrant() whenNotPaused() {
         if(_amount == 0)
             revert Invalid();
 
-        IERC20(asset).safeTransfer(msg.sender, _amount * IERC20(asset).balanceOf(address(this)) / totalSupply()); // Vault Token Amount to Burn * Balance of Vault for Asset  / Total Vault Token Supply
+        uint256 assetAmount = _amount * IERC20(asset).balanceOf(address(this)) / totalSupply();
+
+        IERC20(asset).safeTransfer(msg.sender, assetAmount); // Vault Token Amount to Burn * Balance of Vault for Asset  / Total Vault Token Supply
         _burn(address(msg.sender), _amount);
+
+        emit Withdrawal(assetAmount, _amount);
     }
 
     /// @notice Sets the ratio between the asset and vault token
     /// @dev Allows anyone to set the ratio 1:1 if total supply is 0 for whatever reason
     /// @param _amount amount of the VAULT TOKEN to mint
-    function initializeRatio(uint256 _amount) external {
+    function initializeRatio(uint256 _amount) external nonReentrant() whenNotPaused() {
         if(totalSupply() > 0)
             revert RatioAlreadyDefined();
 
@@ -137,7 +168,7 @@ contract VaultToken is ERC20 {
     /// @param _amount amount of the asset to deposit as collateral
     /// @param _oToken address of the oToken
     /// @param _marginPool address of the margin pool
-    function writeCalls(uint256 _amount, address _oToken, address _marginPool) external onlyManager {
+    function writeCalls(uint256 _amount, address _oToken, address _marginPool) external onlyManager nonReentrant() whenNotPaused() {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
         if(_amount == 0 || _oToken == address(0) || _marginPool == address(0))
@@ -168,7 +199,6 @@ contract VaultToken is ERC20 {
                 ""
             );
             
-
         } else {
             actions = new Actions.ActionArgs[](2);
         }
@@ -202,7 +232,8 @@ contract VaultToken is ERC20 {
         controller.operate(actions);
 
         collateralAmount += _amount;
-        oToken = _oToken;
+        if(oToken != _oToken)
+            oToken = _oToken;
 
         emit CallsMinted(_amount, oToken, controller.getAccountVaultCounter(address(this)));
     }
@@ -213,7 +244,7 @@ contract VaultToken is ERC20 {
     /// @param _premiumIn Token address of the premium
     /// @param _premiumAmount Token amount to receive of the premium
     /// @param _otherParty Address of the counterparty
-    function sellCalls(uint256 _amount, address _premiumIn, uint256 _premiumAmount, address _otherParty) external onlyManager {
+    function sellCalls(uint256 _amount, address _premiumIn, uint256 _premiumAmount, address _otherParty) external onlyManager nonReentrant() whenNotPaused() {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
         if(_amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
@@ -247,11 +278,13 @@ contract VaultToken is ERC20 {
         IERC20(oToken).approve(AIRSWAP_EXCHANGE, _amount);
 
         ISwap(AIRSWAP_EXCHANGE).swap(sellOrder);
+
+        emit CallsSold(_amount, _premiumAmount);
     }
 
     /// @notice Operation to settle the vault
     /// @dev Settles the currently open vault and opens the withdrawal window
-    function settleVault() external onlyManager {
+    function settleVault() external onlyManager nonReentrant() whenNotPaused() {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
 

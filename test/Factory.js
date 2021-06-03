@@ -21,6 +21,7 @@ describe('TestToken contract', () => {
                     "VAULT",
                     "0x0000000000000000000000000000000000000000",
                     "0x0000000000000000000000000000000000000000",
+                    100e6
                 )
             ).to.be.reverted;
         });
@@ -31,7 +32,8 @@ describe('TestToken contract', () => {
                     "Asset Vault",
                     "VAULT",
                     fake_controller.address,
-                    testToken.address
+                    testToken.address,
+                    100e6
                 )
             ).to.not.be.reverted;
         });

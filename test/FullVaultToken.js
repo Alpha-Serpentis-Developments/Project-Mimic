@@ -77,7 +77,8 @@ describe('VaultToken contract (full test)', () => {
             await addressBook.getController(), 
             fake_airswap.address,
             mockWETH.address, 
-            manager.address
+            manager.address,
+            ethers.utils.parseUnits('100', 18)
         );
 
         // Prepare the oracle

@@ -23,10 +23,10 @@ contract Factory {
     /// @param _symbol symbol of the vault token
     /// @param _controller address of the Gamma controller
     /// @param _asset address of the asset token (what the vault is denominated in)
-    function deployNewVaultToken(string memory _name, string memory _symbol, address _controller, address _asset) external {
+    function deployNewVaultToken(string memory _name, string memory _symbol, address _controller, address _asset, uint256 _maximumAssets) external {
         if(_controller == address(0) || _asset == address(0))
             revert ZeroAddress();
-        VaultToken vToken = new VaultToken(_name, _symbol, _controller, AIRSWAP_EXCHANGE, _asset, msg.sender);
+        VaultToken vToken = new VaultToken(_name, _symbol, _controller, AIRSWAP_EXCHANGE, _asset, msg.sender, _maximumAssets);
 
         if(address(vToken) == address(0))
             revert ContractCreationFailed();

@@ -21,7 +21,8 @@ describe('VaultToken contract (simple test)', () => {
             fake_controller.address, 
             fake_airswap.address,
             testToken.address, 
-            manager.address
+            manager.address,
+            1000e6
         );
     });
 
@@ -155,7 +156,8 @@ describe('VaultToken contract (simple test)', () => {
                 fake_controller.address, 
                 fake_airswap.address, 
                 testToken.address, 
-                manager.address
+                manager.address,
+                ethers.utils.parseUnits('100', 20)
             );
 
             await testToken.connect(depositor).transfer(manager.address, ethers.utils.parseUnits('1', 20));
@@ -183,7 +185,7 @@ describe('VaultToken contract (simple test)', () => {
                 "Mock Asset",
                 "MOCK",
                 18,
-                ethers.utils.parseUnits('100000', 20)
+                ethers.utils.parseUnits('100000', 18)
             );
             vaultToken = await VaultToken.connect(manager).deploy(
                 "Vault", 
@@ -191,7 +193,8 @@ describe('VaultToken contract (simple test)', () => {
                 fake_controller.address, 
                 fake_airswap.address, 
                 testToken.address, 
-                manager.address
+                manager.address,
+                ethers.utils.parseUnits('100', 18)
             );
 
             await testToken.connect(depositor).transfer(manager.address, ethers.utils.parseUnits('1', 18));
@@ -210,6 +213,23 @@ describe('VaultToken contract (simple test)', () => {
 
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('2', 18));
             expect(await vaultToken.totalSupply()).to.equal(ethers.utils.parseUnits('2', 18));
+        });
+    });
+
+    describe("Pausable test", () => {
+        before(async () => {
+            await vaultToken.connect(manager).emergency(true);
+        });
+        it('Should not allow anything to occur', async () => {
+            await expect(
+                vaultToken.connect(depositor).deposit(1e6)
+            ).to.be.revertedWith("Pausable: paused");
+            await expect(
+                vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('1', 18))
+            ).to.be.revertedWith("Pausable: paused");
+            await expect(
+                vaultToken.connect(depositor).initializeRatio(ethers.utils.parseUnits('1', 18))
+            ).to.be.revertedWith("Pausable: paused");
         });
     });
 
