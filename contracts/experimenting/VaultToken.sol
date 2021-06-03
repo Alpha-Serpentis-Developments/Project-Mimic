@@ -35,11 +35,9 @@ contract VaultToken is ERC20 {
     /// @notice Address of the current oToken
     address private oToken;
     /// @notice Nonce for the exchange
-    uint256 internal airswapNonce;
+    uint256 private airswapNonce;
     /// @notice Address of the exchange
     address private immutable AIRSWAP_EXCHANGE;
-    /// @notice Address of the uniswap v2 exchange
-    address private immutable UNISWAP_EXCHANGE;
     /// @notice Address of the underlying asset to trade
     address public immutable asset;
     /// @notice Address of the manager (admin)
@@ -56,13 +54,11 @@ contract VaultToken is ERC20 {
         string memory _symbol,
         address _controller,
         address _airswap,
-        address _uniswap,
         address _asset,
         address _manager
     ) ERC20(_name, _symbol) {
         controller = IController(_controller);
         AIRSWAP_EXCHANGE = _airswap;
-        UNISWAP_EXCHANGE = _uniswap;
         asset = _asset;
         manager = _manager;
     }
@@ -75,13 +71,6 @@ contract VaultToken is ERC20 {
     modifier withdrawalWindowCheck(bool _revertIfClosed) {
         _withdrawalWindowCheck(_revertIfClosed);
         _;
-    }
-    
-    function TEST_forceWithdrawalWindowToClose() external onlyManager {
-        withdrawalWindowExpires = block.timestamp;
-    }
-    function TEST_forceWithdrawalWindowToOpen() external onlyManager {
-        withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
     }
     
     /// @notice Deposit assets and receive vault tokens to represent a share
@@ -258,12 +247,6 @@ contract VaultToken is ERC20 {
         IERC20(oToken).approve(AIRSWAP_EXCHANGE, _amount);
 
         ISwap(AIRSWAP_EXCHANGE).swap(sellOrder);
-    }
-
-    /// @notice Converts the premiums of selling calls to the asset
-    /// @dev Converts the vault's premiums into the asset
-    function convertPremiums() external onlyManager {
-        
     }
 
     /// @notice Operation to settle the vault

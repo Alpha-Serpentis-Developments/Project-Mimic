@@ -2,12 +2,12 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe('VaultToken contract (simple test)', () => {
-    let VaultToken, TestToken, vaultToken, testToken, manager, depositor, fake_controller, fake_airswap, fake_uniswap;
+    let VaultToken, TestToken, vaultToken, testToken, manager, depositor, fake_controller, fake_airswap;
 
     before(async () => {
         VaultToken = await ethers.getContractFactory('VaultToken');
         TestToken = await ethers.getContractFactory('TestToken');
-        [manager, depositor, fake_controller, fake_airswap, fake_uniswap] = await ethers.getSigners();
+        [manager, depositor, fake_controller, fake_airswap] = await ethers.getSigners();
 
         testToken = await TestToken.connect(depositor).deploy(
             "Mock Asset",
@@ -19,8 +19,7 @@ describe('VaultToken contract (simple test)', () => {
             "Vault", 
             "VAULT", 
             fake_controller.address, 
-            fake_airswap.address, 
-            fake_uniswap.address, 
+            fake_airswap.address,
             testToken.address, 
             manager.address
         );
@@ -155,7 +154,6 @@ describe('VaultToken contract (simple test)', () => {
                 "VAULT", 
                 fake_controller.address, 
                 fake_airswap.address, 
-                fake_uniswap.address, 
                 testToken.address, 
                 manager.address
             );
@@ -192,7 +190,6 @@ describe('VaultToken contract (simple test)', () => {
                 "VAULT", 
                 fake_controller.address, 
                 fake_airswap.address, 
-                fake_uniswap.address, 
                 testToken.address, 
                 manager.address
             );

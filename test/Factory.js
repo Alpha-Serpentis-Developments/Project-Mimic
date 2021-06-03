@@ -2,14 +2,14 @@ const { ethers } = require("hardhat");
 const { expect } = require("chai");
 
 describe('TestToken contract', () => {
-    let TestToken, Factory, testToken, factory, manager, depositor, fake_airswap, fake_controller, fake_uniswap;
+    let TestToken, Factory, testToken, factory, manager, fake_controller;
 
     beforeEach(async () => {
         TestToken = await ethers.getContractFactory('TestToken');
         Factory = await ethers.getContractFactory('Factory');
 
-        [deployer, manager, depositor, fake_airswap, fake_controller, fake_uniswap] = await ethers.getSigners();
-        testToken = await TestToken.deploy("Asset Token", "ASSET", 100000e6);
+        [deployer, manager, fake_airswap, fake_controller] = await ethers.getSigners();
+        testToken = await TestToken.deploy("Asset Token", "ASSET", 6, 100000e6);
         factory = await Factory.deploy(fake_airswap.address)
     });
 
@@ -19,7 +19,6 @@ describe('TestToken contract', () => {
                 factory.connect(manager).deployNewVaultToken(
                     "Asset Vault",
                     "VAULT",
-                    "0x0000000000000000000000000000000000000000",
                     "0x0000000000000000000000000000000000000000",
                     "0x0000000000000000000000000000000000000000",
                 )
@@ -32,7 +31,6 @@ describe('TestToken contract', () => {
                     "Asset Vault",
                     "VAULT",
                     fake_controller.address,
-                    fake_uniswap.address,
                     testToken.address
                 )
             ).to.not.be.reverted;

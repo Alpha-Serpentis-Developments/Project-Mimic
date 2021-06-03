@@ -20,7 +20,7 @@ describe('VaultToken contract (full test)', () => {
         MarginVault = await ethers.getContractFactory('MarginVault');
         AddressBook = await ethers.getContractFactory('AddressBook');
 
-        [manager, depositor, deployer, pricer, fake_multisig, fake_airswap, fake_uniswap] = await ethers.getSigners();
+        [manager, depositor, deployer, pricer, fake_multisig, fake_airswap] = await ethers.getSigners();
 
         // Deploy all the addresses
         addressBook = await AddressBook.connect(deployer).deploy();
@@ -75,8 +75,7 @@ describe('VaultToken contract (full test)', () => {
             "Vault", 
             "VAULT", 
             await addressBook.getController(), 
-            fake_airswap.address, 
-            fake_uniswap.address, 
+            fake_airswap.address,
             mockWETH.address, 
             manager.address
         );
