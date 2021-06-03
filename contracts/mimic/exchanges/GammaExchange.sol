@@ -7,7 +7,7 @@ import {IExchange} from "../interfaces/IExchange.sol";
 /// @author Amethyst C. (AlphaSerpentis)
 /// @notice Enable trades on 0x for Opyn v2 (Gamma)
 /// @dev Perform trades for 0x on Opyn v2 (Gamma)
-contract GammaExchange is IExchange {
+abstract contract GammaExchange is IExchange {
     function tokenExchange(address _inputToken, uint256 _input, address _outputToken) external override {
 
     }
