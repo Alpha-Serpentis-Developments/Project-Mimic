@@ -29,7 +29,7 @@ describe('VaultToken contract (full test)', () => {
         whitelist = await Whitelist.connect(deployer).deploy(addressBook.address);
         oracle = await Oracle.connect(deployer).deploy();
         marginPool = await MarginPool.connect(deployer).deploy(addressBook.address);
-        marginCalculator = await MarginCalculator.connect(deployer).deploy(addressBook.address);
+        marginCalculator = await MarginCalculator.connect(deployer).deploy(oracle.address);
         marginVault = await MarginVault.connect(deployer).deploy();
 
         Controller = await ethers.getContractFactory(
@@ -83,8 +83,8 @@ describe('VaultToken contract (full test)', () => {
 
         // Prepare the oracle
         await oracle.connect(fake_multisig).setAssetPricer(mockWETH.address, pricer.address);
-        await oracle.connect(fake_multisig).setAssetPricer(mockUSDC.address, pricer.address);
-        //await oracle.connect(fake_multisig).setStablePrice(mockUSDC.address, 1e6)
+        //await oracle.connect(fake_multisig).setAssetPricer(mockUSDC.address, pricer.address);
+        await oracle.connect(fake_multisig).setStablePrice(mockUSDC.address, 1e6)
 
         // Prepare the whitelist
         await whitelist.connect(fake_multisig).whitelistCollateral(mockWETH.address);
@@ -196,26 +196,26 @@ describe('VaultToken contract (full test)', () => {
         });
     });
 
-    describe("Settle the vault", () => {
+    describe("Fail to settle the vault", () => {
         before(async () => {
             await network.provider.send('evm_setNextBlockTimestamp', [1640937601]);
-            await oracle.connect(pricer).setExpiryPrice(
-                mockWETH.address,
-                1640937600,
-                999e8
-            );
         });
         it('Should REVERT in an attempt to settle the vault', async () => {
             await expect(
                 vaultToken.connect(manager).settleVault()
             ).to.be.revertedWith('Controller: asset prices not finalized yet');
         });
-        it('Should settle the vault', async () => {
+    });
+
+    describe("Settle the vault", () => {
+        before(async () => {
             await oracle.connect(pricer).setExpiryPrice(
-                mockUSDC.address,
+                mockWETH.address,
                 1640937600,
-                1e8
+                999e8
             );
+        });
+        it('Should settle the vault', async () => {
             await vaultToken.connect(manager).settleVault();
         });
     });

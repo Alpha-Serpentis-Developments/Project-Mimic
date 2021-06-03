@@ -7,7 +7,7 @@ import {OtokenInterface} from "./gamma/interfaces/OtokenInterface.sol";
 import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
 import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 
-import "hardhat/console.sol";
+//import "hardhat/console.sol";
 
 contract VaultToken is ERC20 {
     using SafeERC20 for IERC20;
@@ -284,14 +284,12 @@ contract VaultToken is ERC20 {
             address(this),
             address(0),
             currentVaultId,
-            0,
+            IERC20(oToken).balanceOf(address(this)),
             0,
             ""
         );
 
-        console.log("SUBMITTING TO CONTROLLER");
         controller.operate(action);
-        console.log("OPERATE IS DONE");
 
         // Withdrawal window opens
         withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
