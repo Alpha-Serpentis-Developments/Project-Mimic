@@ -81,6 +81,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     }
 
     /// @notice For emergency use
+    /// @dev Stops all activities on the vault (or reactivates them)
     /// @param _pause true to pause the vault, false to unpause the vault
     function emergency(bool _pause) public onlyManager {
         if(_pause)
@@ -93,6 +94,9 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     /// @dev Changes the maximumAssets to the new amount
     /// @param _newValue new maximumAssets value
     function adjustTheMaximumAssets(uint256 _newValue) public onlyManager nonReentrant() whenNotPaused() {
+        if(_newValue < collateralAmount + IERC20(asset).balanceOf(address(this)))
+            revert Invalid();
+
         maximumAssets = _newValue;
     }
     
@@ -241,10 +245,9 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     /// @notice Operation to sell calls to an EXISTING order on AirSwap
     /// @dev Sells calls via AirSwap that exists by the counterparty
     /// @param _amount Amount of calls to sell to the exchange
-    /// @param _premiumIn Token address of the premium
     /// @param _premiumAmount Token amount to receive of the premium
     /// @param _otherParty Address of the counterparty
-    function sellCalls(uint256 _amount, address _premiumIn, uint256 _premiumAmount, address _otherParty) external onlyManager nonReentrant() whenNotPaused() {
+    function sellCalls(uint256 _amount, uint256 _premiumAmount, address _otherParty) external onlyManager nonReentrant() whenNotPaused() {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
         if(_amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
@@ -260,7 +263,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         // Prepare the signer Types.Party portion (counterparty) of the order
         signer.kind = 0x36372b07; // ERC20_INTERFACE_ID
         signer.wallet = _otherParty;
-        signer.token = _premiumIn;
+        signer.token = asset;
         signer.amount = _premiumAmount;
 
         // Prepare the sender Types.Party portion (this contract) of the order

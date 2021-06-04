@@ -231,6 +231,14 @@ describe('VaultToken contract (simple test)', () => {
                 vaultToken.connect(depositor).initializeRatio(ethers.utils.parseUnits('1', 18))
             ).to.be.revertedWith("Pausable: paused");
         });
+        it('Should allow something to occur', async () => {
+            await vaultToken.connect(manager).emergency(false);
+            await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
+            
+            await expect(
+                vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18))
+            ).to.not.be.reverted;
+        });
     });
 
 });

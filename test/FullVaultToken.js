@@ -4,7 +4,7 @@ const { ethers, network } = require("hardhat");
 describe('VaultToken contract (full test)', () => {
     let VaultToken, TestToken, OtokenFactory, Otoken, Whitelist, Oracle, MarginPool, MarginCalculator, AddressBook, Controller, MarginVault;
     let vaultToken, mockUSDC, mockWETH, mockOtoken, mockOtokenAddr, otokenFactory, otokenImpl, whitelist, oracle, marginPool, marginCalculator, addressBook, controller, marginVault;
-    let manager, depositor, deployer, pricer;
+    let manager, depositor, depositor_1, depositor_2, deployer, pricer;
 
     before(async () => {
         console.log("IMPORTANT: SimpleVaultToken.js has extensive testing on the deposit/withdraw functions");
@@ -20,7 +20,7 @@ describe('VaultToken contract (full test)', () => {
         MarginVault = await ethers.getContractFactory('MarginVault');
         AddressBook = await ethers.getContractFactory('AddressBook');
 
-        [manager, depositor, deployer, pricer, fake_multisig, fake_airswap] = await ethers.getSigners();
+        [manager, depositor, depositor_1, depositor_2, deployer, pricer, fake_multisig, fake_airswap] = await ethers.getSigners();
 
         // Deploy all the addresses
         addressBook = await AddressBook.connect(deployer).deploy();
@@ -69,7 +69,7 @@ describe('VaultToken contract (full test)', () => {
             "Mock WETH",
             "WETH",
             18,
-            ethers.utils.parseUnits('100', 18)  
+            ethers.utils.parseUnits('1000', 18)  
         );
         vaultToken = await VaultToken.connect(manager).deploy(
             "Vault", 
@@ -150,11 +150,44 @@ describe('VaultToken contract (full test)', () => {
         });
     });
 
+    describe("Cap limits test", () => {
+        before(async () => {
+            await mockWETH.connect(depositor).transfer(depositor_1.address, ethers.utils.parseUnits('94.99', 18));
+            await mockWETH.connect(depositor).transfer(depositor_2.address, ethers.utils.parseUnits('10', 18));
+            await mockWETH.connect(depositor_1).approve(vaultToken.address, ethers.utils.parseUnits('94.99', 18));
+            await mockWETH.connect(depositor_2).approve(vaultToken.address, ethers.utils.parseUnits('10', 18));
+        });
+        it('Should equal the cap limit and NOT revert', async () => {
+            await expect(
+                vaultToken.connect(depositor_1).deposit(ethers.utils.parseUnits('89.99', 18))
+            ).to.not.be.reverted;
+        });
+        it('Should REVERT due to going above the cap limit', async () => {
+            await expect(
+                vaultToken.connect(depositor_2).deposit(ethers.utils.parseUnits('10', 18))
+            ).to.be.reverted;
+        });
+        it('Should raise the cap and successfully let depositor_1 deposit', async () => {
+            await vaultToken.connect(manager).adjustTheMaximumAssets(ethers.utils.parseUnits('105', 18));
+            await vaultToken.connect(depositor_1).deposit(ethers.utils.parseUnits('5', 18));
+
+            expect(await vaultToken.totalSupply()).to.equal(ethers.utils.parseUnits('105', 18));
+            expect(await vaultToken.balanceOf(depositor_1.address)).to.equal(ethers.utils.parseUnits('94.99', 18));
+        });
+        it('Should let depositor_2 in after depositor_1 left', async () => {
+            await vaultToken.connect(depositor_1).withdraw(ethers.utils.parseUnits('5', 18));
+            await vaultToken.connect(depositor_2).deposit(ethers.utils.parseUnits('5', 18));
+
+            expect(await vaultToken.totalSupply()).to.equal(ethers.utils.parseUnits('105', 18));
+            expect(await vaultToken.balanceOf(depositor_2.address)).to.equal(ethers.utils.parseUnits('5', 18));
+        });
+    });
+
     describe("Fail to write options during the withdrawal window", () => {
         it('Should revert on attempting to write options', async () => {
             await expect(
                 vaultToken.connect(manager).writeCalls(
-                    ethers.utils.parseUnits('10.01', 18),
+                    ethers.utils.parseUnits('105', 18),
                     mockOtokenAddr,
                     marginPool.address
                 )
@@ -164,17 +197,18 @@ describe('VaultToken contract (full test)', () => {
 
     describe("Interact after the withdrawal window closes", () => {
         before(async () => {
+            await vaultToken.connect(manager).adjustTheMaximumAssets(ethers.utils.parseUnits('110', 18));
             await network.provider.send('evm_increaseTime', [86400]);
         });
         it('Should write calls when the withdrawal window is closed', async () => {
             await expect(
                 vaultToken.connect(manager).writeCalls(
-                    ethers.utils.parseUnits('10.01', 18),
+                    ethers.utils.parseUnits('105', 18),
                     mockOtokenAddr,
                     marginPool.address
                 )
             ).to.not.be.reverted;
-            expect(await mockOtoken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('10.01', 8));
+            expect(await mockOtoken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('105', 8));
             expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(0);
         });
         it('Should allow you to deposit funds', async () => {
@@ -191,7 +225,7 @@ describe('VaultToken contract (full test)', () => {
                 marginPool.address
             );
 
-            expect(await mockOtoken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('11.01', 8));
+            expect(await mockOtoken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('106', 8));
             expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(0);
         });
     });
@@ -218,7 +252,7 @@ describe('VaultToken contract (full test)', () => {
         it('Should settle the vault with no exercise', async () => {
             await vaultToken.connect(manager).settleVault();
 
-            expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('11.01', 18));
+            expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('106', 18));
         });
     });
 
