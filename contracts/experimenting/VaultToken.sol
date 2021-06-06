@@ -30,7 +30,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     /// @notice Length of time where the withdrawal window is active
     uint256 private constant withdrawalWindowLength = 1 days;
     /// @notice Amount of collateral for the address already used for collateral
-    uint256 private collateralAmount;
+    uint256 public collateralAmount;
     /// @notice Current active vault
     uint256 private currentVaultId;
     /// @notice Maximum funds
@@ -53,6 +53,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     event Withdrawal(uint256 assetWithdrew, uint256 vaultTokensBurned);
     event WithdrawalWindowActivated(uint256 closesAfter);
     event CallsMinted(uint256 collateralDeposited, address indexed newOtoken, uint256 vaultId);
+    event CallsBurned(uint256 oTokensBurned);
     event CallsSold(uint256 amountSold, uint256 premiumReceived);
 
     constructor(
@@ -240,6 +241,43 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
             oToken = _oToken;
 
         emit CallsMinted(_amount, oToken, controller.getAccountVaultCounter(address(this)));
+    }
+
+    /// @notice Burns away the oTokens to redeem the asset collateral
+    /// @dev Operation to burn away the oTOkens in redemption of the asset collateral
+    /// @param _amount Amount of calls to burn
+    function burnCalls(uint256 _amount) external onlyManager nonReentrant() whenNotPaused() {
+        if(!_withdrawalWindowCheck(false))
+            revert WithdrawalWindowActive();
+        if(_amount > IERC20(oToken).balanceOf(address(this)))
+            revert Invalid();
+
+        Actions.ActionArgs[] memory actions = new Actions.ActionArgs[](2);
+        actions[0] = Actions.ActionArgs(
+            Actions.ActionType.BurnShortOption,
+            address(this),
+            address(this),
+            oToken,
+            currentVaultId,
+            _amount,
+            0,
+            ""
+        );
+        actions[1] = Actions.ActionArgs(
+            Actions.ActionType.WithdrawCollateral,
+            address(this),
+            address(this),
+            asset,
+            currentVaultId,
+            _normalize(_amount, 8, 18),
+            0,
+            ""
+        );
+
+        controller.operate(actions);
+        collateralAmount -= _amount;
+
+        emit CallsBurned(_amount);
     }
     
     /// @notice Operation to sell calls to an EXISTING order on AirSwap

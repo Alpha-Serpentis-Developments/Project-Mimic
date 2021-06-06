@@ -2,6 +2,7 @@
  * @type import('hardhat/config').HardhatUserConfig
  */
 require('@nomiclabs/hardhat-waffle');
+require("@nomiclabs/hardhat-etherscan");
 
 const INFURA_URL = '';
 const PRIVATE_KEY = '';
@@ -31,5 +32,8 @@ module.exports = {
         }
       }
     ],
+  },
+  etherscan: {
+    apiKey: "INSERT_KEY_HERE"
   }
 };

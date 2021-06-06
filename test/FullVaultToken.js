@@ -9,7 +9,7 @@ describe('VaultToken contract (full test)', () => {
     before(async () => {
         console.log("IMPORTANT: SimpleVaultToken.js has extensive testing on the deposit/withdraw functions");
 
-        VaultToken = await ethers.getContractFactory('VaultToken');
+        VaultToken = await ethers.getContractFactory("contracts\\experimenting\\VaultToken.sol:VaultToken");
         TestToken = await ethers.getContractFactory('TestToken');
         OtokenFactory = await ethers.getContractFactory('OtokenFactory');
         Otoken = await ethers.getContractFactory('Otoken');
@@ -20,7 +20,7 @@ describe('VaultToken contract (full test)', () => {
         MarginVault = await ethers.getContractFactory('MarginVault');
         AddressBook = await ethers.getContractFactory('AddressBook');
 
-        [manager, depositor, depositor_1, depositor_2, deployer, pricer, fake_multisig, fake_airswap] = await ethers.getSigners();
+        [manager, depositor, depositor_1, depositor_2, random_user, deployer, pricer, fake_multisig, fake_airswap] = await ethers.getSigners();
 
         // Deploy all the addresses
         addressBook = await AddressBook.connect(deployer).deploy();
@@ -228,10 +228,83 @@ describe('VaultToken contract (full test)', () => {
             expect(await mockOtoken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('106', 8));
             expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(0);
         });
+        it('Should burn calls', async () => {
+            await vaultToken.connect(manager).burnCalls(ethers.utils.parseUnits('1', 8));
+
+            expect(await mockOtoken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('105', 8));
+            expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('1', 18));
+        });
+    });
+
+    describe("Handle oTokens getting sent to the vault token directly", async () => {
+        before(async () => {
+            await mockWETH.connect(depositor).transfer(random_user.address, ethers.utils.parseUnits('1', 18));
+            await mockWETH.connect(random_user).approve(marginPool.address, ethers.utils.parseUnits('1', 18));
+            const ActionType = {
+                OpenVault: 0,
+                MintShortOption: 1,
+                BurnShortOption: 2,
+                DepositLongOption: 3,
+                WithdrawLongOption: 4,
+                DepositCollateral: 5,
+                WithdrawCollateral: 6,
+                SettleVault: 7,
+                Redeem: 8,
+                Call: 9,
+                Liquidate: 10
+            };
+            const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+            const args = [
+                {
+                    actionType: ActionType.OpenVault,
+                    owner: random_user.address,
+                    secondAddress: ZERO_ADDRESS,
+                    asset: ZERO_ADDRESS,
+                    vaultId: 1, // open the first vault
+                    amount: 0,
+                    index: 0,
+                    data: ZERO_ADDRESS,
+                },
+                {
+                    actionType: ActionType.DepositCollateral,
+                    owner: random_user.address,
+                    secondAddress: random_user.address,
+                    asset: mockWETH.address,
+                    vaultId: 1,
+                    amount: ethers.utils.parseUnits('1', 18),
+                    index: 0,
+                    data: ZERO_ADDRESS
+                },
+                {
+                    actionType: ActionType.MintShortOption,
+                    owner: random_user.address,
+                    secondAddress: random_user.address,
+                    asset: mockOtoken.address,
+                    vaultId: 1,
+                    amount: ethers.utils.parseUnits('1', 8),
+                    index: 0,
+                    data: ZERO_ADDRESS
+                }
+            ];
+
+            await controller.connect(random_user).operate(args);
+
+            await mockOtoken.connect(random_user).transfer(vaultToken.address, ethers.utils.parseUnits('1', 8));
+        });
+        it('Ratio should not change for random oToken deposit', async () => {
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18));
+
+
+        });
     });
 
     describe("Fail to settle the vault", () => {
         before(async () => {
+            await vaultToken.connect(manager).writeCalls( // To resolve the earlier burn test
+                ethers.utils.parseUnits('1', 18),
+                mockOtokenAddr,
+                marginPool.address
+            );
             await network.provider.send('evm_setNextBlockTimestamp', [1640937601]);
         });
         it('Should REVERT in an attempt to settle the vault', async () => {

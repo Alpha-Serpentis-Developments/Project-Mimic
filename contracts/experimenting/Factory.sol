@@ -8,7 +8,7 @@ contract Factory {
     error ZeroAddress();
 
     /// @notice Address of the airswap exchange
-    address private immutable AIRSWAP_EXCHANGE;
+    address public immutable AIRSWAP_EXCHANGE;
 
     event NewVaultToken(address indexed manager, address indexed asset, address indexed vaultToken);
 
