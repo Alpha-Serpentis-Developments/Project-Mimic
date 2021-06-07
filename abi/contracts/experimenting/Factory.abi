@@ -46,6 +46,19 @@
 		"type": "event"
 	},
 	{
+		"inputs": [],
+		"name": "AIRSWAP_EXCHANGE",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "string",

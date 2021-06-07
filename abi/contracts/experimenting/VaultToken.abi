@@ -121,6 +121,19 @@
 			{
 				"indexed": false,
 				"internalType": "uint256",
+				"name": "oTokensBurned",
+				"type": "uint256"
+			}
+		],
+		"name": "CallsBurned",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
 				"name": "collateralDeposited",
 				"type": "uint256"
 			},
@@ -344,6 +357,32 @@
 			}
 		],
 		"name": "balanceOf",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_amount",
+				"type": "uint256"
+			}
+		],
+		"name": "burnCalls",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "collateralAmount",
 		"outputs": [
 			{
 				"internalType": "uint256",
