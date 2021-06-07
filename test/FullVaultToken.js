@@ -330,6 +330,20 @@ describe('VaultToken contract (full test)', () => {
 
             expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('107', 18));
         });
+        it('Should let people withdraw from the vault', async () => {
+            const depBal = (await vaultToken.balanceOf(depositor.address)).add(await mockWETH.balanceOf(depositor.address));
+            const depBal_1 = (await vaultToken.balanceOf(depositor_1.address)).add(await mockWETH.balanceOf(depositor_1.address));
+            const depBal_2 = (await vaultToken.balanceOf(depositor_2.address)).add(await mockWETH.balanceOf(depositor_2.address));
+
+            await vaultToken.connect(depositor).withdraw(await vaultToken.balanceOf(depositor.address));
+            await vaultToken.connect(depositor_1).withdraw(await vaultToken.balanceOf(depositor_1.address));
+            await vaultToken.connect(depositor_2).withdraw(await vaultToken.balanceOf(depositor_2.address));
+
+            expect(await vaultToken.totalSupply()).to.equal(ethers.utils.parseUnits('0.01', 18));
+            expect(await mockWETH.balanceOf(depositor.address)).to.equal(depBal);
+            expect(await mockWETH.balanceOf(depositor_1.address)).to.equal(depBal_1);
+            expect(await mockWETH.balanceOf(depositor_2.address)).to.equal(depBal_2);
+        });
     });
 
 });
