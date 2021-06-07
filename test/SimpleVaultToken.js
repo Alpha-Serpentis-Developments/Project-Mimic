@@ -5,7 +5,7 @@ describe('VaultToken contract (simple test)', () => {
     let VaultToken, TestToken, vaultToken, testToken, manager, depositor, fake_controller, fake_airswap;
 
     before(async () => {
-        VaultToken = await ethers.getContractFactory('VaultToken');
+        VaultToken = await ethers.getContractFactory('contracts\\experimenting\\VaultToken.sol:VaultToken');
         TestToken = await ethers.getContractFactory('TestToken');
         [manager, depositor, fake_controller, fake_airswap] = await ethers.getSigners();
 
