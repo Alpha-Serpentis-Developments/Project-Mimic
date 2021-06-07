@@ -52,11 +52,14 @@ describe('VaultToken contract (full test)', () => {
         await addressBook.connect(deployer).setMarginCalculator(marginCalculator.address);
         await addressBook.connect(deployer).setController(controller.address);
 
+        controller = await controller.attach(await addressBook.getController());
+
         // Transfer ownership
         await addressBook.connect(deployer).transferOwnership(fake_multisig.address);
         await whitelist.connect(deployer).transferOwnership(fake_multisig.address);
         await oracle.connect(deployer).transferOwnership(fake_multisig.address);
         await marginPool.connect(deployer).transferOwnership(fake_multisig.address);
+        await controller.connect(deployer).transferOwnership(fake_multisig.address);
 
         // Prepare the mock USDC (strike) token, mock WETH (asset) token and vault token
         mockUSDC = await TestToken.connect(depositor).deploy(
@@ -236,7 +239,7 @@ describe('VaultToken contract (full test)', () => {
         });
     });
 
-    describe("Handle oTokens getting sent to the vault token directly", async () => {
+    describe("Handle oTokens getting sent to the vault token directly", () => {
         before(async () => {
             await mockWETH.connect(depositor).transfer(random_user.address, ethers.utils.parseUnits('1', 18));
             await mockWETH.connect(random_user).approve(marginPool.address, ethers.utils.parseUnits('1', 18));
@@ -286,15 +289,15 @@ describe('VaultToken contract (full test)', () => {
                     data: ZERO_ADDRESS
                 }
             ];
-
             await controller.connect(random_user).operate(args);
 
             await mockOtoken.connect(random_user).transfer(vaultToken.address, ethers.utils.parseUnits('1', 8));
         });
         it('Ratio should not change for random oToken deposit', async () => {
+            await mockWETH.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
             await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18));
 
-
+            expect(await vaultToken.totalSupply()).to.equal(ethers.utils.parseUnits('107', 18));
         });
     });
 
@@ -325,7 +328,7 @@ describe('VaultToken contract (full test)', () => {
         it('Should settle the vault with no exercise', async () => {
             await vaultToken.connect(manager).settleVault();
 
-            expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('106', 18));
+            expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('107', 18));
         });
     });
 

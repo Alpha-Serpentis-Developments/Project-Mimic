@@ -253,6 +253,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
             revert Invalid();
 
         Actions.ActionArgs[] memory actions = new Actions.ActionArgs[](2);
+        uint256 normalizedAmount = _normalize(_amount, 8, 18);
         actions[0] = Actions.ActionArgs(
             Actions.ActionType.BurnShortOption,
             address(this),
@@ -269,13 +270,13 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
             address(this),
             asset,
             currentVaultId,
-            _normalize(_amount, 8, 18),
+            normalizedAmount,
             0,
             ""
         );
 
         controller.operate(actions);
-        collateralAmount -= _amount;
+        collateralAmount -= normalizedAmount;
 
         emit CallsBurned(_amount);
     }

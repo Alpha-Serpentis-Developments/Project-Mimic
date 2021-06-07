@@ -33,6 +33,14 @@ module.exports = {
       }
     ],
   },
+  networks: {
+    hardhat: {
+      mining: {
+        auto: true,
+        interval: 5000
+      }
+    }
+  },
   etherscan: {
     apiKey: "INSERT_KEY_HERE"
   }
