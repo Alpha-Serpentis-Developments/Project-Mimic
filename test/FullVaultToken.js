@@ -231,6 +231,11 @@ describe('VaultToken contract (full test)', () => {
             expect(await mockOtoken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('106', 8));
             expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(0);
         });
+        it('Should REVERT for attempting to withdraw', async () => {
+            await expect(
+                vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('1', 18))
+            ).to.be.reverted;
+        });
         it('Should burn calls', async () => {
             await vaultToken.connect(manager).burnCalls(ethers.utils.parseUnits('1', 8));
 

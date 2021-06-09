@@ -39,9 +39,15 @@ module.exports = {
         auto: true,
         interval: 5000
       }
+    },
+    kovan: {
+      url: "url here"
+    },
+    mainnet: {
+      url: "url here"
     }
   },
   etherscan: {
-    apiKey: "INSERT_KEY_HERE"
+    apiKey: "your key here"
   }
 };
