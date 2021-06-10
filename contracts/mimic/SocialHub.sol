@@ -21,7 +21,7 @@ contract SocialHub is ISocialHub {
         bool verified;
     }
     
-    /// @notice Mapping of social traders
+    /// @notice Mapping of social traders 
     mapping(address => SocialTrader) private listOfSocialTraders;
     /// @notice Mapping of whitelisted addresses (used for SocialTraderToken on non-unsafe modules)
     mapping(address => bool) public whitelisted;
@@ -32,7 +32,7 @@ contract SocialHub is ISocialHub {
     /// @notice Protocol withdrawal fee
     uint16 public withdrawalFee;
     /// @notice Address of the predecessor
-    address private predecessor;
+    address private immutable predecessor;
     /// @notice Address of the successor
     address private successor;
     /// @notice Address of the admin of the SocialHub
@@ -76,47 +76,47 @@ contract SocialHub is ISocialHub {
         _;
     }
 
-    function modifyMintingFee(uint16 _newFee) public onlyAdmin outOfBoundsCheck(5000, _newFee) deprecatedCheck(true) {
+    /// @notice bytes32 to string
+    /// @dev Converts bytes32 to a string memory type
+    /// @param _bytes32 bytes32 type to convert into a string
+    /// @return a string memory type 
+    function bytes32ToString(bytes32 _bytes32) public pure returns (string memory) {
+        uint8 i;
+        while(i < 32 && _bytes32[i] != 0) {
+            i++;
+        }
+        bytes memory bytesArray = new bytes(i);
+        for (i; i < 32 && _bytes32[i] != 0; i++) {
+            bytesArray[i] = _bytes32[i];
+        }
+        return string(bytesArray);
+    }
+
+    function modifyMintingFee(uint16 _newFee) external onlyAdmin outOfBoundsCheck(5000, _newFee) deprecatedCheck(true) {
         mintingFee = _newFee;
 
         emit MintingFeeChanged(_newFee);
     }
 
-    function modifyTakeProfitFee(uint16 _newFee) public onlyAdmin outOfBoundsCheck(5000, _newFee) deprecatedCheck(true) {
+    function modifyTakeProfitFee(uint16 _newFee) external onlyAdmin outOfBoundsCheck(5000, _newFee) deprecatedCheck(true) {
         takeProfitFee = _newFee;
 
         emit TakeProfitFeeChanged(_newFee);
     }
 
-    function modifyWithdrawalFee(uint16 _newFee) public onlyAdmin outOfBoundsCheck(5000, _newFee) deprecatedCheck(true) {
+    function modifyWithdrawalFee(uint16 _newFee) external onlyAdmin outOfBoundsCheck(5000, _newFee) deprecatedCheck(true) {
         withdrawalFee = _newFee;
 
         emit WithdrawalFeeChanged(_newFee);
     }
 
-    function deprecate(address _newAddress) public onlyAdmin {
+    function deprecate(address _newAddress) external onlyAdmin {
         if(_newAddress == address(0))
             revert ZeroAddress();
 
         successor = _newAddress;
 
         emit SocialHubDeprecated(_newAddress);
-    }
-
-    /// @notice bytes32 to string
-    /// @dev Converts bytes32 to a string memory type
-    /// @param _bytes32 bytes32 type to convert into a string
-    /// @return a string memory type 
-    function bytes32ToString(bytes32 _bytes32) public pure returns (string memory) {
-        uint8 i = 0;
-        while(i < 32 && _bytes32[i] != 0) {
-            i++;
-        }
-        bytes memory bytesArray = new bytes(i);
-        for (i = 0; i < 32 && _bytes32[i] != 0; i++) {
-            bytesArray[i] = _bytes32[i];
-        }
-        return string(bytesArray);
     }
     
     function addToWhitelist(address _add) external onlyAdmin {
@@ -155,7 +155,16 @@ contract SocialHub is ISocialHub {
         SocialTrader storage st = listOfSocialTraders[_socialTrader];
         
         if(_generateNewToken) {
-            st.token = new SocialTraderToken(bytes32ToString(_tokenSettings.newName), bytes32ToString(_tokenSettings.newSymbol), _tokenSettings.mintingFee, _tokenSettings.takeProfitFee, _tokenSettings.withdrawalFee, _tokenSettings.allowUnsafeModules, _tokenSettings.traderManager, _socialTrader);
+            st.token = new SocialTraderToken(
+                bytes32ToString(_tokenSettings.newName),
+                bytes32ToString(_tokenSettings.newSymbol),
+                _tokenSettings.mintingFee,
+                _tokenSettings.takeProfitFee,
+                _tokenSettings.withdrawalFee,
+                _tokenSettings.allowUnsafeModules,
+                _tokenSettings.traderManager,
+                _socialTrader
+            );
         } else {
             st.token = SocialTraderToken(_token);
         }
