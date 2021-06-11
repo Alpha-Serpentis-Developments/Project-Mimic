@@ -8,4 +8,4 @@ N/A | N/A
 
 File | Contract Address
 -----|-----------------
-[contracts/experimenting/Factory.sol](https://github.com/Alpha-Serpentis-Developments/Project-Mimic/blob/d5cf73a7cd64e33ac19c0d3be6da153c21e4d671/contracts/experimenting/Factory.sol) | [0x3dbf9d88c0d12b54caf70c3ea2417285331b6587](https://kovan.etherscan.io/address/0x3dbf9d88c0d12b54caf70c3ea2417285331b6587)
+[contracts/experimenting/Factory.sol](https://github.com/Alpha-Serpentis-Developments/Project-Mimic/blob/95595b30a6c07c29752ed78543a8a787a4e1a58b/contracts/experimenting/Factory.sol) | [0xa7CD2F79F9aebc0E0fe9bd33Ebf3ce9bD1eBE20c](https://kovan.etherscan.io/address/0xa7CD2F79F9aebc0E0fe9bd33Ebf3ce9bD1eBE20c)
