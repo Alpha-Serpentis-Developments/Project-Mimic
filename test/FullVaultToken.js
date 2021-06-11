@@ -244,8 +244,27 @@ describe('VaultToken contract (full test)', () => {
         });
     });
 
+    describe("Withdrawal window reactivation", () => {
+        it('Should allow a depositor to withdraw', async () => {
+            await vaultToken.connect(manager).burnCalls(await mockOtoken.balanceOf(vaultToken.address));
+
+            const priorBalance = await mockWETH.balanceOf(depositor.address);
+
+            await expect(
+                vaultToken.connect(depositor).withdraw(await vaultToken.balanceOf(depositor.address))
+            ).to.not.be.reverted;
+            
+            expect(await mockWETH.balanceOf(depositor.address)).to.equal(priorBalance.add(ethers.utils.parseUnits('11', 18)));
+        });
+    });
+
     describe("Handle oTokens getting sent to the vault token directly", () => {
         before(async () => {
+            await mockWETH.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('11', 18));
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('11', 18));
+
+            await network.provider.send('evm_increaseTime', [86400]); // to resolve the earlier reopening of the vault
+
             await mockWETH.connect(depositor).transfer(random_user.address, ethers.utils.parseUnits('1', 18));
             await mockWETH.connect(random_user).approve(marginPool.address, ethers.utils.parseUnits('1', 18));
             const ActionType = {

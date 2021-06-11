@@ -276,6 +276,14 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         controller.operate(actions);
         collateralAmount -= normalizedAmount;
 
+        if(collateralAmount == 0 && IERC20(oToken).balanceOf(address(this)) == 0) {
+            // Withdrawal window reopens
+            withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
+            oToken = address(0);
+
+            emit WithdrawalWindowActivated(withdrawalWindowExpires);
+        }
+
         emit CallsBurned(_amount);
     }
     
