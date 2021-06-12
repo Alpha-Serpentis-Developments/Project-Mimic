@@ -39,8 +39,6 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     IController private immutable controller;
     /// @notice Address of the current oToken
     address private oToken;
-    /// @notice Nonce for the exchange
-    uint256 private airswapNonce;
     /// @notice Address of the exchange
     address private immutable AIRSWAP_EXCHANGE;
     /// @notice Address of the underlying asset to trade
@@ -278,6 +276,14 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         controller.operate(actions);
         collateralAmount -= normalizedAmount;
 
+        if(collateralAmount == 0 && IERC20(oToken).balanceOf(address(this)) == 0) {
+            // Withdrawal window reopens
+            withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
+            oToken = address(0);
+
+            emit WithdrawalWindowActivated(withdrawalWindowExpires);
+        }
+
         emit CallsBurned(_amount);
     }
     
@@ -286,7 +292,8 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     /// @param _amount Amount of calls to sell to the exchange
     /// @param _premiumAmount Token amount to receive of the premium
     /// @param _otherParty Address of the counterparty
-    function sellCalls(uint256 _amount, uint256 _premiumAmount, address _otherParty) external onlyManager nonReentrant() whenNotPaused() {
+    /// @param _nonce Other party's AirSwap nonce
+    function sellCalls(uint256 _amount, uint256 _premiumAmount, address _otherParty, uint256 _nonce) external onlyManager nonReentrant() whenNotPaused() {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
         if(_amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
@@ -311,7 +318,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         sender.amount = _amount;
 
         // Define Types.Order
-        sellOrder.nonce = airswapNonce++;
+        sellOrder.nonce = _nonce;
         sellOrder.expiry = block.timestamp + 1 days;
         sellOrder.signer = signer;
         sellOrder.sender = sender;

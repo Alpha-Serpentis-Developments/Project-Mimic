@@ -561,6 +561,11 @@
 				"internalType": "address",
 				"name": "_otherParty",
 				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_nonce",
+				"type": "uint256"
 			}
 		],
 		"name": "sellCalls",
