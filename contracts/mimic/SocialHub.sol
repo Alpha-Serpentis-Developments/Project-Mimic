@@ -238,6 +238,7 @@ contract SocialHub is ISocialHub {
         SocialTrader storage st = listOfSocialTraders[address(token)];
 
         st.twitterHandle = _twitterHandle;
+        st.initialized = true;
 
         emit SocialTraderTokenRegistered(address(token), msg.sender);
     }
@@ -247,7 +248,7 @@ contract SocialHub is ISocialHub {
     function verifySocialTraderToken(address _token) external override onlyAdmin deprecatedCheck(true) {
         SocialTrader storage st = listOfSocialTraders[_token];
 
-        if(!listOfSocialTraders[_token].initialized)
+        if(!st.initialized)
             revert NotASocialTraderToken(_token);
         
         st.verified = true;

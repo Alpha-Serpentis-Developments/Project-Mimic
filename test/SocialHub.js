@@ -92,7 +92,7 @@ describe('SocialHub test', () => {
 	describe('Whitelist functions', () => {
 		it('Should add a new address to the whitelist', async () => {
 			await socialHub.connect(deployer).addToWhitelist(fake_traderManager.address);
-			
+
 			expect(await socialHub.whitelisted(fake_traderManager.address)).to.equal(true);
 		});
 		it('Should remove an address from the whitelist', async () => {
