@@ -1,8 +1,6 @@
 const { expect } = require("chai");
 const { ethers, network } = require("hardhat");
 
-const utils = ethers.utils;
-
 describe('SocialHub test', () => {
 	let SocialHub;
 	let socialHub, socialTraderToken, deployer, manager, depositor, fake_traderManager;
@@ -63,9 +61,9 @@ describe('SocialHub test', () => {
 	describe('Become a social trader (aka deploy social token)', () => {
 		it('Should allow a user to become a social trader', async () => {
 			const becomeSocialTraderTX = await socialHub.connect(manager).becomeSocialTrader(
-				utils.formatBytes32String("Social Token"), // token name
-				utils.formatBytes32String("SOCIAL"), // token symbol
-				utils.formatBytes32String("AlphaSerpentis_"), // twitter handle
+				ethers.utils.formatBytes32String("Social Token"), // token name
+				ethers.utils.formatBytes32String("SOCIAL"), // token symbol
+				ethers.utils.formatBytes32String("AlphaSerpentis_"), // twitter handle
 				0, // minting fee @ 0%
 				0, // profit take fee @ 0%,
 				0, // withdrawal fee @ 0%
@@ -94,13 +92,13 @@ describe('SocialHub test', () => {
 	describe('Whitelist functions', () => {
 		it('Should add a new address to the whitelist', async () => {
 			await socialHub.connect(deployer).addToWhitelist(fake_traderManager.address);
-
-			expect(await socialHub.whitelisted(fake_traderManager.address)).to.be.equal(true);
+			
+			expect(await socialHub.whitelisted(fake_traderManager.address)).to.equal(true);
 		});
 		it('Should remove an address from the whitelist', async () => {
 			await socialHub.connect(deployer).removeFromWhitelist(fake_traderManager.address);
 
-			expect(await socialHub.whitelisted(fake_traderManager.address)).to.be.equal(false);
+			expect(await socialHub.whitelisted(fake_traderManager.address)).to.equal(false);
 		});
 	});
 	describe('Modify protocol-level fees', () => {
@@ -109,9 +107,9 @@ describe('SocialHub test', () => {
 			await socialHub.connect(deployer).modifyTakeProfitFee(5000);
 			await socialHub.connect(deployer).modifyWithdrawalFee(5000);
 
-			expect(await socialHub.mintingFee()).to.be.equal(5000);
-			expect(await socialHub.takeProfitFee()).to.be.equal(5000);
-			expect(await socialHub.withdrawalFee()).to.be.equal(5000);
+			expect(await socialHub.mintingFee()).to.equal(5000);
+			expect(await socialHub.takeProfitFee()).to.equal(5000);
+			expect(await socialHub.withdrawalFee()).to.equal(5000);
 		});
 		it('Should REVERT for going out of bounds', async () => {
 			await expect(

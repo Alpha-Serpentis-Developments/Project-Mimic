@@ -292,7 +292,7 @@ contract SocialHub is ISocialHub {
             i++;
         }
         bytes memory bytesArray = new bytes(i);
-        for (i; i < 32 && _bytes32[i] != 0; i++) {
+        for (i = 0; i < 32 && _bytes32[i] != 0; i++) {
             bytesArray[i] = _bytes32[i];
         }
         return string(bytesArray);
