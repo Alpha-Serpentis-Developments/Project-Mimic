@@ -80,14 +80,43 @@ describe('SocialHub test', () => {
 			);
 
 			expect(await socialTraderToken.admin()).to.equal(manager.address);
+			expect(await socialTraderToken.name()).to.equal("Social Token");
+			expect(await socialTraderToken.symbol()).to.equal("SOCIAL");
+		});
+	});
+	describe('Verify a social trader', () => {
+		it('Should verify the social trader', async () => {
+			await expect(
+				socialHub.connect(deployer).verifySocialTraderToken(socialTraderToken.address)
+			).to.not.be.reverted;
 		});
 	});
 	describe('Whitelist functions', () => {
 		it('Should add a new address to the whitelist', async () => {
+			await socialHub.connect(deployer).addToWhitelist(fake_traderManager.address);
 
+			expect(await socialHub.whitelisted(fake_traderManager.address)).to.be.equal(true);
 		});
 		it('Should remove an address from the whitelist', async () => {
+			await socialHub.connect(deployer).removeFromWhitelist(fake_traderManager.address);
 
+			expect(await socialHub.whitelisted(fake_traderManager.address)).to.be.equal(false);
+		});
+	});
+	describe('Modify protocol-level fees', () => {
+		it('Should modify minting, take profit, and withdrawal at the protocol level', async () => {
+			await socialHub.connect(deployer).modifyMintingFee(5000);
+			await socialHub.connect(deployer).modifyTakeProfitFee(5000);
+			await socialHub.connect(deployer).modifyWithdrawalFee(5000);
+
+			expect(await socialHub.mintingFee()).to.be.equal(5000);
+			expect(await socialHub.takeProfitFee()).to.be.equal(5000);
+			expect(await socialHub.withdrawalFee()).to.be.equal(5000);
+		});
+		it('Should REVERT for going out of bounds', async () => {
+			await expect(
+				socialHub.connect(deployer).modifyMintingFee(5001)
+			).to.be.reverted;
 		});
 	});
 });

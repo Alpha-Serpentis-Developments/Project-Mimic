@@ -11,7 +11,7 @@ interface ISocialHub {
         uint16 takeProfitFee;
         uint16 withdrawalFee;
     }
-    
+
     function receiveTransferDetails(
         address _token,
         address _socialTrader,
@@ -44,7 +44,5 @@ interface ISocialHub {
         address _traderManager
     ) external;
 
-    function verifySocialTrader(address _socialTrader) external;
-
-    function isSocialTrader(address _socialTrader) external view returns(bool);
+    function verifySocialTraderToken(address _socialTrader) external;
 }

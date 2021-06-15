@@ -7,7 +7,7 @@ import {SocialTraderToken} from "./SocialTraderToken.sol";
 
 contract SocialHub is ISocialHub {
     error Unauthorized();
-    error NotASocialTrader(address trader);
+    error NotASocialTraderToken(address token);
     error AlreadyASocialTrader();
     error OutOfBounds(uint256 max, uint256 given);
     error NotDeprecated();
@@ -16,12 +16,13 @@ contract SocialHub is ISocialHub {
 
     /// @notice Struct that outlines the Social Trader
     struct SocialTrader {
-        SocialTraderToken token;
+        address socialTrader;
         bytes32 twitterHandle;
+        bool initialized;
         bool verified;
     }
     
-    /// @notice Mapping of social traders 
+    /// @notice Mapping of social traders (token -> Social Trader)
     mapping(address => SocialTrader) private listOfSocialTraders;
     /// @notice Mapping of whitelisted addresses (used for SocialTraderToken on non-unsafe modules)
     mapping(address => bool) public whitelisted;
@@ -46,8 +47,8 @@ contract SocialHub is ISocialHub {
     event AddressAddedToWhitelist(address indexed addedAddress);
     event AddressRemovedFromWhitelist(address indexed removedAddress);
     event AdminChanged(address newAdmin);
-    event SocialTraderRegistered(address indexed token, address indexed trader);
-    event SocialTraderVerified(address indexed token);
+    event SocialTraderTokenRegistered(address indexed token, address indexed trader);
+    event SocialTraderTokenVerified(address indexed token);
     event SocialHubDeprecated(address indexed successor);
     event DetailsReceived(address indexed trader);
     event DetailsSent(address indexed trader);
@@ -74,22 +75,6 @@ contract SocialHub is ISocialHub {
     modifier deprecatedCheck(bool _revertIfDeprecated) {
         _deprecatedCheck(_revertIfDeprecated);
         _;
-    }
-
-    /// @notice bytes32 to string
-    /// @dev Converts bytes32 to a string memory type
-    /// @param _bytes32 bytes32 type to convert into a string
-    /// @return a string memory type 
-    function bytes32ToString(bytes32 _bytes32) public pure returns (string memory) {
-        uint8 i;
-        while(i < 32 && _bytes32[i] != 0) {
-            i++;
-        }
-        bytes memory bytesArray = new bytes(i);
-        for (i; i < 32 && _bytes32[i] != 0; i++) {
-            bytesArray[i] = _bytes32[i];
-        }
-        return string(bytesArray);
     }
 
     function modifyMintingFee(uint16 _newFee) external onlyAdmin outOfBoundsCheck(5000, _newFee) deprecatedCheck(true) {
@@ -152,10 +137,10 @@ contract SocialHub is ISocialHub {
         if(msg.sender != predecessor)
             revert Unauthorized();
 
-        SocialTrader storage st = listOfSocialTraders[_socialTrader];
+        SocialTraderToken token;
         
         if(_generateNewToken) {
-            st.token = new SocialTraderToken(
+            token = new SocialTraderToken(
                 bytes32ToString(_tokenSettings.newName),
                 bytes32ToString(_tokenSettings.newSymbol),
                 _tokenSettings.mintingFee,
@@ -166,10 +151,14 @@ contract SocialHub is ISocialHub {
                 _socialTrader
             );
         } else {
-            st.token = SocialTraderToken(_token);
+            token = SocialTraderToken(_token);
         }
 
+        SocialTrader storage st = listOfSocialTraders[address(token)];
+
+        st.socialTrader = _socialTrader;
         st.twitterHandle = _twitterHandle;
+        st.initialized = true;
         st.verified = _verified;
 
         emit DetailsReceived(_socialTrader);
@@ -199,10 +188,10 @@ contract SocialHub is ISocialHub {
         if(!_deprecatedCheck(false))
             revert NotDeprecated();
 
-        SocialTrader storage st = listOfSocialTraders[_socialTrader];
+        SocialTrader storage st = listOfSocialTraders[msg.sender];
 
         // Ensure msg.sender is the SocialTraderToken
-        if(msg.sender != address(listOfSocialTraders[_socialTrader].token))
+        if(st.initialized)
             revert Unauthorized();
             
         NewTokenSettings memory newTokenSettings;
@@ -215,7 +204,7 @@ contract SocialHub is ISocialHub {
         newTokenSettings.allowUnsafeModules = _allowUnsafeModules;
 
         ISocialHub(successor).receiveTransferDetails(
-            address(st.token),
+            msg.sender,
             _socialTrader,
             st.twitterHandle,
             st.verified,
@@ -244,41 +233,26 @@ contract SocialHub is ISocialHub {
         override
         deprecatedCheck(true)
     {
-        SocialTrader storage st = listOfSocialTraders[msg.sender];
+        SocialTraderToken token = new SocialTraderToken(bytes32ToString(_tokenName), bytes32ToString(_symbol), _mintingFee, _profitTakeFee, _withdrawalFee, _allowUnsafeModules, _traderManager, msg.sender);
+        
+        SocialTrader storage st = listOfSocialTraders[address(token)];
 
-        if(address(st.token) != address(0))
-            revert AlreadyASocialTrader();
-
-        st.token = new SocialTraderToken(bytes32ToString(_tokenName), bytes32ToString(_symbol), _mintingFee, _profitTakeFee, _withdrawalFee, _allowUnsafeModules, _traderManager, msg.sender);
         st.twitterHandle = _twitterHandle;
 
-        emit SocialTraderRegistered(address(st.token), msg.sender);
+        emit SocialTraderTokenRegistered(address(token), msg.sender);
     }
     /**
      * @dev Verifies the social trader
      */
-    function verifySocialTrader(address _socialTrader) external override onlyAdmin deprecatedCheck(true) {
-        SocialTrader storage st = listOfSocialTraders[_socialTrader];
+    function verifySocialTraderToken(address _token) external override onlyAdmin deprecatedCheck(true) {
+        SocialTrader storage st = listOfSocialTraders[_token];
 
-        if(st.token.admin.address == address(0))
-            revert NotASocialTrader(_socialTrader);
+        if(!listOfSocialTraders[_token].initialized)
+            revert NotASocialTraderToken(_token);
         
         st.verified = true;
 
-        emit SocialTraderVerified(_socialTrader);
-    }
-    /**
-     * @dev Verifies an address is a social trader
-     */
-    function isSocialTrader(
-        address _socialTrader
-    )
-        external
-        override
-        view
-        returns(bool)
-    {
-        return listOfSocialTraders[_socialTrader].token.admin.address != address(0);
+        emit SocialTraderTokenVerified(_token);
     }
 
     /// @notice Checks if a given value is greater than the max
@@ -306,6 +280,22 @@ contract SocialHub is ISocialHub {
     function _onlyAdmin() internal view {
         if(msg.sender != admin)
             revert Unauthorized();
+    }
+
+    /// @notice bytes32 to string
+    /// @dev Converts bytes32 to a string memory type
+    /// @param _bytes32 bytes32 type to convert into a string
+    /// @return a string memory type 
+    function bytes32ToString(bytes32 _bytes32) private pure returns (string memory) {
+        uint8 i;
+        while(i < 32 && _bytes32[i] != 0) {
+            i++;
+        }
+        bytes memory bytesArray = new bytes(i);
+        for (i; i < 32 && _bytes32[i] != 0; i++) {
+            bytesArray[i] = _bytes32[i];
+        }
+        return string(bytesArray);
     }
     
 }

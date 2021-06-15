@@ -1,4 +1,5 @@
 .vscode/settings.json
+remix-compiler.config.js
 node_modules/
 bin/
 contracts/*/artifacts
