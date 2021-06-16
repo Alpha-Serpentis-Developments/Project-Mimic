@@ -110,9 +110,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         if(collateralAmount + IERC20(asset).balanceOf(address(this)) + _amount > maximumAssets)
             revert MaximumFundsReached();
 
-        uint256 normalizedAssetBalance = _normalize(IERC20(asset).balanceOf(address(this)), ERC20(asset).decimals(), 18) + _normalize(collateralAmount, ERC20(asset).decimals(), 18);
-        uint256 normalizedAmount = _normalize(_amount, ERC20(asset).decimals(), 18);
-        uint256 vaultMint = totalSupply() * normalizedAmount / normalizedAssetBalance;
+        uint256 vaultMint = totalSupply() * _amount / (IERC20(asset).balanceOf(address(this)) + collateralAmount);
 
         /*
         console.log(normalizedAmount);
