@@ -2,7 +2,7 @@
 
 File | Contract Address
 -----|-----------------
-N/A | N/A
+[contracts/experimenting/Factory.sol](https://github.com/Alpha-Serpentis-Developments/Project-Mimic/blob/37b6cff9c19f5358f6518beb241bc792bf245ed8/contracts/experimenting/Factory.sol) | [0xe73afc806411859d49977dbade5c9328cd565bcb](https://etherscan.io/address/0xe73afc806411859d49977dbade5c9328cd565bcb)
 
 # Kovan
 
