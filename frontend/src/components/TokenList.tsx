@@ -32,15 +32,16 @@ export default function TokenList(props: {
 
   function timeLeft(ts: number) {
     let n = ts - Date.now();
-
-    let t = new Date(n);
-    let h = t.getHours();
-    let m = t.getMinutes();
-    let s = t.getSeconds();
-
-    return h + ":" + m + ":" + s;
-    // let t = new Date(ts);
-    // return t;
+    // let t = new Date(n);
+    // let h = t.getHours();
+    // let m = t.getMinutes();
+    // let s = t.getSeconds();
+    n = n / 1000;
+    let h = Math.floor(n / 3600);
+    let m = Math.floor((n - h * 3600) / 60);
+    let s = Math.floor(n - h * 3600 - m * 60);
+    // return h + ":" + m + ":" + s;
+    return (h > 0 ? h + "h " : "") + (m > 0 ? m + "m " : "") + s + "s";
   }
 
   function onetoken(item: any) {
@@ -72,7 +73,7 @@ export default function TokenList(props: {
             </Table.Cell>
             <Table.Cell verticalAlign="middle">
               <Header size="small">
-                Vault will close in {timeLeft(item.expireTime * 1000)} hours
+                Vault will close in {timeLeft(item.expireTime * 1000)}
               </Header>
             </Table.Cell>
           </>

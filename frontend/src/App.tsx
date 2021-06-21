@@ -11,7 +11,7 @@ import {
   Menu,
   Sidebar,
   Modal,
-  Segment,
+  Message,
   Divider,
 } from "semantic-ui-react";
 import DeployNewVaultToken from "./components/DeployNewVaultToken";
@@ -274,9 +274,28 @@ export default function App() {
             managerNav={managerNav}
             mmColor={mmColor}
           />
-
+          {!addr && (
+            <div
+              style={{
+                textAlign: "center",
+                fontSize: "20px",
+                marginTop: "20px",
+                color: "red",
+              }}
+            >
+              <Message color="purple" compact>
+                <Icon name="exclamation triangle" color="red" />
+                Please install MetaMask to continue
+              </Message>
+              {/* <a href="https://metamask.io/" style={{ fontWeight: "bold" }}>
+                {" "}
+                MetaMask
+              </a>{" "} */}
+            </div>
+          )}
           {renderHome && <Introduction clickTrade={clickTrade} />}
-          {addr ? (
+
+          {addr && (
             <div>
               <VTList
                 acctNum={acctNum}
@@ -302,22 +321,6 @@ export default function App() {
                   <Grid.Row />
                 </Grid>
               )}
-            </div>
-          ) : (
-            <div
-              style={{
-                textAlign: "center",
-                fontSize: "20px",
-                marginTop: "20px",
-                color: "red",
-              }}
-            >
-              <Icon name="exclamation triangle" color="red" />
-              Please install MetaMask
-              {/* <a href="https://metamask.io/" style={{ fontWeight: "bold" }}>
-                {" "}
-                MetaMask
-              </a>{" "} */}
             </div>
           )}
           <MMInstallModal

@@ -16,21 +16,35 @@ import {
 import { web3 } from "./Web3Handler";
 import ERCTokenInfo from "./ERCTokenInfo";
 
-const units = [
+const units1 = [
   { key: 1, text: "Wei", value: "wei" },
   { key: 2, text: "Token", value: "ether" },
+];
+
+const units = [
+  { key: 1, text: "Ether", value: "ether" },
+  { key: 2, text: "Wei", value: "wei" },
 ];
 
 export default function VaultTokenInfo(props) {
   const [depositAmt, setDeposit] = useState(0);
   const [withdrawAmt, setWithdrawAmt] = useState(0);
   const [initializeAmt, setInitializeAmt] = useState(0);
-  const [dUnit, setDUnit] = useState("wei");
-  const [wUnit, setWUnit] = useState("wei");
-  const [iUnit, setIUnit] = useState("wei");
-  const [writeCallUnit, setWiteCallIUnit] = useState("wei");
-  const [sellCallUnit, setSellCallIUnit] = useState("wei");
-  const [pemiumUnit, setPemiumUnit] = useState("wei");
+  // ================= before set unit=========== start
+  // const [dUnit, setDUnit] = useState("wei");
+  // const [wUnit, setWUnit] = useState("wei");
+  // const [iUnit, setIUnit] = useState("wei");
+  // const [writeCallUnit, setWiteCallIUnit] = useState("wei");
+  // const [sellCallUnit, setSellCallIUnit] = useState("wei");
+  // const [pemiumUnit, setPemiumUnit] = useState("wei");
+  // ==================== end ================
+
+  const [dUnit, setDUnit] = useState("ether");
+  const [wUnit, setWUnit] = useState("ether");
+  const [iUnit, setIUnit] = useState("ether");
+  const [writeCallUnit, setWiteCallIUnit] = useState("ether");
+  const [sellCallUnit, setSellCallIUnit] = useState("ether");
+  const [pemiumUnit, setPemiumUnit] = useState("ether");
 
   const [oTokenAddress, setOTokenaddress] = useState("");
   const [writeCallAmt, setWriteCallAmt] = useState(0);
@@ -57,6 +71,7 @@ export default function VaultTokenInfo(props) {
   const [iconStatus, setIconStatus] = useState("loading");
   const [btnDisabled, setBtnDisabled] = useState(false);
   const [managerClick, setManagerClick] = useState(false);
+  const [isApproved, setIsApproved] = useState(false);
 
   function setSM(h, m, s, e) {
     setStatusHeader(h);
@@ -97,7 +112,7 @@ export default function VaultTokenInfo(props) {
       });
   }
 
-  function deposit(amt) {
+  function deposit1(amt) {
     startTX();
     if (amt === 0) {
       setSM("Error", "Form input Error", true, true);
@@ -143,6 +158,47 @@ export default function VaultTokenInfo(props) {
   //       setIconStatus("confirmed");
   //     });
   // }
+  ///=================
+
+  function deposit(amt) {
+    startTX();
+    if (amt === 0) {
+      setSM("Error", "Form input Error", true, true);
+      setIconStatus("error");
+      return;
+    }
+    let amount = web3.utils.toWei(amt, dUnit);
+    props.token
+      .approveAsset(amount, props.acct)
+      .on("transactionHash", function (hash) {
+        setTxHash(hash);
+        setSM("TX Hash Received", hash, true, false);
+      })
+      .on("error", function (error, receipt) {
+        let m = "";
+        if (error !== null) {
+          let i = error.message.indexOf(":");
+          m = error.message.substring(0, i > 0 ? i : 40);
+        }
+        setSM("" + " TX Error", m, true, true);
+        setTxSent(false);
+        setIconStatus("error");
+      })
+      .on("confirmation", function (confirmationNumber, receipt) {
+        if (confirmationNumber == 1) {
+          let i = props.token.deposit(amount, props.acct);
+          sendTX(i, "deposit");
+          setSM(
+            "Approval" + " TX Confirmed",
+            "" + " Confirmation Received",
+            true,
+            false
+          );
+
+          setIconStatus("confirmed");
+        }
+      });
+  }
 
   function initialize(amt) {
     startTX();
@@ -159,8 +215,6 @@ export default function VaultTokenInfo(props) {
       .on("transactionHash", function (hash) {
         setTxHash(hash);
         setSM("TX Hash Received", hash, true, false);
-        let i = props.token.initialize(amount, props.acct);
-        sendTX(i, "initialize");
       })
       .on("error", function (error, receipt) {
         let m = "";
@@ -171,8 +225,23 @@ export default function VaultTokenInfo(props) {
         setSM("" + " TX Error", m, true, true);
         setTxSent(false);
         setIconStatus("error");
+      })
+      .on("confirmation", function (confirmationNumber, receipt) {
+        if (confirmationNumber == 1) {
+          let i = props.token.initialize(amount, props.acct);
+          sendTX(i, "initialize");
+          setSM(
+            "Approval" + " TX Confirmed",
+            "" + " Confirmation Received",
+            true,
+            false
+          );
+
+          setIconStatus("confirmed");
+        }
       });
   }
+  //====================
 
   function initialize1(amt) {
     startTX();
@@ -310,7 +379,7 @@ export default function VaultTokenInfo(props) {
             <label>select</label>
             <Menu compact size="tiny">
               <Dropdown
-                defaultValue="wei"
+                defaultValue="ether"
                 options={units}
                 item
                 onChange={updateWriteCallUnit}
@@ -356,7 +425,7 @@ export default function VaultTokenInfo(props) {
         <Grid stackable columns={2}>
           <Grid.Column>
             <Header color="grey" size="medium">
-              Vault{" "}
+              vault{" "}
             </Header>
             <Header size="huge" color="blue">
               {props.token.name()}
@@ -383,7 +452,7 @@ export default function VaultTokenInfo(props) {
                   </Form.Field>
                   <Menu compact size="tiny">
                     <Dropdown
-                      defaultValue="wei"
+                      defaultValue="ether"
                       options={units}
                       item
                       onChange={updatewUnit}
@@ -406,7 +475,7 @@ export default function VaultTokenInfo(props) {
           </Grid.Column>
           <Grid.Column textAlign="right">
             <Header color="grey" size="medium">
-              Asset{" "}
+              asset{" "}
             </Header>
             <Header size="huge" color="orange">
               {props.token.assetObject.name()}
@@ -431,7 +500,7 @@ export default function VaultTokenInfo(props) {
                   </Form.Field>
                   <Menu compact size="tiny">
                     <Dropdown
-                      defaultValue="wei"
+                      defaultValue="ether"
                       options={units}
                       item
                       onChange={updatedUnit}
@@ -475,7 +544,7 @@ export default function VaultTokenInfo(props) {
           <Header size="large" color="blue">
             Ratio: {props.token.totalSupply / props.token.vaultBalance}
           </Header>
-          <Header.Subheader>Vault Tokens / Vault Assets</Header.Subheader>
+          <Header.Subheader># vault tokens/ vault assets</Header.Subheader>
         </Grid.Column>
       </Grid>
     );
@@ -497,7 +566,8 @@ export default function VaultTokenInfo(props) {
               </Form.Field>
               <Menu compact size="tiny">
                 <Dropdown
-                  defaultValue="wei"
+                  // defaultValue="wei"
+                  defaultValue="ether"
                   options={units}
                   item
                   onChange={updateIUnit}
@@ -535,7 +605,7 @@ export default function VaultTokenInfo(props) {
             <label>select</label>
             <Menu compact size="tiny">
               <Dropdown
-                defaultValue="wei"
+                defaultValue="ether"
                 options={units}
                 item
                 onChange={updateSellCallUnit}
@@ -556,7 +626,7 @@ export default function VaultTokenInfo(props) {
             <label>select</label>
             <Menu compact size="tiny">
               <Dropdown
-                defaultValue="wei"
+                defaultValue="ether"
                 options={units}
                 item
                 onChange={updatePremiumUnit}
