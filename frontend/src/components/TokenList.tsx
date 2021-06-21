@@ -32,11 +32,15 @@ export default function TokenList(props: {
 
   function timeLeft(ts: number) {
     let n = ts - Date.now();
+
     let t = new Date(n);
     let h = t.getHours();
     let m = t.getMinutes();
     let s = t.getSeconds();
+
     return h + ":" + m + ":" + s;
+    // let t = new Date(ts);
+    // return t;
   }
 
   function onetoken(item: any) {

@@ -356,7 +356,7 @@ export default function VaultTokenInfo(props) {
         <Grid stackable columns={2}>
           <Grid.Column>
             <Header color="grey" size="medium">
-              vault{" "}
+              Vault{" "}
             </Header>
             <Header size="huge" color="blue">
               {props.token.name()}
@@ -406,7 +406,7 @@ export default function VaultTokenInfo(props) {
           </Grid.Column>
           <Grid.Column textAlign="right">
             <Header color="grey" size="medium">
-              asset{" "}
+              Asset{" "}
             </Header>
             <Header size="huge" color="orange">
               {props.token.assetObject.name()}
@@ -475,7 +475,7 @@ export default function VaultTokenInfo(props) {
           <Header size="large" color="blue">
             Ratio: {props.token.totalSupply / props.token.vaultBalance}
           </Header>
-          <Header.Subheader># vault tokens/ vault assets</Header.Subheader>
+          <Header.Subheader>Vault Tokens / Vault Assets</Header.Subheader>
         </Grid.Column>
       </Grid>
     );
