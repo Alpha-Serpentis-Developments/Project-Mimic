@@ -17,8 +17,6 @@ contract SocialHub is ISocialHub {
     /// @notice Struct that outlines the Social Trader
     struct SocialTrader {
         address socialTrader;
-        bytes32 twitterHandle;
-        bool initialized;
         bool verified;
     }
     
@@ -38,8 +36,6 @@ contract SocialHub is ISocialHub {
     address private successor;
     /// @notice Address of the admin of the SocialHub
     address private admin;
-    /// @notice UNIX time of deployment (used for version checking)
-    uint256 private immutable deploymentTime;
 
     event MintingFeeChanged(uint16 newFee);
     event TakeProfitFeeChanged(uint16 newFee);
@@ -59,7 +55,6 @@ contract SocialHub is ISocialHub {
         
         predecessor = _predecessor;
         admin = _admin;
-        deploymentTime = block.timestamp;
     }
 
     modifier onlyAdmin {
@@ -121,14 +116,12 @@ contract SocialHub is ISocialHub {
     /// @dev Receives social trader details from the predecessor social hub
     /// @param _token address of the previous social trading token
     /// @param _socialTrader address of the social trader
-    /// @param _twitterHandle twitter handle of the social trader
     /// @param _verified verified status
     /// @param _generateNewToken boolean if the social trader wishes to create a new token
     /// @param _tokenSettings struct that details the new token settings
     function receiveTransferDetails(
         address _token,
         address _socialTrader,
-        bytes32 _twitterHandle,
         bool _verified,
         bool _generateNewToken,
         NewTokenSettings memory _tokenSettings
@@ -157,8 +150,6 @@ contract SocialHub is ISocialHub {
         SocialTrader storage st = listOfSocialTraders[address(token)];
 
         st.socialTrader = _socialTrader;
-        st.twitterHandle = _twitterHandle;
-        st.initialized = true;
         st.verified = _verified;
 
         emit DetailsReceived(_socialTrader);
@@ -168,8 +159,8 @@ contract SocialHub is ISocialHub {
     /// @dev Transfer details and optionally generate a new token; can only be called by the social token
     /// @param _socialTrader address of the social trader
     /// @param _generateNewToken boolean if the social trader wishes to create a new token
-    /// @param _newName memory-type string of the new token name
-    /// @param _newSymbol memory-type stirng of the new token symbol
+    /// @param _newName memory-type bytes32 of the new token name
+    /// @param _newSymbol memory-type bytes32 of the new token symbol
     /// @param _newMintingFee new minting fees of the new token
     /// @param _newProfitTakeFee new profit take fees of the new token
     /// @param _newWithdrawalFee new withdrawal fees of the new token
@@ -190,8 +181,8 @@ contract SocialHub is ISocialHub {
 
         SocialTrader storage st = listOfSocialTraders[msg.sender];
 
-        // Ensure msg.sender is the SocialTraderToken
-        if(st.initialized)
+        // Ensure msg.sender is the social trader
+        if(st.socialTrader == SocialTraderToken(msg.sender).admin())
             revert Unauthorized();
             
         NewTokenSettings memory newTokenSettings;
@@ -206,7 +197,6 @@ contract SocialHub is ISocialHub {
         ISocialHub(successor).receiveTransferDetails(
             msg.sender,
             _socialTrader,
-            st.twitterHandle,
             st.verified,
             _generateNewToken,
             newTokenSettings
@@ -222,7 +212,6 @@ contract SocialHub is ISocialHub {
     function becomeSocialTrader(
         bytes32 _tokenName,
         bytes32 _symbol,
-        bytes32 _twitterHandle,
         uint16 _mintingFee,
         uint16 _profitTakeFee,
         uint16 _withdrawalFee,
@@ -235,10 +224,7 @@ contract SocialHub is ISocialHub {
     {
         SocialTraderToken token = new SocialTraderToken(bytes32ToString(_tokenName), bytes32ToString(_symbol), _mintingFee, _profitTakeFee, _withdrawalFee, _allowUnsafeModules, _traderManager, msg.sender);
         
-        SocialTrader storage st = listOfSocialTraders[address(token)];
-
-        st.twitterHandle = _twitterHandle;
-        st.initialized = true;
+        listOfSocialTraders[address(token)].socialTrader = msg.sender;
 
         emit SocialTraderTokenRegistered(address(token), msg.sender);
     }
@@ -248,7 +234,7 @@ contract SocialHub is ISocialHub {
     function verifySocialTraderToken(address _token) external override onlyAdmin deprecatedCheck(true) {
         SocialTrader storage st = listOfSocialTraders[_token];
 
-        if(!st.initialized)
+        if(st.socialTrader == address(0))
             revert NotASocialTraderToken(_token);
         
         st.verified = true;
@@ -298,5 +284,5 @@ contract SocialHub is ISocialHub {
         }
         return string(bytesArray);
     }
-    
+
 }

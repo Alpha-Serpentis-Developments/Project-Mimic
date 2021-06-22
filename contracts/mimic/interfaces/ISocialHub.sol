@@ -15,7 +15,6 @@ interface ISocialHub {
     function receiveTransferDetails(
         address _token,
         address _socialTrader,
-        bytes32 _twitterHandle,
         bool _verified,
         bool _generateNewToken,
         NewTokenSettings memory _tokenSettings
@@ -36,7 +35,6 @@ interface ISocialHub {
     function becomeSocialTrader(
         bytes32 _tokenName,
         bytes32 _symbol,
-        bytes32 _twitterHandle,
         uint16 _mintingFee,
         uint16 _profitTakeFee,
         uint16 _withdrawalFee,

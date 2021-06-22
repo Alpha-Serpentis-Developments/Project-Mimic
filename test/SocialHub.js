@@ -3,7 +3,7 @@ const { ethers, network } = require("hardhat");
 
 describe('SocialHub test', () => {
 	let SocialHub;
-	let socialHub, socialTraderToken, deployer, manager, depositor, fake_traderManager;
+	let socialHub, newerSocialHub, socialTraderToken, deployer, manager, depositor, fake_traderManager, fake_dao;
 
 	const zeroAddress = "0x0000000000000000000000000000000000000000";
 
@@ -12,14 +12,14 @@ describe('SocialHub test', () => {
 
 		SocialHub = await ethers.getContractFactory('SocialHub');
 
-		[deployer, manager, depositor, fake_traderManager] = await ethers.getSigners();
+		[deployer, manager, depositor, fake_traderManager, fake_dao] = await ethers.getSigners();
 	});
 	
 	describe('Deploy SocialHub w/o predecessor', () => {
 		it('Should revert the deployment of the SocialHub', async () => {
 			await expect(
 				SocialHub.connect(deployer).deploy(zeroAddress, zeroAddress)
-			).to.be.reverted;
+			).to.be.revertedWith("ZeroAddress");
 		});
 		it('Should deploy SocialHub successfully', async () => {
 			socialHub = await SocialHub.connect(deployer).deploy(
@@ -30,40 +30,11 @@ describe('SocialHub test', () => {
 			expect(socialHub.address).to.not.equal(zeroAddress);
 		});
 	});
-	describe('Use the modify fees on the SocialHub', () => {
-		it('Should revert all three fee modifications for out of bounds', async () => {
-			await expect(
-				socialHub.connect(deployer).modifyMintingFee(5001)
-			).to.be.reverted;
-			await expect(
-				socialHub.connect(deployer).modifyTakeProfitFee(5001)
-			).to.be.reverted;
-			await expect(
-				socialHub.connect(deployer).modifyWithdrawalFee(5001)
-			).to.be.reverted;
-		});
-		it('Should NOT revert all three fee modifications and make changes @ 50%', async () => {
-			await expect(
-				socialHub.connect(deployer).modifyMintingFee(5000)
-			).to.not.be.reverted;
-			await expect(
-				socialHub.connect(deployer).modifyTakeProfitFee(5000)
-			).to.not.be.reverted;
-			await expect(
-				socialHub.connect(deployer).modifyWithdrawalFee(5000)
-			).to.not.be.reverted;
-
-			expect(await socialHub.mintingFee()).to.equal(5000);
-			expect(await socialHub.takeProfitFee()).to.equal(5000);
-			expect(await socialHub.withdrawalFee()).to.equal(5000);
-		});
-	});
 	describe('Become a social trader (aka deploy social token)', () => {
 		it('Should allow a user to become a social trader', async () => {
 			const becomeSocialTraderTX = await socialHub.connect(manager).becomeSocialTrader(
 				ethers.utils.formatBytes32String("Social Token"), // token name
 				ethers.utils.formatBytes32String("SOCIAL"), // token symbol
-				ethers.utils.formatBytes32String("AlphaSerpentis_"), // twitter handle
 				0, // minting fee @ 0%
 				0, // profit take fee @ 0%,
 				0, // withdrawal fee @ 0%
@@ -114,7 +85,30 @@ describe('SocialHub test', () => {
 		it('Should REVERT for going out of bounds', async () => {
 			await expect(
 				socialHub.connect(deployer).modifyMintingFee(5001)
-			).to.be.reverted;
+			).to.be.revertedWith("OutOfBounds");
+		});
+	});
+	describe('Deprecate the social hub', () => {
+		before(async () => {
+			newerSocialHub = await SocialHub.connect(deployer).deploy(
+				socialHub.address,
+				deployer.address
+			);
+		});
+		it('Should deprecate the current social hub and go to the new', async () => {
+			await socialHub.connect(deployer).deprecate(
+				newerSocialHub.address
+			);
+
+			await expect(
+				socialHub.connect(deployer).modifyMintingFee(0)
+			).to.be.revertedWith("Deprecated");
+		});
+		it('Should transfer details to the new social hub', async () => {
+			
+		});
+		it('Should transfer details AND make a new token to the new social hub', async () => {
+
 		});
 	});
 });
