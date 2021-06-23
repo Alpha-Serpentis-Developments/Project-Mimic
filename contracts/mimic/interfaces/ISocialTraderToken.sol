@@ -14,12 +14,14 @@ interface ISocialTraderToken {
     error UnsafeModule_Revert();
     error TradingOperationFailed(ITraderManager.TradeOperation operation);
     error PredeterminedStrategyExists(bytes32 strategy);
+    error OutOfBounds(uint256 max, uint256 given);
+    error WithdrawalWindowIsInactive();
 
     function openPosition(
         bytes32 _openingStrategy,
         address _oToken,
         ITraderManager.OptionStyle _style
-    ) external returns(uint256);
+    ) external;
     function closePosition(uint256 _timestamp, bytes32 _closingStrategy) external;
     function createPredeterminedStrategy(bytes32 _strategy, ITraderManager.TradeOperation[] memory _operations) external;
     function executePredeterminedStrategy(uint256 _timestamp, bytes32 _strategy) external;

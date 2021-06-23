@@ -2,6 +2,14 @@
 pragma solidity ^0.8.4;
 
 interface ISocialHub {
+    error Unauthorized();
+    error NotASocialTraderToken(address token);
+    error AlreadyASocialTrader();
+    error OutOfBounds(uint256 max, uint256 given);
+    error NotDeprecated();
+    error Deprecated(address _succesor);
+    error ZeroAddress();
+
     struct NewTokenSettings {
         bytes32 newName;
         bytes32 newSymbol;

@@ -15,6 +15,7 @@ describe('SocialHub test', () => {
 		[deployer, manager, depositor, fake_traderManager, fake_dao] = await ethers.getSigners();
 	});
 	
+	
 	describe('Deploy SocialHub w/o predecessor', () => {
 		it('Should revert the deployment of the SocialHub', async () => {
 			await expect(
@@ -30,7 +31,22 @@ describe('SocialHub test', () => {
 			expect(socialHub.address).to.not.equal(zeroAddress);
 		});
 	});
+	describe('Whitelist functions', () => {
+		it('Should add a new address to the whitelist', async () => {
+			await socialHub.connect(deployer).addToWhitelist(fake_traderManager.address);
+
+			expect(await socialHub.whitelisted(fake_traderManager.address)).to.equal(true);
+		});
+		it('Should remove an address from the whitelist', async () => {
+			await socialHub.connect(deployer).removeFromWhitelist(fake_traderManager.address);
+
+			expect(await socialHub.whitelisted(fake_traderManager.address)).to.equal(false);
+		});
+	});
 	describe('Become a social trader (aka deploy social token)', () => {
+		before(async () => {
+			await socialHub.connect(deployer).addToWhitelist(fake_traderManager.address);
+		});
 		it('Should allow a user to become a social trader', async () => {
 			const becomeSocialTraderTX = await socialHub.connect(manager).becomeSocialTrader(
 				ethers.utils.formatBytes32String("Social Token"), // token name
@@ -60,18 +76,6 @@ describe('SocialHub test', () => {
 			).to.not.be.reverted;
 		});
 	});
-	describe('Whitelist functions', () => {
-		it('Should add a new address to the whitelist', async () => {
-			await socialHub.connect(deployer).addToWhitelist(fake_traderManager.address);
-
-			expect(await socialHub.whitelisted(fake_traderManager.address)).to.equal(true);
-		});
-		it('Should remove an address from the whitelist', async () => {
-			await socialHub.connect(deployer).removeFromWhitelist(fake_traderManager.address);
-
-			expect(await socialHub.whitelisted(fake_traderManager.address)).to.equal(false);
-		});
-	});
 	describe('Modify protocol-level fees', () => {
 		it('Should modify minting, take profit, and withdrawal at the protocol level', async () => {
 			await socialHub.connect(deployer).modifyMintingFee(5000);
@@ -94,6 +98,7 @@ describe('SocialHub test', () => {
 				socialHub.address,
 				deployer.address
 			);
+			await newerSocialHub.connect(deployer).addToWhitelist(fake_traderManager.address);
 		});
 		it('Should deprecate the current social hub and go to the new', async () => {
 			await socialHub.connect(deployer).deprecate(
@@ -104,11 +109,35 @@ describe('SocialHub test', () => {
 				socialHub.connect(deployer).modifyMintingFee(0)
 			).to.be.revertedWith("Deprecated");
 		});
-		it('Should transfer details to the new social hub', async () => {
-			
-		});
 		it('Should transfer details AND make a new token to the new social hub', async () => {
+			const changeAndCreateTX = await socialTraderToken.connect(manager).changeSocialHubs(
+				true, // generate new token
+				ethers.utils.formatBytes32String("Social Token v2"), // new name
+				ethers.utils.formatBytes32String("SOCIALv2"), // new symbol
+				0, // new minting fee
+				0, // new profit take fee
+				0, // new withdrawal fee
+				false // allow unsafe modules
+			);
+			const changeAndCreateReceipt = await changeAndCreateTX.wait();
 
+			expect(socialTraderToken.address).to.not.be.equal(changeAndCreateReceipt.events[1].topics[0]);
+			expect(changeAndCreateReceipt.events[1].topics[0]).to.not.be.equal(zeroAddress);
+			expect(await (await socialHub.listOfSocialTraders(socialTraderToken.address)).socialTrader).to.be.equal(zeroAddress);
+		});
+	});
+	describe('Protocol-level fees test', () => {
+		before(async () => {
+
+		});
+		it('Should set the new minting fees', () => {
+
+		});
+		it('Should send the minting fees ')
+	});
+	describe('Hand off the admin', () => {
+		it('Should hand off the admin', async () => {
+			await newerSocialHub.connect(deployer).changeAdmin(fake_dao.address);
 		});
 	});
 });

@@ -16,9 +16,6 @@ import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 contract SocialTraderToken is ISocialTraderToken, ERC20 {
     using SafeERC20 for IERC20;
 
-    error OutOfBounds(uint256 max, uint256 given);
-    error WithdrawalWindowIsInactive();
-
     /// @notice Mapping of a strategy to execute predefined
     mapping(bytes32 => ITraderManager.TradeOperation[]) private strategies;
     /// @notice Mapping of a position (timestamp => position)
@@ -198,7 +195,7 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
 
     /// @notice Burns social tokens in return for the pooled funds
     /// @dev Burns social tokens during inactive period
-    /// @param _amount amount of tokens to burn (amount must be approved!)
+    /// @param _amount amount of tokens to burn
     function burn(uint256 _amount) external {
         // TODO: Add logic to check positions and pull necessary oToken to burn and redeem collateral (IF IN A SHORT POSITION)
     }
@@ -208,12 +205,11 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
     /// @param _openingStrategy string for the strategy name in the mapping to be used to execute the trade
     /// @param _oToken address of the oToken
     /// @param _style OptionStyle enum of either AMERICAN or EUROPEAN
-    /// @return !!! TEMPORARY MESSAGE - MIGHT REMOVE? !!!
     function openPosition(
         bytes32 _openingStrategy,
         address _oToken,
         ITraderManager.OptionStyle _style
-    ) external override onlyAdmin returns(uint256) {
+    ) external override onlyAdmin {
         ITraderManager.Position storage pos = positions[block.timestamp];
 
         pos.openingStrategy = _openingStrategy;
@@ -239,8 +235,6 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
         pos.closingStrategy = _closingStrategy;
         pos.closed = true;
         
-        
-
         emit PositionClosed(block.timestamp, _closingStrategy);
     }
 

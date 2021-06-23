@@ -6,13 +6,6 @@ import {ISocialHub} from "./interfaces/ISocialHub.sol";
 import {SocialTraderToken} from "./SocialTraderToken.sol";
 
 contract SocialHub is ISocialHub {
-    error Unauthorized();
-    error NotASocialTraderToken(address token);
-    error AlreadyASocialTrader();
-    error OutOfBounds(uint256 max, uint256 given);
-    error NotDeprecated();
-    error Deprecated(address _succesor);
-    error ZeroAddress();
 
     /// @notice Struct that outlines the Social Trader
     struct SocialTrader {
@@ -21,7 +14,7 @@ contract SocialHub is ISocialHub {
     }
     
     /// @notice Mapping of social traders (token -> Social Trader)
-    mapping(address => SocialTrader) private listOfSocialTraders;
+    mapping(address => SocialTrader) public listOfSocialTraders;
     /// @notice Mapping of whitelisted addresses (used for SocialTraderToken on non-unsafe modules)
     mapping(address => bool) public whitelisted;
     /// @notice Protocol minting fee
@@ -31,11 +24,11 @@ contract SocialHub is ISocialHub {
     /// @notice Protocol withdrawal fee
     uint16 public withdrawalFee;
     /// @notice Address of the predecessor
-    address private immutable predecessor;
+    address public immutable predecessor;
     /// @notice Address of the successor
-    address private successor;
+    address public successor;
     /// @notice Address of the admin of the SocialHub
-    address private admin;
+    address public admin;
 
     event MintingFeeChanged(uint16 newFee);
     event TakeProfitFeeChanged(uint16 newFee);
@@ -70,6 +63,14 @@ contract SocialHub is ISocialHub {
     modifier deprecatedCheck(bool _revertIfDeprecated) {
         _deprecatedCheck(_revertIfDeprecated);
         _;
+    }
+
+    function changeAdmin(address _admin) external onlyAdmin {
+        if(_admin == address(0))
+            revert ZeroAddress();
+        
+        admin = _admin;
+        emit AdminChanged(_admin);
     }
 
     function modifyMintingFee(uint16 _newFee) external onlyAdmin outOfBoundsCheck(5000, _newFee) deprecatedCheck(true) {
@@ -143,6 +144,9 @@ contract SocialHub is ISocialHub {
                 _tokenSettings.traderManager,
                 _socialTrader
             );
+
+            if(address(token) == address(0))
+                revert ZeroAddress();
         } else {
             token = SocialTraderToken(_token);
         }
@@ -164,6 +168,8 @@ contract SocialHub is ISocialHub {
     /// @param _newMintingFee new minting fees of the new token
     /// @param _newProfitTakeFee new profit take fees of the new token
     /// @param _newWithdrawalFee new withdrawal fees of the new token
+    /// @param _allowUnsafeModules boolean to determine if the token can use unsafe modules
+    /// @param _traderManager address of the trader manager contract
     function transferDetailsToSuccessor(
         address _socialTrader,
         bool _generateNewToken,
@@ -182,7 +188,7 @@ contract SocialHub is ISocialHub {
         SocialTrader storage st = listOfSocialTraders[msg.sender];
 
         // Ensure msg.sender is the social trader
-        if(st.socialTrader == SocialTraderToken(msg.sender).admin())
+        if(st.socialTrader != SocialTraderToken(msg.sender).admin())
             revert Unauthorized();
             
         NewTokenSettings memory newTokenSettings;
@@ -202,13 +208,19 @@ contract SocialHub is ISocialHub {
             newTokenSettings
         );
 
-        delete listOfSocialTraders[_socialTrader];
-        emit DetailsSent(_socialTrader);
+        delete listOfSocialTraders[msg.sender];
+        emit DetailsSent(msg.sender);
     }
 
-    /**
-     * @dev Register to become a social trader
-     */
+    /// @notice Register a new social trading token
+    /// @dev Deploys a new SocialTraderToken
+    /// @param _tokenName bytes32 of the token name
+    /// @param _symbol bytes32 of the token symbol
+    /// @param _mintingFee minting fees represented up to a max of (5000 == 50.00%)
+    /// @param _profitTakeFee profit take fees represented up to a max of (5000 == 50.00%)
+    /// @param _withdrawalFee withdrawal fees represented up to a max of (5000 == 50.00%)
+    /// @param _allowUnsafeModules boolean to determine if the token can use unsafe modules
+    /// @param _traderManager address of the trader manager contract
     function becomeSocialTrader(
         bytes32 _tokenName,
         bytes32 _symbol,
@@ -222,15 +234,23 @@ contract SocialHub is ISocialHub {
         override
         deprecatedCheck(true)
     {
+        if(!whitelisted[_traderManager])
+            revert Unauthorized();
+        
+        _outOfBoundsCheck(5000, _mintingFee);
+        _outOfBoundsCheck(5000, _profitTakeFee);
+        _outOfBoundsCheck(5000, _withdrawalFee);
+
         SocialTraderToken token = new SocialTraderToken(bytes32ToString(_tokenName), bytes32ToString(_symbol), _mintingFee, _profitTakeFee, _withdrawalFee, _allowUnsafeModules, _traderManager, msg.sender);
         
         listOfSocialTraders[address(token)].socialTrader = msg.sender;
 
         emit SocialTraderTokenRegistered(address(token), msg.sender);
     }
-    /**
-     * @dev Verifies the social trader
-     */
+    
+    /// @notice Verifies a social trading token
+    /// @dev Marks a social trading token as verified by the admin
+    /// @param _token address of the social token to verify
     function verifySocialTraderToken(address _token) external override onlyAdmin deprecatedCheck(true) {
         SocialTrader storage st = listOfSocialTraders[_token];
 
