@@ -27,7 +27,6 @@ interface ITraderManager {
      * - closingStrategy is the closing strategy
      * - style is the position's option style
      * - oToken represents the address of the token
-     * - numeraire represents the address of the numeraire
      * - closed represents if the position is closed
      */
     struct Position {
@@ -35,7 +34,6 @@ interface ITraderManager {
         bytes32 closingStrategy;
         address oToken;
         address underlying;
-        address numeraire;
         bool closed;
         OptionStyle style;
     }

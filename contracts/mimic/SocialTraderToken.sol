@@ -38,10 +38,6 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
     uint16 private withdrawalFee;
     /// @notice Minimum minting (default is 1e18)
     uint256 private minimumMint = 1e18;
-    /// @notice Interface for exchange on v1
-    IExchange private exchangev1;
-    /// @notice Interface for exchange on v2
-    IExchange private exchangev2;
     /// @notice Boolean if unsafe modules are activated or not (immutable at creation)
     bool private immutable allowUnsafeModules;
     /// @notice Address of the TraderManager
@@ -148,6 +144,8 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
             _allowUnsafeModules,
             address(traderManager)
         );
+
+        socialHub = SocialHub(socialHub).successor();
     }
     
     /// @notice Assign the initial ratio
@@ -167,12 +165,9 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
     }
 
     /// @notice Mints social tokens by depositing a proportion of pooled tokens
-    /// @dev Mints new social tokens, requiring collateral/underlying; minting is disallowed if withdrawalWindowActive is false
+    /// @dev Mints new social tokens, requiring collateral/underlying
     /// @param _amount amount of tokens to mint
     function mint(uint256 _amount) external {
-        if(!withdrawalWindowActive)
-            revert WithdrawalWindowIsInactive();
-        
         if(_amount < minimumMint)
             revert TooLowMintingAmount();
 
@@ -180,14 +175,29 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
         // ... if there's no active positions. If the unsafe module is active, slippage could be a concern.
         // Could be resolved by using some overhead in the approval/allowance, but isn't ideal.
 
-        if(pooledTokens.length == 0 || ERC20(this).totalSupply() == 0)
-            revert RatioNotDefined();
+        if(pooledTokens.length == 0 || ERC20(this).totalSupply() == 0) {
+            // Determine the pool ratio
+        }
 
         // Loop through the current array of pooled tokens
         for(uint256 i; i < pooledTokens.length; i++) {
             IERC20 token = ERC20(pooledTokens[i]);
 
-            token.safeTransferFrom(msg.sender, address(this), _calculateTokenRatio(pooledTokens[i]) * _amount);
+            uint256 finalAmount = _amount;
+            uint256 feeAmount;
+            // calculate protocol fees
+            if(SocialHub(socialHub).mintingFee() != 0) {
+                feeAmount = _calculateFees(SocialHub(socialHub).mintingFee(), _amount);
+                token.safeTransferFrom(msg.sender, socialHub, feeAmount);
+                finalAmount -= feeAmount;
+            }
+            // calculate token-level fees
+            if(mintingFee != 0) {
+                feeAmount = _calculateFees(mintingFee, _amount);
+                token.safeTransferFrom(msg.sender, socialHub, feeAmount);
+                finalAmount -= feeAmount;
+            }
+            token.safeTransferFrom(msg.sender, address(this), _calculateTokenRatio(pooledTokens[i]) * finalAmount);
             super._mint(msg.sender, _amount);
         }
         
@@ -215,7 +225,6 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
         pos.openingStrategy = _openingStrategy;
         pos.oToken = _oToken;
         pos.style = _style;
-        pos.numeraire = _determineNumeraire(_oToken, _style);
 
         //_executeTradingOperation(strategies[_openingStrategy], pos);
         
@@ -337,25 +346,19 @@ contract SocialTraderToken is ISocialTraderToken, ERC20 {
             revert OutOfBounds(_max, _given);
     }
 
-    /// @notice Grab the numeraire of an oToken
-    /// @dev Using the OptionStyle, determine the numeraire of an oToken
-    /// @param _oToken address of the oToken
-    /// @param _style Enum of OptionStyle.AMERICAN or OptionStyle.EUROPEAN
-    /// @return numeraire address of the numeraire
-    function _determineNumeraire(address _oToken, ITraderManager.OptionStyle _style) internal view returns(address numeraire) {
-        if(_style == ITraderManager.OptionStyle.AMERICAN) {
-            
-        } else {
-            
-        }
-    }
-
     /// @notice Calculate the ratio of given token to total supply of social tokens
     /// @dev Calculation of the ratio
     /// @param _token address of the token (in the pool)
     /// @return token ratio
     function _calculateTokenRatio(address _token) internal view returns(uint256) {
         return (10e18 * ERC20(_token).totalSupply())/(10e18 * this.totalSupply());
+    }
+
+    /// @notice Calculates the fees to collect
+    /// @dev Calculation of the fees
+    /// @param _percentage uint256 (up to only 10000)
+    function _calculateFees(uint256 _percentage, uint256 _value) internal pure returns(uint256) {
+        return (_percentage * _value / 10000);
     }
 
     /// @notice Registers a new token to the pool

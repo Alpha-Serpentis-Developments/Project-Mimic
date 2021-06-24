@@ -127,13 +127,14 @@ describe('SocialHub test', () => {
 		});
 	});
 	describe('Protocol-level fees test', () => {
-		before(async () => {
+		it('Should set the new minting fees', async () => {
+			await newerSocialHub.connect(deployer).modifyMintingFee(100);
 
+			expect(await newerSocialHub.mintingFee()).to.be.equal(100);
 		});
-		it('Should set the new minting fees', () => {
-
+		it('Should send the minting fees ', async () => {
+			
 		});
-		it('Should send the minting fees ')
 	});
 	describe('Hand off the admin', () => {
 		it('Should hand off the admin', async () => {
