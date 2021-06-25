@@ -557,7 +557,7 @@ export default function VaultTokenInfo(props) {
           <Header size="large" color="blue">
             Ratio: {props.token.totalSupply / props.token.vaultBalance}
           </Header>
-          <Header.Subheader># vault tokens/ vault assets</Header.Subheader>
+          <Header.Subheader>Vault Tokens / Vault Assets</Header.Subheader>
         </Grid.Column>
       </Grid>
     );
@@ -653,9 +653,9 @@ export default function VaultTokenInfo(props) {
           </Form.Field> */}
         </Form.Group>
         <Form.Field>
-          <label>Other party address</label>
+          <label>Counterparty's Address</label>
           <input
-            placeholder="Other party address"
+            placeholder="Counterparty's Address"
             onChange={(e) => setOtherPartyAddress(e.target.value)}
           />
         </Form.Field>
