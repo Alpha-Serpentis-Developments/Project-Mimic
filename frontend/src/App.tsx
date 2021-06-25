@@ -3,17 +3,7 @@ import "semantic-ui-css/semantic.min.css";
 
 import { web3 } from "./components/Web3Handler";
 import VTList from "./components/VTList.js";
-import {
-  Button,
-  Icon,
-  Tab,
-  Grid,
-  Menu,
-  Sidebar,
-  Modal,
-  Message,
-  Divider,
-} from "semantic-ui-react";
+import { Button, Icon, Grid, Menu, Sidebar, Message } from "semantic-ui-react";
 import DeployNewVaultToken from "./components/DeployNewVaultToken";
 import TopMenu from "./components/TopMenu";
 import Introduction from "./components/Introduction";
@@ -334,42 +324,12 @@ export default function App() {
             acctNum={acctNum}
           />
         </div>
-        {!renderHome && (
+        {/* {!renderHome && (
           <>
             <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
-            <Divider hidden />
+         
           </>
-        )}
+        )} */}
         <Footer />
       </Sidebar.Pusher>
       {/* </Sidebar.Pushable> */}

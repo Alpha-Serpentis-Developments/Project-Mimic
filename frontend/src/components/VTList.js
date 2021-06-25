@@ -124,7 +124,7 @@ export default function VTList(props) {
     }
   }
 
-  function populateName(i) {
+  function populateName1(i) {
     // v.getName().then((result) => {
     // });
     let v = vtList[i];
@@ -140,20 +140,58 @@ export default function VTList(props) {
     }
   }
 
+  function populateName(i) {
+    // v.getName().then((result) => {
+    // });
+    let v = vtList[i];
+    if (v.tName === "") {
+      v.getName(props.acctNum).then((result) => {
+        v.setName(result);
+      });
+    }
+    if (v.tSymbol === "") {
+      v.getSymbol(props.acctNum).then((result) => {
+        v.setSymbol(result);
+      });
+    }
+  }
+
   function populateAssetName(i) {
     // v.getName().then((result) => {
     // });
 
     let v = assetTokenList[i];
     if (v.tName === "") {
-      let o = [];
-
       v.getName(props.acctNum)
         .then((result) => {
           v.setName(result);
-          o = [...assetTokenList];
-          o[i] = v;
-          setAssetTokenList(o);
+        })
+        .catch((error) => {
+          v.setName("Non erc20 token");
+          v.ercStatus = false;
+        });
+    }
+    if (v.tSymbol === "") {
+      v.getSymbol(props.acctNum)
+        .then((result) => {
+          v.setSymbol(result);
+        })
+        .catch((error) => {
+          v.setSymbol("Non erc20 token");
+          v.ercStatus = false;
+        });
+    }
+  }
+
+  function populateAssetName1(i) {
+    // v.getName().then((result) => {
+    // });
+
+    let v = assetTokenList[i];
+    if (v.tName === "") {
+      v.getName(props.acctNum)
+        .then((result) => {
+          v.setName(result);
         })
         .catch((error) => {
           v.setName("Non erc20 token");

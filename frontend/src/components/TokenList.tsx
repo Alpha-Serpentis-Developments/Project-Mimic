@@ -99,8 +99,18 @@ export default function TokenList(props: {
     <div>
       <div>
         <Header size="large">{props.title}</Header>
-        {props.showSpinner && <Icon name="spinner" loading size="large" />}
+
         <Table striped>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>Trade</Table.HeaderCell>
+              <Table.HeaderCell>Token name</Table.HeaderCell>
+              <Table.HeaderCell>Address</Table.HeaderCell>
+              <Table.HeaderCell>Vault Status</Table.HeaderCell>
+              <Table.HeaderCell>Expired/Active</Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+
           <Table.Body>
             {props.tList.map((item: any, i) => {
               return (
@@ -119,6 +129,7 @@ export default function TokenList(props: {
             })}
           </Table.Body>
         </Table>
+        {props.showSpinner && <Icon name="spinner" loading size="large" />}
       </div>
       <Modal open={open} onClose={() => setOpen(false)} closeIcon size="small">
         {/* <Modal.Header>

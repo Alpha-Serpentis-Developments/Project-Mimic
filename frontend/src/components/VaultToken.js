@@ -26,9 +26,9 @@ export class VaultToken extends ERC20 {
     this.manager = a;
   }
 
-  async symbol() {
-    return this.vt.methods.symbol().call();
-  }
+  // async symbol() {
+  //   return this.vt.methods.symbol().call();
+  // }
 
   // asset is the contract address of an ERC20 token that can be used to buy or sell this vault token
 
@@ -127,5 +127,12 @@ export class VaultToken extends ERC20 {
       asset = result;
     });
     return asset;
+  }
+
+  findAllOT() {
+    return this.VT.getPastEvents("CallsMinted", {
+      fromBlock: 0,
+      toBlock: "latest",
+    });
   }
 }

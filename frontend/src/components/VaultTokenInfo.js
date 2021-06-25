@@ -12,6 +12,7 @@ import {
   Form,
   Dropdown,
   Menu,
+  Label,
 } from "semantic-ui-react";
 import { web3 } from "./Web3Handler";
 import ERCTokenInfo from "./ERCTokenInfo";
@@ -22,11 +23,12 @@ const units1 = [
 ];
 
 const units = [
-  { key: 1, text: "Ether", value: "ether" },
+  { key: 1, text: "Token", value: "ether" },
   { key: 2, text: "Wei", value: "wei" },
 ];
 
 export default function VaultTokenInfo(props) {
+  console.log(props.mpaddress);
   const [depositAmt, setDeposit] = useState(0);
   const [withdrawAmt, setWithdrawAmt] = useState(0);
   const [initializeAmt, setInitializeAmt] = useState(0);
@@ -56,11 +58,6 @@ export default function VaultTokenInfo(props) {
   const [writeColor, setWriteColor] = useState("teal");
   const [sellColor, setSellColor] = useState("teal");
   const [settleColor, setSettleColor] = useState("teal");
-
-  const [showDepositErrormsg, setShowDepositErrormsg] = useState(false);
-  const [showIniErrormsg, setShowIniErrormsg] = useState(false);
-  const [showDepositSuccessmsg, setShowDepositSuccessmsg] = useState(false);
-  const [showIniSuccessmsg, setShowIniSuccessmsg] = useState(false);
 
   const [statusMessage, setStatusMessage] = useState("");
   const [showStatus, setShowStatus] = useState(false);
@@ -167,7 +164,8 @@ export default function VaultTokenInfo(props) {
       setIconStatus("error");
       return;
     }
-    let amount = web3.utils.toWei(amt, dUnit);
+    // let amount = web3.utils.toWei(amt, dUnit);
+    let amount = web3.utils.toWei(amt, "ether");
     props.token
       .approveAsset(amount, props.acct)
       .on("transactionHash", function (hash) {
@@ -203,7 +201,6 @@ export default function VaultTokenInfo(props) {
   function initialize(amt) {
     startTX();
     if (amt === 0) {
-      setShowIniErrormsg(true);
       setSM("Error", "Form input Error", true, true);
       setIconStatus("error");
 
@@ -246,7 +243,6 @@ export default function VaultTokenInfo(props) {
   function initialize1(amt) {
     startTX();
     if (amt === 0) {
-      setShowIniErrormsg(true);
       setSM("Error", "Form input Error", true, true);
       setIconStatus("error");
 
@@ -266,7 +262,8 @@ export default function VaultTokenInfo(props) {
       return;
     }
 
-    let amount = web3.utils.toWei(amt, wUnit);
+    // let amount = web3.utils.toWei(amt, wUnit);
+    let amount = web3.utils.toWei(amt, "ether");
     let w = props.token.withdraw(amount, props.acct);
     sendTX(w, "Withdraw");
   }
@@ -301,8 +298,8 @@ export default function VaultTokenInfo(props) {
 
   function writeCall(amt, oTAddress) {
     startTX();
-    let amount = web3.utils.toWei(amt, writeCallUnit);
-
+    //  let amount = web3.utils.toWei(amt, writeCallUnit);
+    let amount = web3.utils.toWei(amt, "ether");
     let wc = props.token.writeCalls(
       amount,
       oTAddress,
@@ -313,8 +310,10 @@ export default function VaultTokenInfo(props) {
   }
 
   function sellCall(amt, premiumAmount, otherPartyAddress) {
-    let amount = web3.utils.toWei(amt, sellCallUnit);
-    let pAmount = web3.utils.toWei(premiumAmount, pemiumUnit);
+    //let amount = web3.utils.toWei(amt, sellCallUnit);
+    let amount = parseInt(amt) * (1e8).toString();
+    // let pAmount = web3.utils.toWei(premiumAmount, pemiumUnit);
+    let pAmount = web3.utils.toWei(premiumAmount, "ether");
     let sc = props.token.sellCalls(
       amount,
       pAmount,
@@ -364,9 +363,11 @@ export default function VaultTokenInfo(props) {
   }
 
   function writeCallRender() {
+    console.log(props.mpaddress);
     return (
       <Form>
         <Divider hidden />
+
         <Form.Group>
           <Form.Field>
             <label>Write Call Amount</label>
@@ -375,8 +376,10 @@ export default function VaultTokenInfo(props) {
               onChange={(e) => setWriteCallAmt(e.target.value)}
             />
           </Form.Field>
-          <Form.Field>
-            <label>select</label>
+          <div style={{ marginTop: "35px", paddingLeft: "0px" }}>
+            {props.token.assetObject.symbol()}
+          </div>
+          {/* <label>select</label>
             <Menu compact size="tiny">
               <Dropdown
                 defaultValue="ether"
@@ -384,9 +387,9 @@ export default function VaultTokenInfo(props) {
                 item
                 onChange={updateWriteCallUnit}
               />
-            </Menu>
-          </Form.Field>
+            </Menu> */}
         </Form.Group>
+
         <Form.Field>
           <label>oToken Address</label>
           <input
@@ -450,14 +453,18 @@ export default function VaultTokenInfo(props) {
                       onChange={(e) => setWithdrawAmt(e.target.value)}
                     />
                   </Form.Field>
-                  <Menu compact size="tiny">
+                  <div style={{ marginTop: "13px" }}>
+                    {" "}
+                    {props.token.symbol()}
+                  </div>
+                  {/* <Menu compact size="tiny">
                     <Dropdown
                       defaultValue="ether"
                       options={units}
                       item
                       onChange={updatewUnit}
                     />
-                  </Menu>
+                  </Menu> */}
                 </Form.Group>
                 <Button
                   onClick={() => withDraw(withdrawAmt)}
@@ -479,6 +486,7 @@ export default function VaultTokenInfo(props) {
             </Header>
             <Header size="huge" color="orange">
               {props.token.assetObject.name()}
+              {/* {props.token.assetObject.symbol()} */}
             </Header>
 
             <Header size="medium">
@@ -491,24 +499,29 @@ export default function VaultTokenInfo(props) {
             <Divider hidden />
             {props.token.totalSupply > 0 && !managerClick && (
               <Form>
-                <Form.Group>
-                  <Form.Field>
-                    <input
-                      value={depositAmt}
-                      onChange={(e) => setDeposit(e.target.value)}
-                    />
-                  </Form.Field>
-                  <Menu compact size="tiny">
+                <div style={{ float: "right" }}>
+                  <Form.Group>
+                    <Form.Field>
+                      <input
+                        value={depositAmt}
+                        onChange={(e) => setDeposit(e.target.value)}
+                      />
+                    </Form.Field>
+                    <div style={{ paddingTop: "13px" }}>
+                      {props.token.assetObject.symbol()}
+                    </div>
+                    {/* <Menu compact size="tiny">
                     <Dropdown
                       defaultValue="ether"
                       options={units}
                       item
                       onChange={updatedUnit}
                     />
-                  </Menu>
-                </Form.Group>
-                {showDepositErrormsg && <ErrorMessage />}
-                {showDepositSuccessmsg && <SuccessMessage />}
+                  </Menu> */}
+                  </Form.Group>
+                </div>
+                {/* {showDepositErrormsg && <ErrorMessage />}
+                {showDepositSuccessmsg && <SuccessMessage />} */}
                 <Button
                   onClick={() => deposit(depositAmt)}
                   color="orange"
@@ -564,7 +577,10 @@ export default function VaultTokenInfo(props) {
                   onChange={(e) => setInitializeAmt(e.target.value)}
                 />
               </Form.Field>
-              <Menu compact size="tiny">
+              <div style={{ marginTop: "10px", marginRight: "20px" }}>
+                {props.token.assetObject.symbol()}
+              </div>
+              {/* <Menu compact size="tiny">
                 <Dropdown
                   // defaultValue="wei"
                   defaultValue="ether"
@@ -572,7 +588,7 @@ export default function VaultTokenInfo(props) {
                   item
                   onChange={updateIUnit}
                 />
-              </Menu>
+              </Menu> */}
 
               <Button
                 onClick={() => initialize(initializeAmt)}
@@ -600,8 +616,8 @@ export default function VaultTokenInfo(props) {
               onChange={(e) => setSellCallAmt(e.target.value)}
             />
           </Form.Field>
-
-          <Form.Field>
+          <div style={{ paddingTop: "35px" }}>oToken</div>
+          {/* <Form.Field>
             <label>select</label>
             <Menu compact size="tiny">
               <Dropdown
@@ -611,7 +627,7 @@ export default function VaultTokenInfo(props) {
                 onChange={updateSellCallUnit}
               />
             </Menu>
-          </Form.Field>
+          </Form.Field> */}
         </Form.Group>
         <Form.Group>
           <Form.Field>
@@ -621,8 +637,10 @@ export default function VaultTokenInfo(props) {
               onChange={(e) => setPemiumAmount(e.target.value)}
             />
           </Form.Field>
-
-          <Form.Field>
+          <div style={{ paddingTop: "35px" }}>
+            {props.token.assetObject.symbol()}
+          </div>
+          {/* <Form.Field>
             <label>select</label>
             <Menu compact size="tiny">
               <Dropdown
@@ -632,7 +650,7 @@ export default function VaultTokenInfo(props) {
                 onChange={updatePremiumUnit}
               />
             </Menu>
-          </Form.Field>
+          </Form.Field> */}
         </Form.Group>
         <Form.Field>
           <label>Other party address</label>

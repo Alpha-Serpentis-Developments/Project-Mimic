@@ -49,6 +49,17 @@ export class ERC20 {
     return this.tName;
   }
 
+  async getSymbol() {
+    if (!this.ercStatus) {
+      return "No Symbol";
+    }
+    return this.erc.methods.symbol().call();
+  }
+  setSymbol(s) {
+    console.log("this.setSymbol " + s);
+    this.tSymbol = s;
+  }
+
   symbol() {
     return this.tSymbol;
   }
