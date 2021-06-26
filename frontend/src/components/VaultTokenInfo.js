@@ -206,7 +206,7 @@ export default function VaultTokenInfo(props) {
 
       return;
     }
-    let amount = web3.utils.toWei(amt, iUnit);
+    let amount = web3.utils.toWei(amt, "ether");
     props.token
       .approveAsset(amount, props.acct)
       .on("transactionHash", function (hash) {
@@ -266,28 +266,6 @@ export default function VaultTokenInfo(props) {
     let amount = web3.utils.toWei(amt, "ether");
     let w = props.token.withdraw(amount, props.acct);
     sendTX(w, "Withdraw");
-  }
-
-  function updatedUnit(e, { value }) {
-    setDUnit(value);
-  }
-  function updatewUnit(e, { value }) {
-    setWUnit(value);
-  }
-
-  function updateIUnit(e, { value }) {
-    setIUnit(value);
-  }
-
-  function updatePremiumUnit(e, { value }) {
-    setPemiumUnit(value);
-  }
-
-  function updateWriteCallUnit(e, { value }) {
-    setWiteCallIUnit(value);
-  }
-  function updateSellCallUnit(e, { value }) {
-    setSellCallIUnit(value);
   }
 
   function settleVault() {

@@ -49,7 +49,7 @@ export default function TokenList(props: {
       <>
         {" "}
         {/* <Table padded columns={3} striped> */}
-        <Table.Cell collapsing verticalAlign="middle">
+        <Table.Cell verticalAlign="middle" textAlign="center">
           <Button
             onClick={showTokenInfo}
             value={item}
@@ -68,7 +68,7 @@ export default function TokenList(props: {
         </Table.Cell>
         {item.expireTime !== -1 && item.expireTime > Date.now() / 1000 && (
           <>
-            <Table.Cell verticalAlign="middle">
+            <Table.Cell verticalAlign="middle" textAlign="center">
               <Icon name="clock outline" size="large" color="teal" />
             </Table.Cell>
             <Table.Cell verticalAlign="middle">
@@ -80,7 +80,7 @@ export default function TokenList(props: {
         )}
         {item.expireTime !== -1 && item.expireTime < Date.now() / 1000 && (
           <>
-            <Table.Cell verticalAlign="middle">
+            <Table.Cell verticalAlign="middle" textAlign="center">
               <Icon name="lock" size="large" color="red" />
             </Table.Cell>
             <Table.Cell verticalAlign="middle">

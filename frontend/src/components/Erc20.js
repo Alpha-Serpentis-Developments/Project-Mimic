@@ -56,7 +56,6 @@ export class ERC20 {
     return this.erc.methods.symbol().call();
   }
   setSymbol(s) {
-    console.log("this.setSymbol " + s);
     this.tSymbol = s;
   }
 
