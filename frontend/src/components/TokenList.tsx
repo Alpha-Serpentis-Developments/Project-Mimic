@@ -69,7 +69,7 @@ export default function TokenList(props: {
         {item.expireTime !== -1 && item.expireTime > Date.now() / 1000 && (
           <>
             <Table.Cell verticalAlign="middle">
-              <Icon name="clock outline" size="large" color="teal" />
+              <Icon name="clock outline" style={{width:"100%"}} size="large" color="teal" />
             </Table.Cell>
             <Table.Cell verticalAlign="middle">
               <Header size="small">
@@ -81,7 +81,7 @@ export default function TokenList(props: {
         {item.expireTime !== -1 && item.expireTime < Date.now() / 1000 && (
           <>
             <Table.Cell verticalAlign="middle">
-              <Icon name="lock" size="large" color="red" />
+              <Icon name="lock" style={{width:"100%"}} size="large" color="red" />
             </Table.Cell>
             <Table.Cell verticalAlign="middle">
               <Header size="small">
@@ -104,7 +104,7 @@ export default function TokenList(props: {
           <Table.Header>
             <Table.Row>
               <Table.HeaderCell>Trade</Table.HeaderCell>
-              <Table.HeaderCell>Token name</Table.HeaderCell>
+              <Table.HeaderCell>Token Name</Table.HeaderCell>
               <Table.HeaderCell>Address</Table.HeaderCell>
               <Table.HeaderCell>Vault Status</Table.HeaderCell>
               <Table.HeaderCell>Expired/Active</Table.HeaderCell>
