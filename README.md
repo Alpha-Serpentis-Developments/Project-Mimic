@@ -1,5 +1,7 @@
 # Project Mimic (Optional)
 
+**(This branch is a frontend branch!)**
+
 Project Mimic (Optional) is a decentralized social trading platform that uses [Opyn v1](https://v1.opyn.co) and [Opyn v2](https://opyn.co) as the underlying on the Ethereum network. 
 
 Optional allows option traders to become social traders or follow other social traders. Social traders on the platform can charge followers a fee to follow their moves whether by entry fee or a small profit cut.

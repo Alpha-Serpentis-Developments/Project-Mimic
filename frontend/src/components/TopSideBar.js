@@ -7,7 +7,7 @@ import cover from "../images/cover.png";
 export default function TopSidebar(props) {
   return (
     <div className="topSidebar">
-      <Grid>
+      <Grid style={{ marginRight: "0px" }}>
         <Grid.Column floated="left" width={5}>
           <Image src={profileImg} />
         </Grid.Column>

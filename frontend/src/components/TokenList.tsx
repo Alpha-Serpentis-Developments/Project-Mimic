@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Header, Modal, Button, Icon, Table, Divider } from "semantic-ui-react";
+import { Header, Modal, Button, Icon, Table } from "semantic-ui-react";
 import ERCTokenInfo from "./ERCTokenInfo";
 import VaultTokenInfo from "./VaultTokenInfo";
 
@@ -32,15 +32,16 @@ export default function TokenList(props: {
 
   function timeLeft(ts: number) {
     let n = ts - Date.now();
-
-    let t = new Date(n);
-    let h = t.getHours();
-    let m = t.getMinutes();
-    let s = t.getSeconds();
-
-    return h + ":" + m + ":" + s;
-    // let t = new Date(ts);
-    // return t;
+    // let t = new Date(n);
+    // let h = t.getHours();
+    // let m = t.getMinutes();
+    // let s = t.getSeconds();
+    n = n / 1000;
+    let h = Math.floor(n / 3600);
+    let m = Math.floor((n - h * 3600) / 60);
+    let s = Math.floor(n - h * 3600 - m * 60);
+    // return h + ":" + m + ":" + s;
+    return (h > 0 ? h + "h " : "") + (m > 0 ? m + "m " : "") + s + "s";
   }
 
   function onetoken(item: any) {
@@ -48,13 +49,14 @@ export default function TokenList(props: {
       <>
         {" "}
         {/* <Table padded columns={3} striped> */}
-        <Table.Cell collapsing verticalAlign="middle">
+        <Table.Cell collapsing verticalAlign="middle" textAlign="center">
           <Button
             onClick={showTokenInfo}
             value={item}
             icon="edit"
             color="blue"
             disabled={!item.status}
+            style={{ marginRight: "0px" }}
           />
         </Table.Cell>
         <Table.Cell verticalAlign="middle">
@@ -68,18 +70,23 @@ export default function TokenList(props: {
         {item.expireTime !== -1 && item.expireTime > Date.now() / 1000 && (
           <>
             <Table.Cell verticalAlign="middle">
-              <Icon name="clock outline" size="large" color="teal" />
+              <Icon
+                name="clock outline"
+                style={{ width: "100%" }}
+                size="large"
+                color="teal"
+              />
             </Table.Cell>
-            <Table.Cell verticalAlign="middle">
+            <Table.Cell verticalAlign="middle" textAlign="center">
               <Header size="small">
-                Vault will close in {timeLeft(item.expireTime * 1000)} hours
+                Vault will close in {timeLeft(item.expireTime * 1000)}
               </Header>
             </Table.Cell>
           </>
         )}
         {item.expireTime !== -1 && item.expireTime < Date.now() / 1000 && (
           <>
-            <Table.Cell verticalAlign="middle">
+            <Table.Cell verticalAlign="middle" textAlign="center">
               <Icon name="lock" size="large" color="red" />
             </Table.Cell>
             <Table.Cell verticalAlign="middle">
@@ -98,8 +105,17 @@ export default function TokenList(props: {
     <div>
       <div>
         <Header size="large">{props.title}</Header>
-        {props.showSpinner && <Icon name="spinner" loading size="large" />}
         <Table striped>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>Trade</Table.HeaderCell>
+              <Table.HeaderCell>Token Name</Table.HeaderCell>
+              <Table.HeaderCell>Address</Table.HeaderCell>
+              <Table.HeaderCell>Vault Status</Table.HeaderCell>
+              <Table.HeaderCell>Expired/Active</Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+
           <Table.Body>
             {props.tList.map((item: any, i) => {
               return (
@@ -118,6 +134,7 @@ export default function TokenList(props: {
             })}
           </Table.Body>
         </Table>
+        {props.showSpinner && <Icon name="spinner" loading size="large" />}
       </div>
       <Modal open={open} onClose={() => setOpen(false)} closeIcon size="small">
         {/* <Modal.Header>
