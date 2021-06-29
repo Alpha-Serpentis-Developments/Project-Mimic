@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { web3 } from "./Web3Handler";
 import { nwConfig, currentChain } from "./NetworkConfig";
 import {
@@ -190,7 +190,7 @@ export default function DeployNewVaultToken(props: {
                 onChange={(e: React.SyntheticEvent<HTMLElement>, data: any) =>
                   setAssetTokenAddr(data.value)
                 }
-                allowAdditions
+                // allowAdditions
                 options={assetTokenAddrs}
                 placeholder="Asset Token Address"
                 selection

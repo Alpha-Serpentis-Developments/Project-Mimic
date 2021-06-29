@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Header, Modal, Button, Icon, Table, Divider } from "semantic-ui-react";
+import { Header, Modal, Button, Icon, Table } from "semantic-ui-react";
 import ERCTokenInfo from "./ERCTokenInfo";
 import VaultTokenInfo from "./VaultTokenInfo";
 
@@ -49,13 +49,14 @@ export default function TokenList(props: {
       <>
         {" "}
         {/* <Table padded columns={3} striped> */}
-        <Table.Cell verticalAlign="middle" textAlign="center">
+        <Table.Cell collapsing verticalAlign="middle" textAlign="center">
           <Button
             onClick={showTokenInfo}
             value={item}
             icon="edit"
             color="blue"
             disabled={!item.status}
+            style={{ marginRight: "0px" }}
           />
         </Table.Cell>
         <Table.Cell verticalAlign="middle">
@@ -68,10 +69,10 @@ export default function TokenList(props: {
         </Table.Cell>
         {item.expireTime !== -1 && item.expireTime > Date.now() / 1000 && (
           <>
-            <Table.Cell verticalAlign="middle" textAlign="center">
+            <Table.Cell verticalAlign="middle">
               <Icon name="clock outline" size="large" color="teal" />
             </Table.Cell>
-            <Table.Cell verticalAlign="middle">
+            <Table.Cell verticalAlign="middle" textAlign="center">
               <Header size="small">
                 Vault will close in {timeLeft(item.expireTime * 1000)}
               </Header>

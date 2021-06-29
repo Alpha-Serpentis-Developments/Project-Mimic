@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Header, Icon, Modal, Grid } from "semantic-ui-react";
+import { Header, Icon, Modal, Grid } from "semantic-ui-react";
 
 export default function ChainAlert(props) {
   return (
