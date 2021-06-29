@@ -161,7 +161,6 @@ export default function VTList(props) {
       });
     }
   }
-
   function populateAssetName(i) {
     // v.getName().then((result) => {
     // });

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 import StatusMessage from "./StatusMessage";
 import {
   Header,
@@ -196,7 +195,7 @@ export default function VaultTokenInfo(props) {
 
       return;
     }
-    let amount = web3.utils.toWei(amt, "ehter");
+    let amount = web3.utils.toWei(amt, "ether");
     props.token
       .approveAsset(amount, props.acct)
       .on("transactionHash", function (hash) {

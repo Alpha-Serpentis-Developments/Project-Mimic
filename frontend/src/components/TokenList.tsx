@@ -105,7 +105,6 @@ export default function TokenList(props: {
     <div>
       <div>
         <Header size="large">{props.title}</Header>
-
         <Table striped>
           <Table.Header>
             <Table.Row>
