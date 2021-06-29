@@ -15,8 +15,14 @@ export class VaultToken extends ERC20 {
     this.assetObject = null;
     this.manageToken = false;
     this.expireTime = -1;
+    this.collateralAmount = -1;
   }
   // return the manager address
+
+  // let ad = events[i].returnValues.vaultToken;
+  // web3.eth.getStorageAt(ad, 2).then((result) => {
+  //   console.log(result);
+  // });
 
   async getManager() {
     return this.vt.methods.manager().call();
@@ -134,5 +140,12 @@ export class VaultToken extends ERC20 {
       fromBlock: 0,
       toBlock: "latest",
     });
+  }
+
+  getCA(w, address) {
+    return w.eth.getStorageAt(address, 2);
+  }
+  setCA(a) {
+    this.collateralAmount = a;
   }
 }

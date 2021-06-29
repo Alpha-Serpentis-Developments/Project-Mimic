@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import ErrorMessage from "./ErrorMessage";
-import SuccessMessage from "./SuccessMessage";
+
 import StatusMessage from "./StatusMessage";
 import {
   Header,
@@ -10,9 +9,6 @@ import {
   Icon,
   Segment,
   Form,
-  Dropdown,
-  Menu,
-  Label,
 } from "semantic-ui-react";
 import { web3 } from "./Web3Handler";
 import ERCTokenInfo from "./ERCTokenInfo";
@@ -28,7 +24,6 @@ const units = [
 ];
 
 export default function VaultTokenInfo(props) {
-  console.log(props.mpaddress);
   const [depositAmt, setDeposit] = useState(0);
   const [withdrawAmt, setWithdrawAmt] = useState(0);
   const [initializeAmt, setInitializeAmt] = useState(0);
@@ -42,11 +37,7 @@ export default function VaultTokenInfo(props) {
   // ==================== end ================
 
   const [dUnit, setDUnit] = useState("ether");
-  const [wUnit, setWUnit] = useState("ether");
   const [iUnit, setIUnit] = useState("ether");
-  const [writeCallUnit, setWiteCallIUnit] = useState("ether");
-  const [sellCallUnit, setSellCallIUnit] = useState("ether");
-  const [pemiumUnit, setPemiumUnit] = useState("ether");
 
   const [oTokenAddress, setOTokenaddress] = useState("");
   const [writeCallAmt, setWriteCallAmt] = useState(0);
@@ -68,7 +59,6 @@ export default function VaultTokenInfo(props) {
   const [iconStatus, setIconStatus] = useState("loading");
   const [btnDisabled, setBtnDisabled] = useState(false);
   const [managerClick, setManagerClick] = useState(false);
-  const [isApproved, setIsApproved] = useState(false);
 
   function setSM(h, m, s, e) {
     setStatusHeader(h);
@@ -183,7 +173,7 @@ export default function VaultTokenInfo(props) {
         setIconStatus("error");
       })
       .on("confirmation", function (confirmationNumber, receipt) {
-        if (confirmationNumber == 1) {
+        if (confirmationNumber === 1) {
           let i = props.token.deposit(amount, props.acct);
           sendTX(i, "deposit");
           setSM(
@@ -206,7 +196,7 @@ export default function VaultTokenInfo(props) {
 
       return;
     }
-    let amount = web3.utils.toWei(amt, iUnit);
+    let amount = web3.utils.toWei(amt, "ehter");
     props.token
       .approveAsset(amount, props.acct)
       .on("transactionHash", function (hash) {
@@ -224,7 +214,7 @@ export default function VaultTokenInfo(props) {
         setIconStatus("error");
       })
       .on("confirmation", function (confirmationNumber, receipt) {
-        if (confirmationNumber == 1) {
+        if (confirmationNumber === 1) {
           let i = props.token.initialize(amount, props.acct);
           sendTX(i, "initialize");
           setSM(
@@ -266,28 +256,6 @@ export default function VaultTokenInfo(props) {
     let amount = web3.utils.toWei(amt, "ether");
     let w = props.token.withdraw(amount, props.acct);
     sendTX(w, "Withdraw");
-  }
-
-  function updatedUnit(e, { value }) {
-    setDUnit(value);
-  }
-  function updatewUnit(e, { value }) {
-    setWUnit(value);
-  }
-
-  function updateIUnit(e, { value }) {
-    setIUnit(value);
-  }
-
-  function updatePremiumUnit(e, { value }) {
-    setPemiumUnit(value);
-  }
-
-  function updateWriteCallUnit(e, { value }) {
-    setWiteCallIUnit(value);
-  }
-  function updateSellCallUnit(e, { value }) {
-    setSellCallIUnit(value);
   }
 
   function settleVault() {
@@ -363,7 +331,6 @@ export default function VaultTokenInfo(props) {
   }
 
   function writeCallRender() {
-    console.log(props.mpaddress);
     return (
       <Form>
         <Divider hidden />
@@ -544,20 +511,29 @@ export default function VaultTokenInfo(props) {
           {/* <Header>{props.token.symbol()}</Header> */}
         </Grid>
         <Divider vertical>
-          <Icon name="sync" size="huge" color="teal" />
+          {/* <Icon name="sync" size="huge" color="teal" /> */}
+          And
         </Divider>
       </Segment>
     );
   }
-
+  // vault tokens / (asset tokens + collateral amount)
+  //props.token.assetObject
   function showRatio() {
     return (
       <Grid textAlign="center" stackable>
         <Grid.Column>
           <Header size="large" color="blue">
-            Ratio: {props.token.totalSupply / props.token.vaultBalance}
+            Ratio:{" "}
+            {/* {props.token.totalSupply /
+              (props.token.vaultBalance} */}
+            {props.token.totalSupply /
+              (props.token.vaultBalance + props.token.collateralAmount)}
           </Header>
-          <Header.Subheader>Vault Tokens / Vault Assets</Header.Subheader>
+          {/* <Header.Subheader># vault tokens/ vault assets</Header.Subheader> */}
+          <Header.Subheader>
+            # vault tokens / (asset tokens + collateral amount)
+          </Header.Subheader>
         </Grid.Column>
       </Grid>
     );
@@ -653,9 +629,9 @@ export default function VaultTokenInfo(props) {
           </Form.Field> */}
         </Form.Group>
         <Form.Field>
-          <label>Counterparty's Address</label>
+          <label>Other party address</label>
           <input
-            placeholder="Counterparty's Address"
+            placeholder="Other party address"
             onChange={(e) => setOtherPartyAddress(e.target.value)}
           />
         </Form.Field>

@@ -154,6 +154,12 @@ export default function VTList(props) {
         v.setSymbol(result);
       });
     }
+    if (v.collateralAmount === -1) {
+      v.getCA(web3, v.address).then((result) => {
+        let da = web3.utils.hexToNumber(result);
+        v.setCA(da);
+      });
+    }
   }
 
   function populateAssetName(i) {

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Header, Modal, Button, Icon, Table, Divider } from "semantic-ui-react";
+import { Header, Modal, Button, Icon, Table } from "semantic-ui-react";
 import ERCTokenInfo from "./ERCTokenInfo";
 import VaultTokenInfo from "./VaultTokenInfo";
 
@@ -49,13 +49,14 @@ export default function TokenList(props: {
       <>
         {" "}
         {/* <Table padded columns={3} striped> */}
-        <Table.Cell collapsing verticalAlign="middle">
+        <Table.Cell collapsing verticalAlign="middle" textAlign="center">
           <Button
             onClick={showTokenInfo}
             value={item}
             icon="edit"
             color="blue"
             disabled={!item.status}
+            style={{ marginRight: "0px" }}
           />
         </Table.Cell>
         <Table.Cell verticalAlign="middle">
@@ -69,9 +70,14 @@ export default function TokenList(props: {
         {item.expireTime !== -1 && item.expireTime > Date.now() / 1000 && (
           <>
             <Table.Cell verticalAlign="middle">
-              <Icon name="clock outline" style={{width:"100%"}} size="large" color="teal" />
+              <Icon
+                name="clock outline"
+                style={{ width: "100%" }}
+                size="large"
+                color="teal"
+              />
             </Table.Cell>
-            <Table.Cell verticalAlign="middle">
+            <Table.Cell verticalAlign="middle" textAlign="center">
               <Header size="small">
                 Vault will close in {timeLeft(item.expireTime * 1000)}
               </Header>
@@ -80,8 +86,8 @@ export default function TokenList(props: {
         )}
         {item.expireTime !== -1 && item.expireTime < Date.now() / 1000 && (
           <>
-            <Table.Cell verticalAlign="middle">
-              <Icon name="lock" style={{width:"100%"}} size="large" color="red" />
+            <Table.Cell verticalAlign="middle" textAlign="center">
+              <Icon name="lock" size="large" color="red" />
             </Table.Cell>
             <Table.Cell verticalAlign="middle">
               <Header size="small">
