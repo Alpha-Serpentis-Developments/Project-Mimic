@@ -343,7 +343,7 @@ export default function VTList(props) {
   }, [update]);
   return (
     <div>
-      <Table textAlign="center" celled={true}>
+      <Table textAlign="center" celled={true} style={{ borderStyle: "none" }}>
         <Table.Body>
           <Table.Row verticalAlign="top">
             {/* <Table.Cell>
