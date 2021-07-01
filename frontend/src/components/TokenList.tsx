@@ -87,7 +87,12 @@ export default function TokenList(props: {
         {item.expireTime !== -1 && item.expireTime < Date.now() / 1000 && (
           <>
             <Table.Cell verticalAlign="middle" textAlign="center">
-              <Icon name="lock" size="large" color="red" />
+              <Icon
+                name="lock"
+                size="large"
+                color="red"
+                style={{ width: "100%" }}
+              />
             </Table.Cell>
             <Table.Cell verticalAlign="middle">
               <Header size="small">
