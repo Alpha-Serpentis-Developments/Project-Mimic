@@ -2,6 +2,7 @@
 pragma solidity =0.8.4;
 
 import {ISwap, Types} from "./airswap/interfaces/ISwap.sol";
+import {IAddressBook} from "./gamma/interfaces/IAddressBook.sol";
 import {Actions, GammaTypes, IController} from "./gamma/interfaces/IController.sol";
 import {OtokenInterface} from "./gamma/interfaces/OtokenInterface.sol";
 import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
@@ -26,26 +27,29 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     error SettlementNotReady();
 
     /// @notice Time in which the withdrawal window expires
-    uint256 private withdrawalWindowExpires;
+    uint256 public withdrawalWindowExpires;
     /// @notice Length of time where the withdrawal window is active
-    uint256 private constant withdrawalWindowLength = 1 days;
+    uint256 private immutable withdrawalWindowLength;
     /// @notice Amount of collateral for the address already used for collateral
     uint256 public collateralAmount;
     /// @notice Current active vault
     uint256 private currentVaultId;
     /// @notice Maximum funds
     uint256 public maximumAssets;
-    /// @notice Address of the Gamma controller
-    IController private immutable controller;
+    /// @notice Deposit fee
+    uint16 public depositFee;
+    /// @notice Take profit fee
+    uint16 public withdrawalFee;
     /// @notice Address of the current oToken
     address private oToken;
+    /// @notice Address of the AddressBook
+    IAddressBook private immutable addressBook;
     /// @notice Address of the exchange
     address private immutable AIRSWAP_EXCHANGE;
     /// @notice Address of the underlying asset to trade
     address public immutable asset;
     /// @notice Address of the manager (admin)
     address public immutable manager;
-    /// @notice For emergency use 
 
     event Deposit(uint256 assetDeposited, uint256 vaultTokensMinted);
     event Withdrawal(uint256 assetWithdrew, uint256 vaultTokensBurned);
@@ -57,16 +61,18 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     constructor(
         string memory _name,
         string memory _symbol,
-        address _controller,
         address _airswap,
+        address _addressBook,
         address _asset,
         address _manager,
+        uint256 _withdrawalWindowLength,
         uint256 _maximumAssets
     ) ERC20(_name, _symbol) {
-        controller = IController(_controller);
         AIRSWAP_EXCHANGE = _airswap;
+        addressBook = IAddressBook(_addressBook);
         asset = _asset;
         manager = _manager;
+        withdrawalWindowLength = _withdrawalWindowLength;
         maximumAssets = _maximumAssets;
     }
 
@@ -168,17 +174,18 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     /// @dev Allows the manager to write calls for an x 
     /// @param _amount amount of the asset to deposit as collateral
     /// @param _oToken address of the oToken
-    /// @param _marginPool address of the margin pool
-    function writeCalls(uint256 _amount, address _oToken, address _marginPool) external onlyManager nonReentrant() whenNotPaused() {
+    function writeCalls(uint256 _amount, address _oToken) external onlyManager nonReentrant() whenNotPaused() {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
-        if(_amount == 0 || _oToken == address(0) || _marginPool == address(0))
+        if(_amount == 0 || _oToken == address(0))
             revert Invalid();
         if(_oToken != oToken && oToken != address(0))
             revert oTokenNotCleared();
 
         Actions.ActionArgs[] memory actions;
         GammaTypes.Vault memory vault;
+
+        IController controller = IController(addressBook.getController());
 
         // Check if the vault is even open and open if no vault is open
         vault = controller.getVault(address(this), currentVaultId);
@@ -227,7 +234,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
                 ""
             );
         // Approve the tokens to be moved
-        IERC20(asset).approve(_marginPool, _amount);
+        IERC20(asset).approve(addressBook.getMarginPool(), _amount);
         
         // Submit the operations to the controller contract
         controller.operate(actions);
@@ -270,6 +277,8 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
             0,
             ""
         );
+
+        IController controller = IController(addressBook.getController());
 
         controller.operate(actions);
         collateralAmount -= normalizedAmount;
@@ -335,8 +344,10 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
 
+        IController controller = IController(addressBook.getController());
+
         // Check if ready to settle otherwise revert
-        if(OtokenInterface(oToken).expiryTimestamp() > block.timestamp)
+        if(controller.isSettlementAllowed(oToken))
             revert SettlementNotReady();
 
         // Settle the vault if ready

@@ -9,6 +9,30 @@ import {MarginVault} from "./MarginVault.sol";
  * @title Actions
  * @author Opyn Team
  * @notice A library that provides a ActionArgs struct, sub types of Action structs, and functions to parse ActionArgs into specific Actions.
+ * errorCode
+ * A1 can only parse arguments for open vault actions
+ * A2 cannot open vault for an invalid account
+ * A3 cannot open vault with an invalid type
+ * A4 can only parse arguments for mint actions
+ * A5 cannot mint from an invalid account
+ * A6 can only parse arguments for burn actions
+ * A7 cannot burn from an invalid account
+ * A8 can only parse arguments for deposit actions
+ * A9 cannot deposit to an invalid account
+ * A10 can only parse arguments for withdraw actions
+ * A11 cannot withdraw from an invalid account
+ * A12 cannot withdraw to an invalid account
+ * A13 can only parse arguments for redeem actions
+ * A14 cannot redeem to an invalid account
+ * A15 can only parse arguments for settle vault actions
+ * A16 cannot settle vault for an invalid account
+ * A17 cannot withdraw payout to an invalid account
+ * A18 can only parse arguments for liquidate action
+ * A19 cannot liquidate vault for an invalid account owner
+ * A20 cannot send collateral to an invalid account
+ * A21 cannot parse liquidate action with no round id
+ * A22 can only parse arguments for call actions
+ * A23 target address cannot be address(0)
  */
 library Actions {
     // possible actions that can be performed
@@ -22,7 +46,8 @@ library Actions {
         WithdrawCollateral,
         SettleVault,
         Redeem,
-        Call
+        Call,
+        Liquidate
     }
 
     struct ActionArgs {
@@ -82,6 +107,8 @@ library Actions {
         address owner;
         // vault id to create
         uint256 vaultId;
+        // vault type, 0 for spread/max loss and 1 for naked margin vault
+        uint256 vaultType;
     }
 
     struct DepositArgs {
@@ -134,6 +161,19 @@ library Actions {
         address to;
     }
 
+    struct LiquidateArgs {
+        // address of the vault owner to liquidate
+        address owner;
+        // address of the liquidated collateral receiver
+        address receiver;
+        // vault id to liquidate
+        uint256 vaultId;
+        // amount of debt(otoken) to repay
+        uint256 amount;
+        // chainlink round id
+        uint256 roundId;
+    }
+
     struct CallArgs {
         // address of the callee contract
         address callee;
@@ -147,10 +187,21 @@ library Actions {
      * @return arguments for a open vault action
      */
     function _parseOpenVaultArgs(ActionArgs memory _args) internal pure returns (OpenVaultArgs memory) {
-        require(_args.actionType == ActionType.OpenVault, "Actions: can only parse arguments for open vault actions");
-        require(_args.owner != address(0), "Actions: cannot open vault for an invalid account");
+        require(_args.actionType == ActionType.OpenVault, "A1");
+        require(_args.owner != address(0), "A2");
 
-        return OpenVaultArgs({owner: _args.owner, vaultId: _args.vaultId});
+        // if not _args.data included, vault type will be 0 by default
+        uint256 vaultType;
+
+        if (_args.data.length == 32) {
+            // decode vault type from _args.data
+            vaultType = abi.decode(_args.data, (uint256));
+        }
+
+        // for now we only have 2 vault types
+        require(vaultType < 2, "A3");
+
+        return OpenVaultArgs({owner: _args.owner, vaultId: _args.vaultId, vaultType: vaultType});
     }
 
     /**
@@ -159,8 +210,8 @@ library Actions {
      * @return arguments for a mint action
      */
     function _parseMintArgs(ActionArgs memory _args) internal pure returns (MintArgs memory) {
-        require(_args.actionType == ActionType.MintShortOption, "Actions: can only parse arguments for mint actions");
-        require(_args.owner != address(0), "Actions: cannot mint from an invalid account");
+        require(_args.actionType == ActionType.MintShortOption, "A4");
+        require(_args.owner != address(0), "A5");
 
         return
             MintArgs({
@@ -179,8 +230,8 @@ library Actions {
      * @return arguments for a burn action
      */
     function _parseBurnArgs(ActionArgs memory _args) internal pure returns (BurnArgs memory) {
-        require(_args.actionType == ActionType.BurnShortOption, "Actions: can only parse arguments for burn actions");
-        require(_args.owner != address(0), "Actions: cannot burn from an invalid account");
+        require(_args.actionType == ActionType.BurnShortOption, "A6");
+        require(_args.owner != address(0), "A7");
 
         return
             BurnArgs({
@@ -201,9 +252,9 @@ library Actions {
     function _parseDepositArgs(ActionArgs memory _args) internal pure returns (DepositArgs memory) {
         require(
             (_args.actionType == ActionType.DepositLongOption) || (_args.actionType == ActionType.DepositCollateral),
-            "Actions: can only parse arguments for deposit actions"
+            "A8"
         );
-        require(_args.owner != address(0), "Actions: cannot deposit to an invalid account");
+        require(_args.owner != address(0), "A9");
 
         return
             DepositArgs({
@@ -224,10 +275,10 @@ library Actions {
     function _parseWithdrawArgs(ActionArgs memory _args) internal pure returns (WithdrawArgs memory) {
         require(
             (_args.actionType == ActionType.WithdrawLongOption) || (_args.actionType == ActionType.WithdrawCollateral),
-            "Actions: can only parse arguments for withdraw actions"
+            "A10"
         );
-        require(_args.owner != address(0), "Actions: cannot withdraw from an invalid account");
-        require(_args.secondAddress != address(0), "Actions: cannot withdraw to an invalid account");
+        require(_args.owner != address(0), "A11");
+        require(_args.secondAddress != address(0), "A12");
 
         return
             WithdrawArgs({
@@ -246,8 +297,8 @@ library Actions {
      * @return arguments for a redeem action
      */
     function _parseRedeemArgs(ActionArgs memory _args) internal pure returns (RedeemArgs memory) {
-        require(_args.actionType == ActionType.Redeem, "Actions: can only parse arguments for redeem actions");
-        require(_args.secondAddress != address(0), "Actions: cannot redeem to an invalid account");
+        require(_args.actionType == ActionType.Redeem, "A13");
+        require(_args.secondAddress != address(0), "A14");
 
         return RedeemArgs({receiver: _args.secondAddress, otoken: _args.asset, amount: _args.amount});
     }
@@ -258,14 +309,30 @@ library Actions {
      * @return arguments for a settle vault action
      */
     function _parseSettleVaultArgs(ActionArgs memory _args) internal pure returns (SettleVaultArgs memory) {
-        require(
-            _args.actionType == ActionType.SettleVault,
-            "Actions: can only parse arguments for settle vault actions"
-        );
-        require(_args.owner != address(0), "Actions: cannot settle vault for an invalid account");
-        require(_args.secondAddress != address(0), "Actions: cannot withdraw payout to an invalid account");
+        require(_args.actionType == ActionType.SettleVault, "A15");
+        require(_args.owner != address(0), "A16");
+        require(_args.secondAddress != address(0), "A17");
 
         return SettleVaultArgs({owner: _args.owner, vaultId: _args.vaultId, to: _args.secondAddress});
+    }
+
+    function _parseLiquidateArgs(ActionArgs memory _args) internal pure returns (LiquidateArgs memory) {
+        require(_args.actionType == ActionType.Liquidate, "A18");
+        require(_args.owner != address(0), "A19");
+        require(_args.secondAddress != address(0), "A20");
+        require(_args.data.length == 32, "A21");
+
+        // decode chainlink round id from _args.data
+        uint256 roundId = abi.decode(_args.data, (uint256));
+
+        return
+            LiquidateArgs({
+                owner: _args.owner,
+                receiver: _args.secondAddress,
+                vaultId: _args.vaultId,
+                amount: _args.amount,
+                roundId: roundId
+            });
     }
 
     /**
@@ -274,8 +341,8 @@ library Actions {
      * @return arguments for a call action
      */
     function _parseCallArgs(ActionArgs memory _args) internal pure returns (CallArgs memory) {
-        require(_args.actionType == ActionType.Call, "Actions: can only parse arguments for call actions");
-        require(_args.secondAddress != address(0), "Actions: target address cannot be address(0)");
+        require(_args.actionType == ActionType.Call, "A22");
+        require(_args.secondAddress != address(0), "A23");
 
         return CallArgs({callee: _args.secondAddress, data: _args.data});
     }
