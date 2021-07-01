@@ -1,4 +1,3 @@
-import React from "react";
 import { Button, Header, Icon, Modal, Grid } from "semantic-ui-react";
 
 export default function MMInstallModal(props) {
