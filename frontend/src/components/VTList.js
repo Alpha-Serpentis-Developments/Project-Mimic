@@ -3,6 +3,7 @@ import { web3 } from "./Web3Handler";
 import { Factory } from "./Factory";
 import { VaultToken } from "./VaultToken";
 import TokenList from "./TokenList";
+import BigNumber from "bignumber.js";
 
 import { Table } from "semantic-ui-react";
 import { ERC20 } from "./Erc20";
@@ -157,6 +158,7 @@ export default function VTList(props) {
     if (v.collateralAmount === -1) {
       v.getCA(web3, v.address).then((result) => {
         let da = web3.utils.toBN(result).toString();
+        console.log(da);
 
         v.setCA(da);
       });
@@ -340,7 +342,7 @@ export default function VTList(props) {
   }, [update]);
   return (
     <div>
-      <Table textAlign="center" celled={true}>
+      <Table textAlign="center" celled={true} style={{ borderStyle: "none" }}>
         <Table.Body>
           <Table.Row verticalAlign="top">
             {/* <Table.Cell>
