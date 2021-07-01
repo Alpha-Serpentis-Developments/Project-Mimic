@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Header, Modal, Button, Icon, Table } from "semantic-ui-react";
-import ERCTokenInfo from "./ERCTokenInfo";
 import VaultTokenInfo from "./VaultTokenInfo";
 
 export default function TokenList(props: {

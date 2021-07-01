@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import StatusMessage from "./StatusMessage";
 import {
   Header,
@@ -10,7 +10,6 @@ import {
   Form,
 } from "semantic-ui-react";
 import { web3 } from "./Web3Handler";
-import ERCTokenInfo from "./ERCTokenInfo";
 
 const units1 = [
   { key: 1, text: "Wei", value: "wei" },
@@ -526,12 +525,12 @@ export default function VaultTokenInfo(props) {
             Ratio:{" "}
             {/* {props.token.totalSupply /
               (props.token.vaultBalance} */}
-            {props.token.totalSupply /
-              (props.token.vaultBalance + props.token.collateralAmount)}
+            {Number(props.token.totalSupply) /
+              (Number(props.token.vaultBalance) + Number(props.token.collateralAmount))}
           </Header>
           {/* <Header.Subheader># vault tokens/ vault assets</Header.Subheader> */}
           <Header.Subheader>
-            # vault tokens / (asset tokens + collateral amount)
+            Vault Tokens / (Asset Tokens + Collateral Amount)
           </Header.Subheader>
         </Grid.Column>
       </Grid>

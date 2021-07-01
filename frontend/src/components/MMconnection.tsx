@@ -1,5 +1,3 @@
-import React from "react";
-
 // import "../style/mmConnect.css";
 
 export default function MMconnect(props: {

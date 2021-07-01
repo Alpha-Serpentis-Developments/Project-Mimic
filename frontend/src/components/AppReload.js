@@ -1,4 +1,3 @@
-import React from "react";
 import { nwConfig, currentChain } from "./NetworkConfig";
 import { Header, Icon, Modal, Grid } from "semantic-ui-react";
 

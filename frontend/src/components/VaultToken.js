@@ -143,7 +143,7 @@ export class VaultToken extends ERC20 {
   }
 
   getCA(w, address) {
-    return w.eth.getStorageAt(address, 2);
+    return w.eth.getStorageAt(address, 8);
   }
   setCA(a) {
     this.collateralAmount = a;

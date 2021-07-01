@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { web3 } from "./Web3Handler";
 import { Factory } from "./Factory";
 import { VaultToken } from "./VaultToken";
@@ -157,10 +157,9 @@ export default function VTList(props) {
     }
     if (v.collateralAmount === -1) {
       v.getCA(web3, v.address).then((result) => {
-        // let da = web3.utils.hexToNumber(result);
-        let daObj = new BigNumber(result);
+        let da = web3.utils.toBN(result).toString();
+        console.log(da);
 
-        let da = daObj.c[0];
         v.setCA(da);
       });
     }
