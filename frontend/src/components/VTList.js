@@ -261,7 +261,7 @@ export default function VTList(props) {
         // );
         // console.log(result);
         if (result.length > 0) {
-          let ts = result[0].returnValues.closesAfter;
+          let ts = result[result.length - 1].returnValues.closesAfter;
           vtList[i].expireTime = ts;
           // let date = new Date(ts * 1000);
           // var hours = date.getHours();
