@@ -1,4 +1,3 @@
-import { VaultToken } from "./VaultToken";
 import { nwConfig, currentChain } from "./NetworkConfig";
 
 const abi = require("../abi/factoryabi.json");

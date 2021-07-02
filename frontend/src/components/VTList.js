@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { web3 } from "./Web3Handler";
 import { Factory } from "./Factory";
 import { VaultToken } from "./VaultToken";
 import TokenList from "./TokenList";
+import BigNumber from "bignumber.js";
 
 import { Table } from "semantic-ui-react";
 import { ERC20 } from "./Erc20";
@@ -156,7 +157,8 @@ export default function VTList(props) {
     }
     if (v.collateralAmount === -1) {
       v.getCA(web3, v.address).then((result) => {
-        let da = web3.utils.hexToNumber(result);
+        let da = web3.utils.toBN(result).toString();
+
         v.setCA(da);
       });
     }
@@ -258,7 +260,7 @@ export default function VTList(props) {
         // );
         // console.log(result);
         if (result.length > 0) {
-          let ts = result[0].returnValues.closesAfter;
+          let ts = result[result.length - 1].returnValues.closesAfter;
           vtList[i].expireTime = ts;
           // let date = new Date(ts * 1000);
           // var hours = date.getHours();
@@ -339,7 +341,7 @@ export default function VTList(props) {
   }, [update]);
   return (
     <div>
-      <Table padded textAlign="center" celled={true}>
+      <Table textAlign="center" celled={true} style={{ borderStyle: "none" }}>
         <Table.Body>
           <Table.Row verticalAlign="top">
             {/* <Table.Cell>

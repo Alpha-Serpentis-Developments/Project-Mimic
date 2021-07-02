@@ -1,8 +1,6 @@
-import React from "react";
 import "../App.css";
 import profileImg from "../images/profile.png";
 import { Icon, Grid, Image } from "semantic-ui-react";
-import cover from "../images/cover.png";
 
 export default function TopSidebar(props) {
   return (

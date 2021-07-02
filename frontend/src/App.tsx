@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "semantic-ui-css/semantic.min.css";
 
 import { web3 } from "./components/Web3Handler";
