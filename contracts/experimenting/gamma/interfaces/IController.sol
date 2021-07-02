@@ -75,4 +75,6 @@ interface IController {
 
     function operate(Actions.ActionArgs[] memory _actions) external;
 
+    function isSettlementAllowed(address _oToken) external view returns(bool);
+
 }
