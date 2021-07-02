@@ -10,7 +10,7 @@ describe('TestToken contract', () => {
 
         [deployer, manager, fake_airswap, fake_controller] = await ethers.getSigners();
         testToken = await TestToken.deploy("Asset Token", "ASSET", 6, 100000e6);
-        factory = await Factory.deploy(fake_airswap.address)
+        factory = await Factory.deploy(fake_airswap.address, deployer.address);
     });
 
     describe('Deploy Vault Tokens', () => {
@@ -21,9 +21,10 @@ describe('TestToken contract', () => {
                     "VAULT",
                     "0x0000000000000000000000000000000000000000",
                     "0x0000000000000000000000000000000000000000",
+                    86400, // 1 day
                     100e6
                 )
-            ).to.be.reverted;
+            ).to.be.revertedWith("ZeroAddress()");
         });
 
         it('Should successfully deploy', async () => {
@@ -33,6 +34,7 @@ describe('TestToken contract', () => {
                     "VAULT",
                     fake_controller.address,
                     testToken.address,
+                    86400, // 1 day
                     100e6
                 )
             ).to.not.be.reverted;

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity =0.8.4;
 
+import {IFactory} from "./interfaces/IFactory.sol";
 import {ISwap, Types} from "./airswap/interfaces/ISwap.sol";
 import {IAddressBook} from "./gamma/interfaces/IAddressBook.sol";
 import {Actions, GammaTypes, IController} from "./gamma/interfaces/IController.sol";
@@ -9,8 +10,6 @@ import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
 import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 import {Pausable} from "../oz/security/Pausable.sol";
 import {ReentrancyGuard} from "../oz/security/ReentrancyGuard.sol";
-
-//import "hardhat/console.sol";
 
 contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -36,6 +35,8 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     uint256 private currentVaultId;
     /// @notice Maximum funds
     uint256 public maximumAssets;
+    /// @notice Obligated fees to the manager
+    uint256 private obligatedFees;
     /// @notice Deposit fee
     uint16 public depositFee;
     /// @notice Take profit fee
@@ -50,6 +51,8 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     address public immutable asset;
     /// @notice Address of the manager (admin)
     address public immutable manager;
+    /// @notice Address of the factory
+    address private immutable factory;
 
     event Deposit(uint256 assetDeposited, uint256 vaultTokensMinted);
     event Withdrawal(uint256 assetWithdrew, uint256 vaultTokensBurned);
@@ -57,6 +60,8 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     event CallsMinted(uint256 collateralDeposited, address indexed newOtoken, uint256 vaultId);
     event CallsBurned(uint256 oTokensBurned);
     event CallsSold(uint256 amountSold, uint256 premiumReceived);
+    event DepositFeeModified(uint16 newFee);
+    event WithdrawalFeeModified(uint16 newFee);
 
     constructor(
         string memory _name,
@@ -74,6 +79,8 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         manager = _manager;
         withdrawalWindowLength = _withdrawalWindowLength;
         maximumAssets = _maximumAssets;
+
+        factory = msg.sender;
     }
 
     modifier onlyManager {
@@ -104,6 +111,24 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
 
         maximumAssets = _newValue;
     }
+
+    function adjustDepositFee(uint16 _newValue) external onlyManager nonReentrant() whenNotPaused() {
+        if(_newValue > 5000)
+            revert Invalid();
+
+        depositFee = _newValue;
+
+        emit DepositFeeModified(_newValue);
+    }
+
+    function adjustWithdrawalFee(uint16 _newValue) external onlyManager nonReentrant() whenNotPaused() {
+        if(_newValue > 5000)
+            revert Invalid();
+
+        withdrawalFee = _newValue;
+
+        emit WithdrawalFeeModified(_newValue);
+    }
     
     /// @notice Deposit assets and receive vault tokens to represent a share
     /// @dev Deposits an amount of assets specified then mints vault tokens to the msg.sender
@@ -116,15 +141,15 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         if(collateralAmount + IERC20(asset).balanceOf(address(this)) + _amount > maximumAssets)
             revert MaximumFundsReached();
 
-        uint256 vaultMint = totalSupply() * _amount / (IERC20(asset).balanceOf(address(this)) + collateralAmount);
+        // Calculate protocol-level fees
+        uint256 protocolFees = _calculateFees(_amount, depositFee);
+        if(protocolFees != 0)
+            IERC20(asset).safeTransfer(factory, protocolFees);
 
-        /*
-        console.log(normalizedAmount);
-        console.log(normalizedAssetBalance);
-        console.log(totalSupply());
-        console.log(totalSupply() * normalizedAmount / normalizedAssetBalance);
-        console.log(vaultMint);
-        */
+        // Calculate vault-level fees
+        uint256 vaultLevelFees = _calculateFees(_amount, IFactory(factory).withdrawalFee());
+
+        uint256 vaultMint = totalSupply() * (_amount - protocolFees - vaultLevelFees) / (IERC20(asset).balanceOf(address(this)) + collateralAmount);
 
         if(vaultMint == 0) // Safety check for rounding errors
             revert Invalid();
@@ -150,7 +175,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         emit Withdrawal(assetAmount, _amount);
     }
 
-    /// @notice Sets the ratio between the asset and vault token
+    /// @notice Sets the ratio between the asset and vault token (initialization is not charged a fee)
     /// @dev Allows anyone to set the ratio 1:1 if total supply is 0 for whatever reason
     /// @param _amount amount of the VAULT TOKEN to mint
     function initializeRatio(uint256 _amount) external nonReentrant() whenNotPaused() {
@@ -399,5 +424,9 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
             revert WithdrawalWindowNotActive();
         
         return block.timestamp > withdrawalWindowExpires;
+    }
+
+    function _calculateFees(uint256 _subtotal, uint16 _fee) internal pure returns(uint256) {
+        return _subtotal * _fee / 10000;
     }
 }

@@ -2,12 +2,12 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe('VaultToken contract (simple test)', () => {
-    let VaultToken, TestToken, vaultToken, testToken, manager, depositor, fake_controller, fake_airswap;
+    let VaultToken, TestToken, Factory, vaultToken, testToken, manager, depositor, fake_addressBook, fake_controller, fake_airswap;
 
     before(async () => {
-        VaultToken = await ethers.getContractFactory('contracts\\experimenting\\VaultToken.sol:VaultToken');
         TestToken = await ethers.getContractFactory('TestToken');
-        [manager, depositor, fake_controller, fake_airswap] = await ethers.getSigners();
+        Factory = await ethers.getContractFactory('Factory');
+        [deployer, manager, depositor, fake_addressBook, fake_controller, fake_airswap] = await ethers.getSigners();
 
         testToken = await TestToken.connect(depositor).deploy(
             "Mock Asset",
@@ -15,15 +15,28 @@ describe('VaultToken contract (simple test)', () => {
             6,
             100000e6
         );
-        vaultToken = await VaultToken.connect(manager).deploy(
-            "Vault", 
-            "VAULT", 
-            fake_controller.address, 
+        factory = await Factory.connect(deployer).deploy(
             fake_airswap.address,
-            testToken.address, 
-            manager.address,
-            1000e6
+            deployer.address
         );
+
+        vaultTokenTransaction = await factory.connect(manager).deployNewVaultToken(
+            "Vault",
+            "VAULT",
+            fake_addressBook.address,
+            testToken.address,
+            86400, // 1 day
+            500e6
+        );
+
+        const receipt = await vaultTokenTransaction.wait();
+
+        vaultToken = await ethers.getContractAt(
+            'VaultToken',
+            receipt.events[0].args.vaultToken,
+            manager
+        );
+        
     });
 
     describe("Verify Depositor's Balance", () => {
@@ -150,14 +163,21 @@ describe('VaultToken contract (simple test)', () => {
                 20,
                 ethers.utils.parseUnits('100000', 20)
             );
-            vaultToken = await VaultToken.connect(manager).deploy(
-                "Vault", 
-                "VAULT", 
-                fake_controller.address, 
-                fake_airswap.address, 
-                testToken.address, 
-                manager.address,
-                ethers.utils.parseUnits('100', 20)
+            vaultTokenTransaction = await factory.connect(manager).deployNewVaultToken(
+                "Vault",
+                "VAULT",
+                fake_addressBook.address,
+                testToken.address,
+                86400, // 1 day
+                ethers.utils.parseUnits('500', 20)
+            );
+    
+            const receipt = await vaultTokenTransaction.wait();
+    
+            vaultToken = await ethers.getContractAt(
+                'VaultToken',
+                receipt.events[0].args.vaultToken,
+                manager
             );
 
             await testToken.connect(depositor).transfer(manager.address, ethers.utils.parseUnits('1', 20));
@@ -187,14 +207,21 @@ describe('VaultToken contract (simple test)', () => {
                 18,
                 ethers.utils.parseUnits('100000', 18)
             );
-            vaultToken = await VaultToken.connect(manager).deploy(
-                "Vault", 
-                "VAULT", 
-                fake_controller.address, 
-                fake_airswap.address, 
-                testToken.address, 
-                manager.address,
-                ethers.utils.parseUnits('100', 18)
+            vaultTokenTransaction = await factory.connect(manager).deployNewVaultToken(
+                "Vault",
+                "VAULT",
+                fake_addressBook.address,
+                testToken.address,
+                86400, // 1 day
+                ethers.utils.parseUnits('500', 18)
+            );
+    
+            const receipt = await vaultTokenTransaction.wait();
+    
+            vaultToken = await ethers.getContractAt(
+                'VaultToken',
+                receipt.events[0].args.vaultToken,
+                manager
             );
 
             await testToken.connect(depositor).transfer(manager.address, ethers.utils.parseUnits('1', 18));
