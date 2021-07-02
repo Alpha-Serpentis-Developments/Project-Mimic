@@ -2,8 +2,12 @@
 pragma solidity =0.8.4;
 
 import {VaultToken} from "./VaultToken.sol";
+import {IERC20} from "../oz/token/ERC20/IERC20.sol";
+import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 
 contract Factory {
+    using SafeERC20 for IERC20;
+
     error Unauthorized();
     error Invalid();
     error ContractCreationFailed();
@@ -49,6 +53,12 @@ contract Factory {
         withdrawalFee = _newFee;
 
         emit WithdrawalFeeModified(_newFee);
+    }
+
+    function sweepFees(address _token) external onlyAdmin {
+        IERC20 token = IERC20(_token);
+
+        token.safeTransfer(msg.sender, token.balanceOf(address(this)));
     }
 
     /// @notice Deploys a new vault token

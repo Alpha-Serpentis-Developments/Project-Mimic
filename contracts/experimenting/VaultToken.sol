@@ -372,7 +372,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         IController controller = IController(addressBook.getController());
 
         // Check if ready to settle otherwise revert
-        if(controller.isSettlementAllowed(oToken))
+        if(!controller.isSettlementAllowed(oToken))
             revert SettlementNotReady();
 
         // Settle the vault if ready

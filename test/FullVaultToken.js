@@ -2,13 +2,14 @@ const { expect } = require("chai");
 const { ethers, network } = require("hardhat");
 
 describe('VaultToken contract (full test)', () => {
-    let VaultToken, TestToken, OtokenFactory, Otoken, Whitelist, Oracle, MarginPool, MarginCalculator, AddressBook, Controller, MarginVault;
-    let vaultToken, mockUSDC, mockWETH, mockOtoken, mockOtokenAddr, otokenFactory, otokenImpl, whitelist, oracle, marginPool, marginCalculator, addressBook, controller, marginVault;
+    let Factory, VaultToken, TestToken, OtokenFactory, Otoken, Whitelist, Oracle, MarginPool, MarginCalculator, AddressBook, Controller, MarginVault;
+    let factory, vaultToken, mockUSDC, mockWETH, mockOtoken, mockOtokenAddr, otokenFactory, otokenImpl, whitelist, oracle, marginPool, marginCalculator, addressBook, controller, marginVault;
     let manager, depositor, depositor_1, depositor_2, deployer, pricer;
 
     before(async () => {
         console.log("IMPORTANT: SimpleVaultToken.js has extensive testing on the deposit/withdraw functions");
 
+        Factory = await ethers.getContractFactory('Factory');
         VaultToken = await ethers.getContractFactory("contracts\\experimenting\\VaultToken.sol:VaultToken");
         TestToken = await ethers.getContractFactory('TestToken');
         OtokenFactory = await ethers.getContractFactory('OtokenFactory');
@@ -74,14 +75,25 @@ describe('VaultToken contract (full test)', () => {
             18,
             ethers.utils.parseUnits('1000', 18)  
         );
-        vaultToken = await VaultToken.connect(manager).deploy(
-            "Vault", 
-            "VAULT", 
-            await addressBook.getController(), 
+        factory = await Factory.connect(deployer).deploy(
             fake_airswap.address,
-            mockWETH.address, 
-            manager.address,
+            deployer.address
+        );
+        vaultTokenTransaction = await factory.connect(manager).deployNewVaultToken(
+            "Vault",
+            "VAULT",
+            addressBook.address,
+            mockWETH.address,
+            86400, // 1 day
             ethers.utils.parseUnits('100', 18)
+        );
+
+        const receipt = await vaultTokenTransaction.wait();
+
+        vaultToken = await ethers.getContractAt(
+            'VaultToken',
+            receipt.events[0].args.vaultToken,
+            manager
         );
 
         // Prepare the oracle
@@ -207,8 +219,7 @@ describe('VaultToken contract (full test)', () => {
             await expect(
                 vaultToken.connect(manager).writeCalls(
                     ethers.utils.parseUnits('105', 18),
-                    mockOtokenAddr,
-                    marginPool.address
+                    mockOtokenAddr
                 )
             ).to.not.be.reverted;
             expect(await mockOtoken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('105', 8));
@@ -224,8 +235,7 @@ describe('VaultToken contract (full test)', () => {
         it('Should write calls again to the same vault', async () => {
             await vaultToken.connect(manager).writeCalls(
                 ethers.utils.parseUnits('1', 18),
-                mockOtokenAddr,
-                marginPool.address
+                mockOtokenAddr
             );
 
             expect(await mockOtoken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('106', 8));
@@ -329,15 +339,14 @@ describe('VaultToken contract (full test)', () => {
         before(async () => {
             await vaultToken.connect(manager).writeCalls( // To resolve the earlier burn test
                 ethers.utils.parseUnits('1', 18),
-                mockOtokenAddr,
-                marginPool.address
+                mockOtokenAddr
             );
             await network.provider.send('evm_setNextBlockTimestamp', [1640937601]);
         });
         it('Should REVERT in an attempt to settle the vault', async () => {
             await expect(
                 vaultToken.connect(manager).settleVault()
-            ).to.be.revertedWith('Controller: asset prices not finalized yet');
+            ).to.be.revertedWith('SettlementNotReady');
         });
     });
 
