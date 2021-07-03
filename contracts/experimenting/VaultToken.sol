@@ -11,6 +11,8 @@ import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 import {Pausable} from "../oz/security/Pausable.sol";
 import {ReentrancyGuard} from "../oz/security/ReentrancyGuard.sol";
 
+import "hardhat/console.sol";
+
 contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -129,6 +131,10 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
 
         emit WithdrawalFeeModified(_newValue);
     }
+
+    function sweepFees() external onlyManager nonReentrant() whenNotPaused() {
+        IERC20(asset).safeTransfer(msg.sender, obligatedFees);
+    }
     
     /// @notice Deposit assets and receive vault tokens to represent a share
     /// @dev Deposits an amount of assets specified then mints vault tokens to the msg.sender
@@ -136,20 +142,32 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     function deposit(uint256 _amount) external nonReentrant() whenNotPaused() {
         if(_amount == 0)
             revert Invalid();
-        if(totalSupply() == 0)
-            revert RatioNotDefined();
-        if(collateralAmount + IERC20(asset).balanceOf(address(this)) + _amount > maximumAssets)
+        if(collateralAmount + IERC20(asset).balanceOf(address(this)) + _amount - obligatedFees > maximumAssets)
             revert MaximumFundsReached();
 
+        uint256 vaultMint;
+        uint256 protocolFees;
+        uint256 vaultFees;
+
         // Calculate protocol-level fees
-        uint256 protocolFees = _calculateFees(_amount, depositFee);
-        if(protocolFees != 0)
+        if(IFactory(factory).depositFee() != 0) {
+            protocolFees = _calculateFees(_amount, IFactory(factory).depositFee());
             IERC20(asset).safeTransfer(factory, protocolFees);
+        }
 
         // Calculate vault-level fees
-        uint256 vaultLevelFees = _calculateFees(_amount, IFactory(factory).withdrawalFee());
+        if(depositFee != 0) {
+            vaultFees = _calculateFees(_amount, depositFee);
+            obligatedFees += vaultFees;
+        }
 
-        uint256 vaultMint = totalSupply() * (_amount - protocolFees - vaultLevelFees) / (IERC20(asset).balanceOf(address(this)) + collateralAmount);
+        // Check if the total supply is zero
+        if(totalSupply() == 0) {
+            vaultMint = _normalize(_amount - protocolFees - vaultFees, ERC20(asset).decimals(), decimals());
+            withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
+        } else {
+            vaultMint = totalSupply() * (_amount - protocolFees - vaultFees) / (IERC20(asset).balanceOf(address(this)) + collateralAmount - obligatedFees);
+        }
 
         if(vaultMint == 0) // Safety check for rounding errors
             revert Invalid();
@@ -167,7 +185,17 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         if(_amount == 0)
             revert Invalid();
 
-        uint256 assetAmount = _amount * IERC20(asset).balanceOf(address(this)) / totalSupply();
+        uint256 assetAmount = _amount * (IERC20(asset).balanceOf(address(this)) - obligatedFees) / totalSupply();
+        uint256 protocolFee;
+        
+        if(IFactory(factory).withdrawalFee() > 0) {
+            protocolFee = _calculateFees(_amount, IFactory(factory).withdrawalFee());
+            IERC20(asset).safeTransfer(factory, protocolFee);
+        }
+        uint256 vaultFee = _calculateFees(_amount, withdrawalFee);
+
+        assetAmount -= (protocolFee + vaultFee);
+        obligatedFees += vaultFee;
 
         IERC20(asset).safeTransfer(msg.sender, assetAmount); // Vault Token Amount to Burn * Balance of Vault for Asset  / Total Vault Token Supply
         _burn(address(msg.sender), _amount);
@@ -175,23 +203,17 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         emit Withdrawal(assetAmount, _amount);
     }
 
-    /// @notice Sets the ratio between the asset and vault token (initialization is not charged a fee)
-    /// @dev Allows anyone to set the ratio 1:1 if total supply is 0 for whatever reason
-    /// @param _amount amount of the VAULT TOKEN to mint
-    function initializeRatio(uint256 _amount) external nonReentrant() whenNotPaused() {
-        if(totalSupply() > 0)
-            revert RatioAlreadyDefined();
-
-        uint256 normalizedAssetAmount = _normalize(_amount, decimals(), ERC20(asset).decimals());
-        
-        if(normalizedAssetAmount == 0) // Safety check for rounding errors
+    /// @notice Allows anyone to call it in the event the withdrawal window is closed, but no action has occurred within 1 day
+    /// @dev Reopens the withdrawal window for a minimum of one day, whichever is greater
+    function reactivateWithdrawalWindow() external nonReentrant() whenNotPaused() {
+        if(block.timestamp < withdrawalWindowExpires + 1 days)
             revert Invalid();
+        
+        if(withdrawalWindowLength > 1 days)
+            withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
+        else
+            withdrawalWindowExpires = block.timestamp + 1 days;
 
-        _mint(address(msg.sender), _amount);
-        IERC20(asset).safeTransferFrom(msg.sender, address(this), normalizedAssetAmount);
-        
-        withdrawalWindowExpires = block.timestamp + withdrawalWindowLength; // This WILL reset the withdrawal window if the supply was zero
-        
         emit WithdrawalWindowActivated(withdrawalWindowExpires);
     }
 

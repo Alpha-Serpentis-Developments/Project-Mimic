@@ -145,7 +145,7 @@ describe('VaultToken contract (full test)', () => {
     describe("Initialize the Vault", () => {
         it('Ratio should be initialized', async () => {
             await mockWETH.connect(manager).approve(vaultToken.address, ethers.utils.parseUnits('0.01', 18));
-            await vaultToken.connect(manager).initializeRatio(ethers.utils.parseUnits('0.01', 18));
+            await vaultToken.connect(manager).deposit(ethers.utils.parseUnits('0.01', 18));
 
             const vaultTokenSupply = await vaultToken.totalSupply();
             const vaultBalance = await mockWETH.balanceOf(vaultToken.address);
@@ -346,7 +346,7 @@ describe('VaultToken contract (full test)', () => {
         it('Should REVERT in an attempt to settle the vault', async () => {
             await expect(
                 vaultToken.connect(manager).settleVault()
-            ).to.be.revertedWith('SettlementNotReady');
+            ).to.be.reverted;
         });
     });
 
@@ -377,6 +377,10 @@ describe('VaultToken contract (full test)', () => {
             expect(await mockWETH.balanceOf(depositor_1.address)).to.equal(depBal_1);
             expect(await mockWETH.balanceOf(depositor_2.address)).to.equal(depBal_2);
         });
+    });
+
+    describe("Fee Test", () => {
+
     });
 
 });
