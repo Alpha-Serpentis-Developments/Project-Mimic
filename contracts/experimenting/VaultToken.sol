@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity =0.8.4;
 
+import {IFactory} from "./interfaces/IFactory.sol";
 import {ISwap, Types} from "./airswap/interfaces/ISwap.sol";
+import {IAddressBook} from "./gamma/interfaces/IAddressBook.sol";
 import {Actions, GammaTypes, IController} from "./gamma/interfaces/IController.sol";
 import {OtokenInterface} from "./gamma/interfaces/OtokenInterface.sol";
 import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
 import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 import {Pausable} from "../oz/security/Pausable.sol";
 import {ReentrancyGuard} from "../oz/security/ReentrancyGuard.sol";
-
-//import "hardhat/console.sol";
 
 contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -26,26 +26,33 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     error SettlementNotReady();
 
     /// @notice Time in which the withdrawal window expires
-    uint256 private withdrawalWindowExpires;
+    uint256 public withdrawalWindowExpires;
     /// @notice Length of time where the withdrawal window is active
-    uint256 private constant withdrawalWindowLength = 1 days;
+    uint256 private immutable withdrawalWindowLength;
     /// @notice Amount of collateral for the address already used for collateral
     uint256 public collateralAmount;
     /// @notice Current active vault
     uint256 private currentVaultId;
     /// @notice Maximum funds
     uint256 public maximumAssets;
-    /// @notice Address of the Gamma controller
-    IController private immutable controller;
+    /// @notice Obligated fees to the manager
+    uint256 private obligatedFees;
+    /// @notice Deposit fee
+    uint16 public depositFee;
+    /// @notice Take profit fee
+    uint16 public withdrawalFee;
     /// @notice Address of the current oToken
     address private oToken;
+    /// @notice Address of the AddressBook
+    IAddressBook private immutable addressBook;
     /// @notice Address of the exchange
     address private immutable AIRSWAP_EXCHANGE;
     /// @notice Address of the underlying asset to trade
     address public immutable asset;
     /// @notice Address of the manager (admin)
     address public immutable manager;
-    /// @notice For emergency use 
+    /// @notice Address of the factory
+    address private immutable factory;
 
     event Deposit(uint256 assetDeposited, uint256 vaultTokensMinted);
     event Withdrawal(uint256 assetWithdrew, uint256 vaultTokensBurned);
@@ -53,21 +60,27 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     event CallsMinted(uint256 collateralDeposited, address indexed newOtoken, uint256 vaultId);
     event CallsBurned(uint256 oTokensBurned);
     event CallsSold(uint256 amountSold, uint256 premiumReceived);
+    event DepositFeeModified(uint16 newFee);
+    event WithdrawalFeeModified(uint16 newFee);
 
     constructor(
         string memory _name,
         string memory _symbol,
-        address _controller,
         address _airswap,
+        address _addressBook,
         address _asset,
         address _manager,
+        uint256 _withdrawalWindowLength,
         uint256 _maximumAssets
     ) ERC20(_name, _symbol) {
-        controller = IController(_controller);
         AIRSWAP_EXCHANGE = _airswap;
+        addressBook = IAddressBook(_addressBook);
         asset = _asset;
         manager = _manager;
+        withdrawalWindowLength = _withdrawalWindowLength;
         maximumAssets = _maximumAssets;
+
+        factory = msg.sender;
     }
 
     modifier onlyManager {
@@ -98,6 +111,24 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
 
         maximumAssets = _newValue;
     }
+
+    function adjustDepositFee(uint16 _newValue) external onlyManager nonReentrant() whenNotPaused() {
+        if(_newValue > 5000)
+            revert Invalid();
+
+        depositFee = _newValue;
+
+        emit DepositFeeModified(_newValue);
+    }
+
+    function adjustWithdrawalFee(uint16 _newValue) external onlyManager nonReentrant() whenNotPaused() {
+        if(_newValue > 5000)
+            revert Invalid();
+
+        withdrawalFee = _newValue;
+
+        emit WithdrawalFeeModified(_newValue);
+    }
     
     /// @notice Deposit assets and receive vault tokens to represent a share
     /// @dev Deposits an amount of assets specified then mints vault tokens to the msg.sender
@@ -110,15 +141,15 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         if(collateralAmount + IERC20(asset).balanceOf(address(this)) + _amount > maximumAssets)
             revert MaximumFundsReached();
 
-        uint256 vaultMint = totalSupply() * _amount / (IERC20(asset).balanceOf(address(this)) + collateralAmount);
+        // Calculate protocol-level fees
+        uint256 protocolFees = _calculateFees(_amount, depositFee);
+        if(protocolFees != 0)
+            IERC20(asset).safeTransfer(factory, protocolFees);
 
-        /*
-        console.log(normalizedAmount);
-        console.log(normalizedAssetBalance);
-        console.log(totalSupply());
-        console.log(totalSupply() * normalizedAmount / normalizedAssetBalance);
-        console.log(vaultMint);
-        */
+        // Calculate vault-level fees
+        uint256 vaultLevelFees = _calculateFees(_amount, IFactory(factory).withdrawalFee());
+
+        uint256 vaultMint = totalSupply() * (_amount - protocolFees - vaultLevelFees) / (IERC20(asset).balanceOf(address(this)) + collateralAmount);
 
         if(vaultMint == 0) // Safety check for rounding errors
             revert Invalid();
@@ -144,7 +175,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         emit Withdrawal(assetAmount, _amount);
     }
 
-    /// @notice Sets the ratio between the asset and vault token
+    /// @notice Sets the ratio between the asset and vault token (initialization is not charged a fee)
     /// @dev Allows anyone to set the ratio 1:1 if total supply is 0 for whatever reason
     /// @param _amount amount of the VAULT TOKEN to mint
     function initializeRatio(uint256 _amount) external nonReentrant() whenNotPaused() {
@@ -168,17 +199,18 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     /// @dev Allows the manager to write calls for an x 
     /// @param _amount amount of the asset to deposit as collateral
     /// @param _oToken address of the oToken
-    /// @param _marginPool address of the margin pool
-    function writeCalls(uint256 _amount, address _oToken, address _marginPool) external onlyManager nonReentrant() whenNotPaused() {
+    function writeCalls(uint256 _amount, address _oToken) external onlyManager nonReentrant() whenNotPaused() {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
-        if(_amount == 0 || _oToken == address(0) || _marginPool == address(0))
+        if(_amount == 0 || _oToken == address(0))
             revert Invalid();
         if(_oToken != oToken && oToken != address(0))
             revert oTokenNotCleared();
 
         Actions.ActionArgs[] memory actions;
         GammaTypes.Vault memory vault;
+
+        IController controller = IController(addressBook.getController());
 
         // Check if the vault is even open and open if no vault is open
         vault = controller.getVault(address(this), currentVaultId);
@@ -227,7 +259,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
                 ""
             );
         // Approve the tokens to be moved
-        IERC20(asset).approve(_marginPool, _amount);
+        IERC20(asset).approve(addressBook.getMarginPool(), _amount);
         
         // Submit the operations to the controller contract
         controller.operate(actions);
@@ -270,6 +302,8 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
             0,
             ""
         );
+
+        IController controller = IController(addressBook.getController());
 
         controller.operate(actions);
         collateralAmount -= normalizedAmount;
@@ -335,8 +369,10 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
 
+        IController controller = IController(addressBook.getController());
+
         // Check if ready to settle otherwise revert
-        if(OtokenInterface(oToken).expiryTimestamp() > block.timestamp)
+        if(controller.isSettlementAllowed(oToken))
             revert SettlementNotReady();
 
         // Settle the vault if ready
@@ -388,5 +424,9 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
             revert WithdrawalWindowNotActive();
         
         return block.timestamp > withdrawalWindowExpires;
+    }
+
+    function _calculateFees(uint256 _subtotal, uint16 _fee) internal pure returns(uint256) {
+        return _subtotal * _fee / 10000;
     }
 }

@@ -29,7 +29,7 @@ export default function SuccessMessage() {
       <div style={socialStyle} className="socialLink">
         <a
           style={{ color: "purple" }}
-          href="https://twitter.com/Official_ASDev"
+          href="https://twitter.com/OptionalFinance"
         >
           <Icon name="twitter" />
           Twitter{" "}

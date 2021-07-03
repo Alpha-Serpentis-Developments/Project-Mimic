@@ -1,11 +1,11 @@
 /**
  * SPDX-License-Identifier: UNLICENSED
  */
-pragma solidity 0.6.10;
+pragma solidity =0.6.10;
 
-import {OpynPricerInterface} from "./interfaces/OpynPricerInterface.sol";
-import {Ownable} from "./packages/oz/Ownable.sol";
-import {SafeMath} from "./packages/oz/SafeMath.sol";
+import {OpynPricerInterface} from "../interfaces/OpynPricerInterface.sol";
+import {Ownable} from "../packages/oz/Ownable.sol";
+import {SafeMath} from "../packages/oz/SafeMath.sol";
 
 /**
  * @author Opyn Team
@@ -22,6 +22,11 @@ contract Oracle is Ownable {
         uint256 timestamp; // timestamp at which the price is pushed to this oracle
     }
 
+    //// @dev disputer is a role defined by the owner that has the ability to dispute a price during the dispute period
+    address internal disputer;
+
+    bool migrated;
+
     /// @dev mapping of asset pricer to its locking period
     /// locking period is the period of time after the expiry timestamp where a price can not be pushed
     mapping(address => uint256) internal pricerLockingPeriod;
@@ -34,8 +39,6 @@ contract Oracle is Ownable {
     mapping(address => mapping(uint256 => Price)) internal storedPrice;
     /// @dev mapping between stable asset and price
     mapping(address => uint256) internal stablePrice;
-    //// @dev disputer is a role defined by the owner that has the ability to dispute a price during the dispute period
-    address internal disputer;
 
     /// @notice emits an event when the disputer is updated
     event DisputerUpdated(address indexed newDisputer);
@@ -64,123 +67,31 @@ contract Oracle is Ownable {
     event StablePriceUpdated(address indexed asset, uint256 price);
 
     /**
-     * @notice get a live asset price from the asset's pricer contract
+     * @notice function to mgirate asset prices from old oracle to new deployed oracle
+     * @dev this can only be called by owner, should be used at the deployment time before setting Oracle module into AddressBook
      * @param _asset asset address
-     * @return price scaled by 1e8, denominated in USD
-     * e.g. 17568900000 => 175.689 USD
+     * @param _expiries array of expiries timestamps
+     * @param _prices array of prices
      */
-    function getPrice(address _asset) external view returns (uint256) {
-        uint256 price = stablePrice[_asset];
+    function migrateOracle(
+        address _asset,
+        uint256[] calldata _expiries,
+        uint256[] calldata _prices
+    ) external onlyOwner {
+        require(!migrated, "Oracle: migration already done");
+        require(_expiries.length == _prices.length, "Oracle: invalid migration data");
 
-        if (price == 0) {
-            require(assetPricer[_asset] != address(0), "Oracle: Pricer for this asset not set");
-
-            price = OpynPricerInterface(assetPricer[_asset]).getPrice();
+        for (uint256 i; i < _expiries.length; i++) {
+            storedPrice[_asset][_expiries[i]] = Price(_prices[i], now);
         }
-
-        return price;
     }
 
     /**
-     * @notice get the asset price at specific expiry timestamp
-     * @param _asset asset address
-     * @param _expiryTimestamp expiry timestamp
-     * @return price scaled by 1e8, denominated in USD
-     * @return isFinalized True, if the price is finalized, False if not
+     * @notice end migration process
+     * @dev can only be called by owner, should be called before setting Oracle module into AddressBook
      */
-    function getExpiryPrice(address _asset, uint256 _expiryTimestamp) external view returns (uint256, bool) {
-        uint256 price = stablePrice[_asset];
-        bool isFinalized = true;
-
-        if (price == 0) {
-            price = storedPrice[_asset][_expiryTimestamp].price;
-            isFinalized = isDisputePeriodOver(_asset, _expiryTimestamp);
-        }
-
-        return (price, isFinalized);
-    }
-
-    /**
-     * @notice get the pricer for an asset
-     * @param _asset asset address
-     * @return pricer address
-     */
-    function getPricer(address _asset) external view returns (address) {
-        return assetPricer[_asset];
-    }
-
-    /**
-     * @notice get the disputer address
-     * @return disputer address
-     */
-    function getDisputer() external view returns (address) {
-        return disputer;
-    }
-
-    /**
-     * @notice get a pricer's locking period
-     * locking period is the period of time after the expiry timestamp where a price can not be pushed
-     * @dev during the locking period an expiry price can not be submitted to this contract
-     * @param _pricer pricer address
-     * @return locking period
-     */
-    function getPricerLockingPeriod(address _pricer) external view returns (uint256) {
-        return pricerLockingPeriod[_pricer];
-    }
-
-    /**
-     * @notice get a pricer's dispute period
-     * dispute period is the period of time after an expiry price has been pushed where a price can be disputed
-     * @dev during the dispute period, the disputer can dispute the submitted price and modify it
-     * @param _pricer pricer address
-     * @return dispute period
-     */
-    function getPricerDisputePeriod(address _pricer) external view returns (uint256) {
-        return pricerDisputePeriod[_pricer];
-    }
-
-    /**
-     * @notice check if the locking period is over for setting the asset price at a particular expiry timestamp
-     * @param _asset asset address
-     * @param _expiryTimestamp expiry timestamp
-     * @return True if locking period is over, False if not
-     */
-    function isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) public view returns (bool) {
-        uint256 price = stablePrice[_asset];
-
-        if (price == 0) {
-            address pricer = assetPricer[_asset];
-            uint256 lockingPeriod = pricerLockingPeriod[pricer];
-
-            return now > _expiryTimestamp.add(lockingPeriod);
-        }
-
-        return true;
-    }
-
-    /**
-     * @notice check if the dispute period is over
-     * @param _asset asset address
-     * @param _expiryTimestamp expiry timestamp
-     * @return True if dispute period is over, False if not
-     */
-    function isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) public view returns (bool) {
-        uint256 price = stablePrice[_asset];
-
-        if (price == 0) {
-            // check if the pricer has a price for this expiry timestamp
-            Price memory price = storedPrice[_asset][_expiryTimestamp];
-            if (price.timestamp == 0) {
-                return false;
-            }
-
-            address pricer = assetPricer[_asset];
-            uint256 disputePeriod = pricerDisputePeriod[pricer];
-
-            return now > price.timestamp.add(disputePeriod);
-        }
-
-        return true;
+    function endMigration() external onlyOwner {
+        migrated = true;
     }
 
     /**
@@ -294,5 +205,145 @@ contract Oracle is Ownable {
 
         storedPrice[_asset][_expiryTimestamp] = Price(_price, now);
         emit ExpiryPriceUpdated(_asset, _expiryTimestamp, _price, now);
+    }
+
+    /**
+     * @notice get a live asset price from the asset's pricer contract
+     * @param _asset asset address
+     * @return price scaled by 1e8, denominated in USD
+     * e.g. 17568900000 => 175.689 USD
+     */
+    function getPrice(address _asset) external view returns (uint256) {
+        uint256 price = stablePrice[_asset];
+
+        if (price == 0) {
+            require(assetPricer[_asset] != address(0), "Oracle: Pricer for this asset not set");
+
+            price = OpynPricerInterface(assetPricer[_asset]).getPrice();
+        }
+
+        return price;
+    }
+
+    /**
+     * @notice get the asset price at specific expiry timestamp
+     * @param _asset asset address
+     * @param _expiryTimestamp expiry timestamp
+     * @return price scaled by 1e8, denominated in USD
+     * @return isFinalized True, if the price is finalized, False if not
+     */
+    function getExpiryPrice(address _asset, uint256 _expiryTimestamp) external view returns (uint256, bool) {
+        uint256 price = stablePrice[_asset];
+        bool isFinalized = true;
+
+        if (price == 0) {
+            price = storedPrice[_asset][_expiryTimestamp].price;
+            isFinalized = isDisputePeriodOver(_asset, _expiryTimestamp);
+        }
+
+        return (price, isFinalized);
+    }
+
+    /**
+     * @notice get the pricer for an asset
+     * @param _asset asset address
+     * @return pricer address
+     */
+    function getPricer(address _asset) external view returns (address) {
+        return assetPricer[_asset];
+    }
+
+    /**
+     * @notice get the disputer address
+     * @return disputer address
+     */
+    function getDisputer() external view returns (address) {
+        return disputer;
+    }
+
+    /**
+     * @notice get a pricer's locking period
+     * locking period is the period of time after the expiry timestamp where a price can not be pushed
+     * @dev during the locking period an expiry price can not be submitted to this contract
+     * @param _pricer pricer address
+     * @return locking period
+     */
+    function getPricerLockingPeriod(address _pricer) external view returns (uint256) {
+        return pricerLockingPeriod[_pricer];
+    }
+
+    /**
+     * @notice get a pricer's dispute period
+     * dispute period is the period of time after an expiry price has been pushed where a price can be disputed
+     * @dev during the dispute period, the disputer can dispute the submitted price and modify it
+     * @param _pricer pricer address
+     * @return dispute period
+     */
+    function getPricerDisputePeriod(address _pricer) external view returns (uint256) {
+        return pricerDisputePeriod[_pricer];
+    }
+
+    /**
+     * @notice get historical asset price and timestamp
+     * @dev if asset is a stable asset, will return stored price and timestamp equal to now
+     * @param _asset asset address to get it's historical price
+     * @param _roundId chainlink round id
+     * @return price and round timestamp
+     */
+    function getChainlinkRoundData(address _asset, uint80 _roundId) external view returns (uint256, uint256) {
+        uint256 price = stablePrice[_asset];
+        uint256 timestamp = now;
+
+        if (price == 0) {
+            require(assetPricer[_asset] != address(0), "Oracle: Pricer for this asset not set");
+
+            (price, timestamp) = OpynPricerInterface(assetPricer[_asset]).getHistoricalPrice(_roundId);
+        }
+
+        return (price, timestamp);
+    }
+
+    /**
+     * @notice check if the locking period is over for setting the asset price at a particular expiry timestamp
+     * @param _asset asset address
+     * @param _expiryTimestamp expiry timestamp
+     * @return True if locking period is over, False if not
+     */
+    function isLockingPeriodOver(address _asset, uint256 _expiryTimestamp) public view returns (bool) {
+        uint256 price = stablePrice[_asset];
+
+        if (price == 0) {
+            address pricer = assetPricer[_asset];
+            uint256 lockingPeriod = pricerLockingPeriod[pricer];
+
+            return now > _expiryTimestamp.add(lockingPeriod);
+        }
+
+        return true;
+    }
+
+    /**
+     * @notice check if the dispute period is over
+     * @param _asset asset address
+     * @param _expiryTimestamp expiry timestamp
+     * @return True if dispute period is over, False if not
+     */
+    function isDisputePeriodOver(address _asset, uint256 _expiryTimestamp) public view returns (bool) {
+        uint256 price = stablePrice[_asset];
+
+        if (price == 0) {
+            // check if the pricer has a price for this expiry timestamp
+            Price memory price = storedPrice[_asset][_expiryTimestamp];
+            if (price.timestamp == 0) {
+                return false;
+            }
+
+            address pricer = assetPricer[_asset];
+            uint256 disputePeriod = pricerDisputePeriod[pricer];
+
+            return now > price.timestamp.add(disputePeriod);
+        }
+
+        return true;
     }
 }
