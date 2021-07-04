@@ -561,21 +561,21 @@ export default function VaultTokenInfo(props) {
   // vault tokens / (asset tokens + collateral amount)
   //props.token.assetObject
   function showRatio() {
-    let vtBN = new BigNumber(props.token.totalSupply);
-    let atBN = new BigNumber(props.token.vaultBalance);
+    // let vtBN = new BigNumber(props.token.totalSupply);
+    // let atBN = new BigNumber(props.token.vaultBalance);
 
-    let denominator = atBN.plus(props.token.collateralAmount);
+    // let denominator = atBN.plus(props.token.collateralAmount);
 
-    let pairRatio = parseInt(vtBN.dividedBy(denominator).toString());
+    // let pairRatio = parseInt(vtBN.dividedBy(denominator).toString());
     return (
       <Grid textAlign="center" stackable>
         <Grid.Column>
           <Header size="large" color="blue">
             Ratio:{" "}
-            {/* {Number(props.token.totalSupply) /
+            {Number(props.token.totalSupply) /
               (Number(props.token.vaultBalance) +
-                Number(props.token.collateralAmount))} */}
-            {pairRatio}
+                Number(props.token.collateralAmount))}
+            {/* {pairRatio} */}
           </Header>
           {/* <Header.Subheader># vault tokens/ vault assets</Header.Subheader> */}
           <Header.Subheader>
