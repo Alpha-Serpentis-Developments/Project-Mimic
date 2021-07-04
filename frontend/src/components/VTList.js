@@ -157,9 +157,8 @@ export default function VTList(props) {
     }
     if (v.collateralAmount === -1) {
       v.getCA(web3, v.address).then((result) => {
-        let da = web3.utils.toBN(result).toString();
-        console.log(da);
-
+        // let da = web3.utils.toBN(result).toString();
+        let da = new BigNumber(result);
         v.setCA(da);
       });
     }
