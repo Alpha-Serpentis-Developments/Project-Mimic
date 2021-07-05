@@ -8,6 +8,7 @@ import {
   Icon,
   Segment,
   Form,
+  Popup,
 } from "semantic-ui-react";
 import { web3 } from "./Web3Handler";
 
@@ -412,6 +413,25 @@ export default function VaultTokenInfo(props) {
             {props.token.totalSupply > 0 && !managerClick && (
               <Form>
                 <Form.Group>
+                  <Popup
+                    pinned
+                    trigger={
+                      <Icon
+                        name="info circle"
+                        color="blue"
+                        size="large"
+                        style={{ marginTop: "auto", marginBottom: "auto" }}
+                      />
+                    }
+                  >
+                    <Popup.Header>Withdraw</Popup.Header>
+                    <Popup.Content>
+                      When withdrawing, you will burn away your vault tokens to
+                      redeem the underlying asset token. Withdrawing from the
+                      vault can only be done if the vault's withdrawal window
+                      has opened up after the manager has settled the vault.
+                    </Popup.Content>
+                  </Popup>
                   <Form.Field>
                     <input
                       value={withdrawAmt}
@@ -431,6 +451,7 @@ export default function VaultTokenInfo(props) {
                     />
                   </Menu> */}
                 </Form.Group>
+
                 <Button
                   onClick={() => withDraw(withdrawAmt)}
                   color="blue"
@@ -466,6 +487,25 @@ export default function VaultTokenInfo(props) {
               <Form>
                 <div style={{ float: "right" }}>
                   <Form.Group>
+                    <Popup
+                      pinned
+                      trigger={
+                        <Icon
+                          name="info circle"
+                          color="orange"
+                          size="large"
+                          style={{ marginTop: "auto", marginBottom: "auto" }}
+                        />
+                      }
+                    >
+                      <Popup.Header>Deposit</Popup.Header>
+                      <Popup.Content>
+                        When depositing, you will deposit the vault's asset
+                        token in redemption for vault tokens to represent your
+                        fair share of the vault. Depositing is open anytime
+                        whether the withdrawal window is closed or not.
+                      </Popup.Content>
+                    </Popup>
                     <Form.Field>
                       <input
                         value={depositAmt}
@@ -475,6 +515,7 @@ export default function VaultTokenInfo(props) {
                     <div style={{ paddingTop: "13px" }}>
                       {props.token.assetObject.symbol()}
                     </div>
+
                     {/* <Menu compact size="tiny">
                     <Dropdown
                       defaultValue="ether"
@@ -487,6 +528,7 @@ export default function VaultTokenInfo(props) {
                 </div>
                 {/* {showDepositErrormsg && <ErrorMessage />}
                 {showDepositSuccessmsg && <SuccessMessage />} */}
+
                 <Button
                   onClick={() => deposit(depositAmt)}
                   color="orange"
@@ -518,15 +560,21 @@ export default function VaultTokenInfo(props) {
   // vault tokens / (asset tokens + collateral amount)
   //props.token.assetObject
   function showRatio() {
+    // let vtBN = new BigNumber(props.token.totalSupply);
+    // let atBN = new BigNumber(props.token.vaultBalance);
+
+    // let denominator = atBN.plus(props.token.collateralAmount);
+
+    // let pairRatio = parseInt(vtBN.dividedBy(denominator).toString());
     return (
       <Grid textAlign="center" stackable>
         <Grid.Column>
           <Header size="large" color="blue">
             Ratio:{" "}
-            {/* {props.token.totalSupply /
-              (props.token.vaultBalance} */}
             {Number(props.token.totalSupply) /
-              (Number(props.token.vaultBalance) + Number(props.token.collateralAmount))}
+              (Number(props.token.vaultBalance) +
+                Number(props.token.collateralAmount))}
+            {/* {pairRatio} */}
           </Header>
           {/* <Header.Subheader># vault tokens/ vault assets</Header.Subheader> */}
           <Header.Subheader>
