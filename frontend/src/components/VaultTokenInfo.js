@@ -11,7 +11,6 @@ import {
   Popup,
 } from "semantic-ui-react";
 import { web3 } from "./Web3Handler";
-import BigNumber from "bignumber.js";
 
 const units1 = [
   { key: 1, text: "Wei", value: "wei" },
