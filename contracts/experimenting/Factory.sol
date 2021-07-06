@@ -55,12 +55,6 @@ contract Factory {
         emit WithdrawalFeeModified(_newFee);
     }
 
-    function sweepFees(address _token) external onlyAdmin {
-        IERC20 token = IERC20(_token);
-
-        token.safeTransfer(msg.sender, token.balanceOf(address(this)));
-    }
-
     /// @notice Deploys a new vault token
     /// @dev Deploys a new vault token under the given parameters for the caller
     /// @param _name name of the vault token

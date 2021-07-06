@@ -152,13 +152,11 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         // Calculate protocol-level fees
         if(IFactory(factory).depositFee() != 0) {
             protocolFees = _calculateFees(_amount, IFactory(factory).depositFee());
-            IERC20(asset).safeTransfer(factory, protocolFees);
         }
 
         // Calculate vault-level fees
         if(depositFee != 0) {
             vaultFees = _calculateFees(_amount, depositFee);
-            obligatedFees += vaultFees;
         }
 
         // Check if the total supply is zero
@@ -169,10 +167,13 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
             vaultMint = totalSupply() * (_amount - protocolFees - vaultFees) / (IERC20(asset).balanceOf(address(this)) + collateralAmount - obligatedFees);
         }
 
+        obligatedFees += vaultFees;
+
         if(vaultMint == 0) // Safety check for rounding errors
             revert Invalid();
 
         IERC20(asset).safeTransferFrom(msg.sender, address(this), _amount);
+        IERC20(asset).safeTransfer(IFactory(factory).admin(), protocolFees);
         _mint(msg.sender, vaultMint);
 
         emit Deposit(_amount, vaultMint);
@@ -190,7 +191,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         
         if(IFactory(factory).withdrawalFee() > 0) {
             protocolFee = _calculateFees(_amount, IFactory(factory).withdrawalFee());
-            IERC20(asset).safeTransfer(factory, protocolFee);
+            IERC20(asset).safeTransfer(IFactory(factory).admin(), protocolFee);
         }
         uint256 vaultFee = _calculateFees(_amount, withdrawalFee);
 
