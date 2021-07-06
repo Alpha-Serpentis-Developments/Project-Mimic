@@ -4,6 +4,7 @@ import { Factory } from "./Factory";
 import { VaultToken } from "./VaultToken";
 import TokenList from "./TokenList";
 import BigNumber from "bignumber.js";
+import { Otoken } from "./Otoken";
 
 import { Table } from "semantic-ui-react";
 import { ERC20 } from "./Erc20";
@@ -160,6 +161,26 @@ export default function VTList(props) {
         let da = web3.utils.toBN(result).toString();
         // let da = new BigNumber(result);
         v.setCA(da);
+      });
+    }
+    if (v.oTokenAddr === "") {
+      v.getOT(web3, v.address).then((result) => {
+        if (
+          result !==
+          "0x0000000000000000000000000000000000000000000000000000000000000000"
+        ) {
+          let oAddr = `0x${result.slice(-40)}`;
+          console.log(result);
+          v.setOT(oAddr);
+          if (v.oTokenAddr !== "") {
+            let o = new Otoken(web3, v.oTokenAddr);
+            console.log(o.name());
+            v.oTokenObj = o;
+            o.getName().then((result) => {
+              o.setName(result);
+            });
+          }
+        }
       });
     }
   }

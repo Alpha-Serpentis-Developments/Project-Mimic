@@ -9,8 +9,10 @@ import {
   Segment,
   Form,
   Popup,
+  Label,
 } from "semantic-ui-react";
 import { web3 } from "./Web3Handler";
+
 import BigNumber from "bignumber.js";
 
 const units1 = [
@@ -397,8 +399,20 @@ export default function VaultTokenInfo(props) {
             <Header color="grey" size="medium">
               vault{" "}
             </Header>
+
             <Header size="huge" color="blue">
               {props.token.name()}
+              {props.token.oTokenObj && props.token.oTokenObj.tName !== "" && (
+                <Popup
+                  content={props.token.oTokenObj.name()}
+                  trigger={
+                    <Label color="blue">
+                      <Icon name="star" />
+                      show oToken
+                    </Label>
+                  }
+                />
+              )}
             </Header>
 
             <Header size="medium">
@@ -410,6 +424,9 @@ export default function VaultTokenInfo(props) {
             <Header size="medium">
               Total Supply: {props.token.totalSupply / 1e18}
             </Header>
+            {/* {props.token.oTokenObj && props.token.oTokenObj.tName !== "" && (
+              <Header>oToken: {props.token.oTokenObj.name()}</Header>
+            )} */}
             <Divider hidden />
             {props.token.totalSupply > 0 && !managerClick && (
               <Form>
@@ -483,6 +500,7 @@ export default function VaultTokenInfo(props) {
             <Header size="medium">
               Vault Balance: {props.token.vaultBalance / 1e18}
             </Header>
+
             <Divider hidden />
             {props.token.totalSupply > 0 && !managerClick && (
               <Form>
@@ -765,7 +783,6 @@ export default function VaultTokenInfo(props) {
       </div>
     );
   }
-
   return (
     <div>
       {showStatus && (
