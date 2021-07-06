@@ -347,6 +347,7 @@ describe('VaultToken contract (full test)', () => {
             await expect(
                 vaultToken.connect(manager).settleVault()
             ).to.be.reverted;
+            expect(await controller.isSettlementAllowed(mockOtoken.address)).to.be.equal(false); // Added due to a strange error occurring that Hardhat won't pick up?
         });
     });
 
@@ -373,13 +374,75 @@ describe('VaultToken contract (full test)', () => {
             await vaultToken.connect(depositor_2).withdraw(await vaultToken.balanceOf(depositor_2.address));
 
             expect(await vaultToken.totalSupply()).to.equal(ethers.utils.parseUnits('0.01', 18));
+            expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('0.01', 18));
             expect(await mockWETH.balanceOf(depositor.address)).to.equal(depBal);
             expect(await mockWETH.balanceOf(depositor_1.address)).to.equal(depBal_1);
             expect(await mockWETH.balanceOf(depositor_2.address)).to.equal(depBal_2);
         });
     });
 
-    describe("Fee Test", () => {
+    describe("Protocol Fee Test", () => {
+        it('Take protocol fees for deposit', async () => {
+            await factory.connect(deployer).changeDepositFee(100);
+            await mockWETH.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
+
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.be.equal(ethers.utils.parseUnits('0.99', 18));
+            expect(await mockWETH.balanceOf(deployer.address)).to.be.equal(ethers.utils.parseUnits('0.01', 18));
+        });
+        it('Take protocol fees for withdrawing', async () => {
+            const prevBal = await mockWETH.balanceOf(depositor.address);
+            const adminBal = await mockWETH.balanceOf(deployer.address);
+            await factory.connect(deployer).changeWithdrawalFee(100);
+            
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('0.99', 18));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.be.equal(0);
+            expect(await mockWETH.balanceOf(deployer.address)).to.be.equal((ethers.utils.parseUnits('0.0099', 18)).add(adminBal));
+            expect(await mockWETH.balanceOf(depositor.address)).to.be.equal((ethers.utils.parseUnits('0.9801', 18)).add(prevBal));
+        });
+        it('Verify ratio is still 1:1', async () => {
+            const prevBal_0 = await vaultToken.balanceOf(depositor.address);
+            const prevBal_1 = await vaultToken.balanceOf(depositor_1.address);
+
+            await mockWETH.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
+            await mockWETH.connect(depositor_1).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
+
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18));
+            await vaultToken.connect(depositor_1).deposit(ethers.utils.parseUnits('1', 18));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.be.equal((ethers.utils.parseUnits('0.99', 18)).add(prevBal_0));
+        });
+    });
+
+    describe("VaultToken Fee Test", () => {
+        before(async () => {
+            await factory.connect(deployer).changeDepositFee(0);
+            await factory.connect(deployer).changeWithdrawalFee(0);
+        });
+        it('Take vault fees for deposit', async () => {
+            await vaultToken.connect(manager).adjustDepositFee(100);
+            await mockWETH.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
+            
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18));
+            await vaultToken.connect(manager).sweepFees();
+            
+            expect(await vaultToken.balanceOf(depositor.address)).to.be.equal(ethers.utils.parseUnits('0.99', 18));
+            expect(await mockWETH.balanceOf(manager.address)).to.be.equal(ethers.utils.parseUnits('0.01', 18));
+        });
+        it('Take vault fees for withdrawing', async () => {
+            await vaultToken.connect(manager).adjustWithdrawalFee(100);
+            
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('0.99', 18));
+            await vaultToken.connect(manager).sweepFees();
+        });
+        it('Verify ratio is still 1:1 (no sweep)', async () => {
+
+        });
+    });
+
+    describe("Reactivate withdrawal window", () => {
 
     });
 
