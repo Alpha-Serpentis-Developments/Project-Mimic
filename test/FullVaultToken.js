@@ -10,7 +10,7 @@ describe('VaultToken contract (full test)', () => {
         console.log("IMPORTANT: SimpleVaultToken.js has extensive testing on the deposit/withdraw functions");
 
         Factory = await ethers.getContractFactory('Factory');
-        VaultToken = await ethers.getContractFactory("contracts\\experimenting\\VaultToken.sol:VaultToken");
+        VaultToken = await ethers.getContractFactory("contracts\\mimic\\VaultToken.sol:VaultToken");
         TestToken = await ethers.getContractFactory('TestToken');
         OtokenFactory = await ethers.getContractFactory('OtokenFactory');
         Otoken = await ethers.getContractFactory('Otoken');
