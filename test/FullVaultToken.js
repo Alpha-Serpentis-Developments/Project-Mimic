@@ -413,6 +413,7 @@ describe('VaultToken contract (full test)', () => {
             await vaultToken.connect(depositor_1).deposit(ethers.utils.parseUnits('1', 18));
 
             expect(await vaultToken.balanceOf(depositor.address)).to.be.equal((ethers.utils.parseUnits('0.99', 18)).add(prevBal_0));
+            expect(await vaultToken.balanceOf(depositor_1.address)).to.be.equal((ethers.utils.parseUnits('0.99', 18)).add(prevBal_1));
         });
     });
 
@@ -422,13 +423,15 @@ describe('VaultToken contract (full test)', () => {
             await factory.connect(deployer).changeWithdrawalFee(0);
         });
         it('Take vault fees for deposit', async () => {
+            const prevBal = await vaultToken.balanceOf(depositor.address);
+
             await vaultToken.connect(manager).adjustDepositFee(100);
             await mockWETH.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
             
             await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18));
             await vaultToken.connect(manager).sweepFees();
             
-            expect(await vaultToken.balanceOf(depositor.address)).to.be.equal(ethers.utils.parseUnits('0.99', 18));
+            expect(await vaultToken.balanceOf(depositor.address)).to.be.equal((ethers.utils.parseUnits('0.99', 18)).add(prevBal));
             expect(await mockWETH.balanceOf(manager.address)).to.be.equal(ethers.utils.parseUnits('0.01', 18));
         });
         it('Take vault fees for withdrawing', async () => {
@@ -438,12 +441,36 @@ describe('VaultToken contract (full test)', () => {
             await vaultToken.connect(manager).sweepFees();
         });
         it('Verify ratio is still 1:1 (no sweep)', async () => {
+            const prevBal_0 = await vaultToken.balanceOf(depositor.address);
+            const prevBal_1 = await vaultToken.balanceOf(depositor_1.address);
 
+            await mockWETH.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
+            await mockWETH.connect(depositor_1).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
+
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18));
+            await vaultToken.connect(depositor_1).deposit(ethers.utils.parseUnits('1', 18));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.be.equal((ethers.utils.parseUnits('0.99', 18)).add(prevBal_0));
+            expect(await vaultToken.balanceOf(depositor_1.address)).to.be.equal((ethers.utils.parseUnits('0.99', 18)).add(prevBal_1));
         });
     });
 
     describe("Reactivate withdrawal window", () => {
+        before(async () => {
+            await network.provider.send('evm_increaseTime', [86400]);
+        });
+        it("Shouldn't reopen the withdrawal window", async () => {
+            await expect(
+                vaultToken.reactivateWithdrawalWindow()
+            ).to.be.revertedWith("Invalid");
+        });
+        it("Should allow anyone to reopen the withdrawal window", async () => {
+            await network.provider.send('evm_increaseTime', [86400]);
 
+            await expect(
+                vaultToken.reactivateWithdrawalWindow()
+            ).to.not.be.reverted;
+        });
     });
 
 });

@@ -134,6 +134,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
 
     function sweepFees() external onlyManager nonReentrant() whenNotPaused() {
         IERC20(asset).safeTransfer(msg.sender, obligatedFees);
+        obligatedFees = 0;
     }
     
     /// @notice Deposit assets and receive vault tokens to represent a share
