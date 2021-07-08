@@ -7,7 +7,7 @@ export default function WethWrap(props) {
       <Form.Group>
         <Form.Field inline>
           {/* <div>{nwConfig[currentChain].wethContractAddr}</div> */}
-          <label>Eth Amount</label>
+          <label>ETH Amount</label>
           <Input placeholder="Amount" onChange={props.ethInputAmt} />
         </Form.Field>
         <Button onClick={props.ethToWeth}>Convert</Button>

@@ -71,7 +71,7 @@ export default function VaultTokenInfo(props) {
 
   function ethInputAmt(event) {
     if (event.target.value > props.ethBal) {
-      setSM("Error", "Your don't have enough Eth", true, true);
+      setSM("Error", "Your don't have enough ETH", true, true);
       setIconStatus("error");
       return;
     }
@@ -191,7 +191,7 @@ export default function VaultTokenInfo(props) {
     } else if (a > b && a < b + c) {
       setSM(
         "Error",
-        `You need to convert ${(a - b) / 1e18} Eth to Weth`,
+        `You need to convert ${(a - b) / 1e18} ETH to WETH`,
         true,
         true
       );
@@ -400,7 +400,7 @@ export default function VaultTokenInfo(props) {
           onClick={handleConvert}
         >
           <Icon name="dropdown" />
-          Eth <Icon name="long arrow alternate right" /> WETH
+          ETH <Icon name="long arrow alternate right" /> WETH Wrapper
         </Accordion.Title>
         {/* {showConvertModal && ( */}
         <Accordion.Content active={activeIndex === 0}>
