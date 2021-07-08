@@ -378,6 +378,7 @@ export default function VTList(props) {
                   acct={props.acctNum}
                   mpAddress={props.mpAddress}
                   showSpinner={vtList.length === 0}
+                  ethBal={props.ethBal}
                 />
               </Table.Cell>
             )}
@@ -389,6 +390,7 @@ export default function VTList(props) {
                   title="Portfolio"
                   acct={props.acctNum}
                   showSpinner={vtList.length === 0}
+                  ethBal={props.ethBal}
                 />
               </Table.Cell>
             )}
@@ -400,6 +402,7 @@ export default function VTList(props) {
                   title="Follow List"
                   acct={props.acctNum}
                   showSpinner={vtList.length === 0}
+                  ethBal={props.ethBal}
                 />
               </Table.Cell>
             )}
