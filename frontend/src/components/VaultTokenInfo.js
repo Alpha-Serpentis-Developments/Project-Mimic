@@ -587,10 +587,11 @@ export default function VaultTokenInfo(props) {
       <Grid textAlign="center" stackable>
         <Grid.Column>
           <Header size="large" color="blue">
-            Ratio:{" "}
+            1 WETH ={" "}
             {Number(props.token.totalSupply) /
               (Number(props.token.vaultBalance) +
                 Number(props.token.collateralAmount))}
+                {" "} Vault Tokens
             {/* {pairRatio} */}
           </Header>
           {/* <Header.Subheader># vault tokens/ vault assets</Header.Subheader> */}
