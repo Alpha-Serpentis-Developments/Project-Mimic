@@ -6,7 +6,7 @@ describe('TestToken contract', () => {
 
     beforeEach(async () => {
         TestToken = await ethers.getContractFactory('TestToken');
-        Factory = await ethers.getContractFactory('contracts\\experimenting\\Factory.sol:Factory');
+        Factory = await ethers.getContractFactory('contracts\\mimic\\Factory.sol:Factory');
 
         [deployer, manager, fake_airswap, fake_controller] = await ethers.getSigners();
         testToken = await TestToken.deploy("Asset Token", "ASSET", 6, 100000e6);
