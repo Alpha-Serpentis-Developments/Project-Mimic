@@ -33,7 +33,6 @@ export default function App() {
   const [chainId, setChainId] = useState<number | undefined>();
   const [ethBal, setEthBal] = useState<number | undefined>();
   const [mpAddress, setMPAddress] = useState<string>("");
-
   const [renderHome, setRenderHome] = useState<boolean>(true);
   const [renderManager, setRenderManager] = useState<boolean>(false);
   const [renderFollow, setRenderFollow] = useState<boolean>(false);
@@ -76,10 +75,20 @@ export default function App() {
       getChainID();
       setBtnText(t);
       getMarginPoolAddress();
+      getAccountDetail();
     }
 
     hasMMInstall();
   }, []);
+
+  async function getAccountDetail() {
+    getChainID();
+    const weiBal = await web3.eth.getBalance(acctNum);
+    console.log(weiBal);
+    const ethBal = parseInt(weiBal) / 1000000000000000000;
+    // setChainId(chain_Id);
+    setEthBal(ethBal);
+  }
 
   function getMarginPoolAddress() {
     let ab = new AddressBook(web3);
@@ -133,11 +142,13 @@ export default function App() {
       setAcctNum(account);
       setBtnText(wAddress);
       // const chain_Id = await web3.eth.getChainId();
-      getChainID();
-      const weiBal = await web3.eth.getBalance(account);
-      const ethBal = parseInt(weiBal) / 1000000000000000000;
-      // setChainId(chain_Id);
-      setEthBal(ethBal);
+      // getChainID();
+      // const weiBal = await web3.eth.getBalance(account);
+      // console.log(weiBal);
+      // const ethBal = parseInt(weiBal) / 1000000000000000000;
+      // // setChainId(chain_Id);
+      // setEthBal(ethBal);
+      getAccountDetail();
       localStorage.setItem("account", JSON.stringify(account));
     }
   }
@@ -293,6 +304,7 @@ export default function App() {
                 renderManager={renderManager}
                 renderFollow={renderFollow}
                 renderPortfolio={renderPortfolio}
+                ethBal={ethBal}
               />
               {renderManager && (
                 <Grid centered padded>

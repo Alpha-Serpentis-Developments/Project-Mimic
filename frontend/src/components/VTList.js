@@ -10,6 +10,7 @@ import { Table } from "semantic-ui-react";
 import { ERC20 } from "./Erc20";
 
 export default function VTList(props) {
+  console.log(props.ethBal);
   const [vtList, setVTList] = useState([]);
   const [update, setUpdate] = useState(0);
   const [managedList, setManagedList] = useState([]);
@@ -378,6 +379,7 @@ export default function VTList(props) {
                   acct={props.acctNum}
                   mpAddress={props.mpAddress}
                   showSpinner={vtList.length === 0}
+                  ethBal={props.ethBal}
                 />
               </Table.Cell>
             )}
@@ -389,6 +391,7 @@ export default function VTList(props) {
                   title="Portfolio"
                   acct={props.acctNum}
                   showSpinner={vtList.length === 0}
+                  ethBal={props.ethBal}
                 />
               </Table.Cell>
             )}
@@ -400,6 +403,7 @@ export default function VTList(props) {
                   title="Follow List"
                   acct={props.acctNum}
                   showSpinner={vtList.length === 0}
+                  ethBal={props.ethBal}
                 />
               </Table.Cell>
             )}

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import StatusMessage from "./StatusMessage";
+import { nwConfig, currentChain } from "./NetworkConfig";
+
 import {
   Header,
   Button,
@@ -10,8 +12,10 @@ import {
   Form,
   Popup,
   Label,
+  Accordion,
 } from "semantic-ui-react";
 import { web3 } from "./Web3Handler";
+import WethWrap from "./WethWrap";
 
 const units1 = [
   { key: 1, text: "Wei", value: "wei" },
@@ -60,6 +64,36 @@ export default function VaultTokenInfo(props) {
   const [btnDisabled, setBtnDisabled] = useState(false);
   const [managerClick, setManagerClick] = useState(false);
 
+  //=======texting for eth to weth
+  const [eToWethAmt, setEToWethAmt] = useState(0);
+  const [showConvertForm, setShowConvertForm] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+
+  function ethInputAmt(event) {
+    if (event.target.value > props.ethBal) {
+      setSM("Error", "Your don't have enough Eth", true, true);
+      setIconStatus("error");
+      return;
+    }
+    setEToWethAmt(event.target.value);
+  }
+
+  function ethToWeth(a) {
+    if (a === 0) {
+      setSM("Error", "Form input Error", true, true);
+      setIconStatus("error");
+      return;
+    }
+    let amount = web3.utils.toWei(a, "ether");
+    let e = web3.eth.sendTransaction({
+      from: props.acct,
+      to: nwConfig[currentChain].wethContractAddr,
+      value: amount,
+    });
+    sendTX(e, "Converting to WETH");
+  }
+
+  //========ending
   function setSM(h, m, s, e) {
     setStatusHeader(h);
     setStatusMessage(m);
@@ -147,9 +181,29 @@ export default function VaultTokenInfo(props) {
   // }
   ///=================
 
+  function overAmount(a, b, c) {
+    c = c * 1e18;
+    console.log(a, b, c);
+    if (a > b + c) {
+      setSM("Error", "You don't have enough balance", true, true);
+      setIconStatus("error");
+      return;
+    } else if (a > b && a < b + c) {
+      setSM(
+        "Error",
+        `You need to convert ${(a - b) / 1e18} Eth to Weth`,
+        true,
+        true
+      );
+      setIconStatus("error");
+      setShowConvertForm(true);
+      return;
+    }
+  }
+
   function deposit(amt) {
     startTX();
-    if (amt === 0) {
+    if (amt === 0 || typeof amt !== "number") {
       setSM("Error", "Form input Error", true, true);
       setIconStatus("error");
       return;
@@ -190,7 +244,7 @@ export default function VaultTokenInfo(props) {
 
   function initialize(amt) {
     startTX();
-    if (amt === 0) {
+    if (amt === 0 || typeof amt !== "number") {
       setSM("Error", "Form input Error", true, true);
       setIconStatus("error");
 
@@ -246,7 +300,7 @@ export default function VaultTokenInfo(props) {
   function withDraw(amt) {
     startTX();
 
-    if (amt === 0) {
+    if (amt === 0 || typeof amt !== "number") {
       setSM("Error", "Form input Error", true, true);
       setIconStatus("error");
       return;
@@ -330,6 +384,41 @@ export default function VaultTokenInfo(props) {
     setShowStatus(false);
   }
 
+  function handleConvert(e, titleProps) {
+    const { index } = titleProps;
+    const newIndex = activeIndex === index ? -1 : index;
+
+    setActiveIndex(newIndex);
+  }
+
+  function convertForm() {
+    return (
+      <Accordion>
+        <Accordion.Title
+          active={activeIndex === 0}
+          index={0}
+          onClick={handleConvert}
+        >
+          <Icon name="dropdown" />
+          Eth <Icon name="long arrow alternate right" /> WETH
+        </Accordion.Title>
+        {/* {showConvertModal && ( */}
+        <Accordion.Content active={activeIndex === 0}>
+          <p>
+            <WethWrap
+              acct={props.acct}
+              ethInputAmt={ethInputAmt}
+              ethToWeth={() => ethToWeth(eToWethAmt)}
+              eToWethAmt={eToWethAmt}
+            />
+            {/* )} */}
+          </p>
+          <Divider section />
+        </Accordion.Content>
+      </Accordion>
+    );
+  }
+
   function writeCallRender() {
     return (
       <Form>
@@ -340,7 +429,20 @@ export default function VaultTokenInfo(props) {
             <label>Write Call Amount</label>
             <input
               value={writeCallAmt}
-              onChange={(e) => setWriteCallAmt(e.target.value)}
+              // onChange={(e) => setWriteCallAmt(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value > 0) {
+                  let a = web3.utils.toWei(e.target.value, "ether");
+                  overAmount(
+                    a,
+                    props.token.assetObject.myBalance,
+                    props.ethBal
+                  );
+                  setWriteCallAmt(e.target.value);
+                } else {
+                  setWriteCallAmt(e.target.value);
+                }
+              }}
             />
           </Form.Field>
           <div style={{ marginTop: "35px", paddingLeft: "0px" }}>
@@ -526,7 +628,20 @@ export default function VaultTokenInfo(props) {
                     <Form.Field>
                       <input
                         value={depositAmt}
-                        onChange={(e) => setDeposit(e.target.value)}
+                        onChange={(e) => {
+                          console.log(typeof e.target.value);
+                          if (e.target.value > 0) {
+                            let a = web3.utils.toWei(e.target.value, "ether");
+                            overAmount(
+                              a,
+                              props.token.assetObject.myBalance,
+                              props.ethBal
+                            );
+                            setDeposit(e.target.value);
+                          } else {
+                            setDeposit(e.target.value);
+                          }
+                        }}
                       />
                     </Form.Field>
                     <div style={{ paddingTop: "13px" }}>
@@ -547,7 +662,9 @@ export default function VaultTokenInfo(props) {
                 {showDepositSuccessmsg && <SuccessMessage />} */}
 
                 <Button
-                  onClick={() => deposit(depositAmt)}
+                  onClick={() => {
+                    deposit(depositAmt);
+                  }}
                   color="orange"
                   icon
                   size="large"
@@ -613,7 +730,20 @@ export default function VaultTokenInfo(props) {
               <Form.Field>
                 <input
                   value={initializeAmt}
-                  onChange={(e) => setInitializeAmt(e.target.value)}
+                  // onChange={(e) => setInitializeAmt(e.target.value)}
+                  onChange={(e) => {
+                    if (e.target.value > 0) {
+                      let a = web3.utils.toWei(e.target.value, "ether");
+                      overAmount(
+                        a,
+                        props.token.assetObject.myBalance,
+                        props.ethBal
+                      );
+                      setInitializeAmt(e.target.value);
+                    } else {
+                      setInitializeAmt(e.target.value);
+                    }
+                  }}
                 />
               </Form.Field>
               <div style={{ marginTop: "10px", marginRight: "20px" }}>
@@ -673,7 +803,20 @@ export default function VaultTokenInfo(props) {
             <label>Premium Amount</label>
             <input
               value={premiumAmount}
-              onChange={(e) => setPemiumAmount(e.target.value)}
+              // onChange={(e) => setPemiumAmount(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value > 0) {
+                  let a = web3.utils.toWei(e.target.value, "ether");
+                  overAmount(
+                    a,
+                    props.token.assetObject.myBalance,
+                    props.ethBal
+                  );
+                  setPemiumAmount(e.target.value);
+                } else {
+                  setPemiumAmount(e.target.value);
+                }
+              }}
             />
           </Form.Field>
           <div style={{ paddingTop: "35px" }}>
@@ -801,6 +944,8 @@ export default function VaultTokenInfo(props) {
           </Grid.Column>
         </Grid>
       )}
+      {/* {showConvertForm && convertForm()} */}
+      {convertForm()}
       {showTokenPair()}
 
       {props.token.vaultBalance > 0 && showRatio()}
