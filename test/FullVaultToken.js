@@ -455,6 +455,40 @@ describe('VaultToken contract (full test)', () => {
         });
     });
 
+    describe("Protocol and Vault Fees Active", () => {
+        before(async () => {
+            await factory.connect(deployer).changeDepositFee(100);
+            await factory.connect(deployer).changeWithdrawalFee(100);
+        });
+        it('Should correctly charge both fees at the same time (deposit)', async () => {
+            const prevBal_0 = await vaultToken.balanceOf(depositor.address);
+            const prevBal_1 = await vaultToken.balanceOf(depositor_1.address);
+            const prevBal_admin = await mockWETH.balanceOf(deployer.address);
+
+            await mockWETH.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
+            await mockWETH.connect(depositor_1).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
+
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18));
+            await vaultToken.connect(depositor_1).deposit(ethers.utils.parseUnits('1', 18));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.be.equal((ethers.utils.parseUnits('0.98', 18)).add(prevBal_0));
+            expect(await vaultToken.balanceOf(depositor_1.address)).to.be.equal((ethers.utils.parseUnits('0.98', 18)).add(prevBal_1));
+            expect(await mockWETH.balanceOf(deployer.address)).to.be.equal((ethers.utils.parseUnits('0.02', 18)).add(prevBal_admin));
+        });
+        it('Should correctly charge both fees at the same time (withdrawal)', async () => {
+            const prevBal_0 = await mockWETH.balanceOf(depositor.address);
+            const prevBal_1 = await mockWETH.balanceOf(depositor_1.address);
+            const prevBal_admin = await mockWETH.balanceOf(deployer.address);
+
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('0.98', 18));
+            await vaultToken.connect(depositor_1).withdraw(ethers.utils.parseUnits('0.98', 18));
+
+            expect(await mockWETH.balanceOf(depositor.address)).to.be.equal((ethers.utils.parseUnits('0.9604', 18)).add(prevBal_0));
+            expect(await mockWETH.balanceOf(depositor_1.address)).to.be.equal((ethers.utils.parseUnits('0.9604', 18)).add(prevBal_1));
+            expect(await mockWETH.balanceOf(deployer.address)).to.be.equal((ethers.utils.parseUnits('0.0196', 18)).add(prevBal_admin));
+        });
+    });
+
     describe("Reactivate withdrawal window", () => {
         before(async () => {
             await network.provider.send('evm_increaseTime', [86400]);
