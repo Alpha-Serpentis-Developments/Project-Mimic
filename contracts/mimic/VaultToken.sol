@@ -6,14 +6,13 @@ import {ISwap, Types} from "./airswap/interfaces/ISwap.sol";
 import {IAddressBook} from "./gamma/interfaces/IAddressBook.sol";
 import {Actions, GammaTypes, IController} from "./gamma/interfaces/IController.sol";
 import {OtokenInterface} from "./gamma/interfaces/OtokenInterface.sol";
+import {ERC20Upgradeable} from "../oz/token/ERC20/ERC20Upgradeable.sol";
 import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
 import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
-import {Pausable} from "../oz/security/Pausable.sol";
-import {ReentrancyGuard} from "../oz/security/ReentrancyGuard.sol";
+import {PausableUpgradeable} from "../oz/security/PausableUpgradeable.sol";
+import {ReentrancyGuardUpgradeable} from "../oz/security/ReentrancyGuardUpgradeable.sol";
 
-import "hardhat/console.sol";
-
-contract VaultToken is ERC20, Pausable, ReentrancyGuard {
+contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20 for IERC20;
 
     error Unauthorized();
@@ -30,7 +29,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     /// @notice Time in which the withdrawal window expires
     uint256 public withdrawalWindowExpires;
     /// @notice Length of time where the withdrawal window is active
-    uint256 private immutable withdrawalWindowLength;
+    uint256 private withdrawalWindowLength;
     /// @notice Amount of collateral for the address already used for collateral
     uint256 public collateralAmount;
     /// @notice Current active vault
@@ -43,18 +42,18 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     uint16 public depositFee;
     /// @notice Take profit fee
     uint16 public withdrawalFee;
+    /// @notice Performance fee
+    uint16 public performanceFee;
     /// @notice Address of the current oToken
     address private oToken;
     /// @notice Address of the AddressBook
-    IAddressBook private immutable addressBook;
-    /// @notice Address of the exchange
-    address private immutable AIRSWAP_EXCHANGE;
+    IAddressBook private addressBook;
     /// @notice Address of the underlying asset to trade
-    address public immutable asset;
+    address public asset;
     /// @notice Address of the manager (admin)
-    address public immutable manager;
+    address public manager;
     /// @notice Address of the factory
-    address private immutable factory;
+    address private factory;
 
     event Deposit(uint256 assetDeposited, uint256 vaultTokensMinted);
     event Withdrawal(uint256 assetWithdrew, uint256 vaultTokensBurned);
@@ -64,26 +63,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     event CallsSold(uint256 amountSold, uint256 premiumReceived);
     event DepositFeeModified(uint16 newFee);
     event WithdrawalFeeModified(uint16 newFee);
-
-    constructor(
-        string memory _name,
-        string memory _symbol,
-        address _airswap,
-        address _addressBook,
-        address _asset,
-        address _manager,
-        uint256 _withdrawalWindowLength,
-        uint256 _maximumAssets
-    ) ERC20(_name, _symbol) {
-        AIRSWAP_EXCHANGE = _airswap;
-        addressBook = IAddressBook(_addressBook);
-        asset = _asset;
-        manager = _manager;
-        withdrawalWindowLength = _withdrawalWindowLength;
-        maximumAssets = _maximumAssets;
-
-        factory = msg.sender;
-    }
+    event PerformanceFeeModified(uint16 newFee);
 
     modifier onlyManager {
         _onlyManager();
@@ -92,6 +72,25 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     modifier withdrawalWindowCheck(bool _revertIfClosed) {
         _withdrawalWindowCheck(_revertIfClosed);
         _;
+    }
+
+    function initialize(
+        string memory _name,
+        string memory _symbol,
+        address _asset,
+        address _manager,
+        address _addressBook,
+        address _factory,
+        uint256 _withdrawalWindowLength,
+        uint256 _maximumAssets
+    ) external initializer {
+        __ERC20_init_unchained(_name, _symbol);
+        asset = _asset;
+        manager = _manager;
+        addressBook = IAddressBook(_addressBook);
+        factory = _factory;
+        withdrawalWindowLength = _withdrawalWindowLength;
+        maximumAssets = _maximumAssets;
     }
 
     /// @notice For emergency use
@@ -130,6 +129,22 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         withdrawalFee = _newValue;
 
         emit WithdrawalFeeModified(_newValue);
+    }
+    
+    function adjustPerformanceFee(uint16 _newValue) external onlyManager nonReentrant() whenNotPaused() {
+        if(_newValue > 5000)
+            revert Invalid();
+            
+        performanceFee = _newValue;
+        
+        emit PerformanceFeeModified(_newValue);
+    }
+
+    function adjustWithdrawalWindowLength(uint256 _newValue) external onlyManager nonReentrant() whenNotPaused() {
+        if(_newValue < 21600) // 6 hour minimum
+            revert Invalid();
+
+        withdrawalWindowLength = _newValue;
     }
 
     function sweepFees() external onlyManager nonReentrant() whenNotPaused() {
@@ -226,7 +241,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
     function writeCalls(uint256 _amount, address _oToken) external onlyManager nonReentrant() whenNotPaused() {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
-        if(_amount == 0 || _oToken == address(0))
+        if(_amount == 0 || _oToken == address(0) || _amount > IERC20(asset).balanceOf(address(this)) - obligatedFees)
             revert Invalid();
         if(_oToken != oToken && oToken != address(0))
             revert oTokenNotCleared();
@@ -354,7 +369,7 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
             revert WithdrawalWindowActive();
         if(_amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
             revert Invalid();
-        if(!ISwap(AIRSWAP_EXCHANGE).signerAuthorizations(_otherParty, address(this)))
+        if(!ISwap(IFactory(factory).airswapExchange()).signerAuthorizations(_otherParty, address(this)))
             revert Unauthorized_COUNTERPARTY_DID_NOT_SIGN();
 
         // Prepare the AirSwap order
@@ -380,9 +395,12 @@ contract VaultToken is ERC20, Pausable, ReentrancyGuard {
         sellOrder.sender = sender;
         
         // Approve
-        IERC20(oToken).approve(AIRSWAP_EXCHANGE, _amount);
+        IERC20(oToken).approve(IFactory(factory).airswapExchange(), _amount);
 
-        ISwap(AIRSWAP_EXCHANGE).swap(sellOrder);
+        ISwap(IFactory(factory).airswapExchange()).swap(sellOrder);
+        
+        // Calculate performance fee
+        obligatedFees += _calculateFees(_premiumAmount, performanceFee);
 
         emit CallsSold(_amount, _premiumAmount);
     }
