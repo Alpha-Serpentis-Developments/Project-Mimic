@@ -18,6 +18,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     error Unauthorized();
     error Unauthorized_COUNTERPARTY_DID_NOT_SIGN();
     error Invalid();
+    error NotEnoughFunds();
     error MaximumFundsReached();
     error RatioAlreadyDefined();
     error RatioNotDefined();
@@ -29,7 +30,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @notice Time in which the withdrawal window expires
     uint256 public withdrawalWindowExpires;
     /// @notice Length of time where the withdrawal window is active
-    uint256 private withdrawalWindowLength;
+    uint256 public withdrawalWindowLength;
     /// @notice Amount of collateral for the address already used for collateral
     uint256 public collateralAmount;
     /// @notice Current active vault
@@ -37,7 +38,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @notice Maximum funds
     uint256 public maximumAssets;
     /// @notice Obligated fees to the manager
-    uint256 private obligatedFees;
+    uint256 public obligatedFees;
     /// @notice Deposit fee
     uint16 public depositFee;
     /// @notice Take profit fee
@@ -45,7 +46,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @notice Performance fee
     uint16 public performanceFee;
     /// @notice Address of the current oToken
-    address private oToken;
+    address public oToken;
     /// @notice Address of the AddressBook
     IAddressBook private addressBook;
     /// @notice Address of the underlying asset to trade
@@ -53,14 +54,14 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @notice Address of the manager (admin)
     address public manager;
     /// @notice Address of the factory
-    address private factory;
+    address public factory;
 
     event Deposit(uint256 assetDeposited, uint256 vaultTokensMinted);
     event Withdrawal(uint256 assetWithdrew, uint256 vaultTokensBurned);
     event WithdrawalWindowActivated(uint256 closesAfter);
-    event CallsMinted(uint256 collateralDeposited, address indexed newOtoken, uint256 vaultId);
-    event CallsBurned(uint256 oTokensBurned);
-    event CallsSold(uint256 amountSold, uint256 premiumReceived);
+    event OptionsMinted(uint256 collateralDeposited, address indexed newOtoken, uint256 vaultId);
+    event OptionsBurned(uint256 oTokensBurned);
+    event OptionsSold(uint256 amountSold, uint256 premiumReceived);
     event DepositFeeModified(uint16 newFee);
     event WithdrawalFeeModified(uint16 newFee);
     event PerformanceFeeModified(uint16 newFee);
@@ -167,12 +168,12 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
 
         // Calculate protocol-level fees
         if(IFactory(factory).depositFee() != 0) {
-            protocolFees = _calculateFees(_amount, IFactory(factory).depositFee());
+            protocolFees = _percentMultiply(_amount, IFactory(factory).depositFee());
         }
 
         // Calculate vault-level fees
         if(depositFee != 0) {
-            vaultFees = _calculateFees(_amount, depositFee);
+            vaultFees = _percentMultiply(_amount, depositFee);
         }
 
         // Check if the total supply is zero
@@ -206,10 +207,10 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         uint256 protocolFee;
         
         if(IFactory(factory).withdrawalFee() > 0) {
-            protocolFee = _calculateFees(_amount, IFactory(factory).withdrawalFee());
+            protocolFee = _percentMultiply(_amount, IFactory(factory).withdrawalFee());
             IERC20(asset).safeTransfer(IFactory(factory).admin(), protocolFee);
         }
-        uint256 vaultFee = _calculateFees(_amount, withdrawalFee);
+        uint256 vaultFee = _percentMultiply(_amount, withdrawalFee);
 
         assetAmount -= (protocolFee + vaultFee);
         obligatedFees += vaultFee;
@@ -238,76 +239,21 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @dev Allows the manager to write calls for an x 
     /// @param _amount amount of the asset to deposit as collateral
     /// @param _oToken address of the oToken
-    function writeCalls(uint256 _amount, address _oToken) external onlyManager nonReentrant() whenNotPaused() {
-        if(!_withdrawalWindowCheck(false))
-            revert WithdrawalWindowActive();
-        if(_amount == 0 || _oToken == address(0) || _amount > IERC20(asset).balanceOf(address(this)) - obligatedFees)
-            revert Invalid();
-        if(_oToken != oToken && oToken != address(0))
-            revert oTokenNotCleared();
+    function writeOptions(uint256 _amount, address _oToken) external onlyManager nonReentrant() whenNotPaused() {
+        _writeOptions(_amount, _oToken);
+    }
 
-        Actions.ActionArgs[] memory actions;
-        GammaTypes.Vault memory vault;
-
-        IController controller = IController(addressBook.getController());
-
-        // Check if the vault is even open and open if no vault is open
-        vault = controller.getVault(address(this), currentVaultId);
-        if(
-            vault.shortOtokens.length == 0 &&
-            vault.collateralAssets.length == 0
-        ) {
-            actions = new Actions.ActionArgs[](3);
-            currentVaultId = controller.getAccountVaultCounter(address(this)) + 1;
-
-            actions[0] = Actions.ActionArgs(
-                Actions.ActionType.OpenVault,
-                address(this),
-                address(this),
-                address(0),
-                currentVaultId,
-                0,
-                0,
-                ""
-            );
-            
-        } else {
-            actions = new Actions.ActionArgs[](2);
-        }
-
-        // Deposit _amount of asset to the vault
-        actions[actions.length - 2] = Actions.ActionArgs(
-                Actions.ActionType.DepositCollateral,
-                address(this),
-                address(this),
-                asset,
-                currentVaultId,
-                _amount,
-                0,
-                ""
-            );
-        // Write calls
-        actions[actions.length - 1] = Actions.ActionArgs(
-                Actions.ActionType.MintShortOption,
-                address(this),
-                address(this),
-                _oToken,
-                currentVaultId,
-                _normalize(_amount, ERC20(asset).decimals(), 8),
-                0,
-                ""
-            );
-        // Approve the tokens to be moved
-        IERC20(asset).approve(addressBook.getMarginPool(), _amount);
-        
-        // Submit the operations to the controller contract
-        controller.operate(actions);
-
-        collateralAmount += _amount;
-        if(oToken != _oToken)
-            oToken = _oToken;
-
-        emit CallsMinted(_amount, oToken, controller.getAccountVaultCounter(address(this)));
+    /// @notice Write calls for a _percentage of the current balance of the vault
+    /// @dev Uses percentage of the vault instead of a specific number (helpful for multi-sigs)
+    /// @param _percentage A uint16 representing up to 10000 (100.00%) with two decimals of precision
+    /// @param _oToken address of the oToken
+    function writeOptions(uint16 _percentage, address _oToken) external onlyManager nonReentrant() whenNotPaused() {
+        _writeOptions(
+            _percentMultiply(
+                IERC20(asset).balanceOf(address(this)) - obligatedFees, _percentage
+            ),
+            _oToken
+        );
     }
 
     /// @notice Burns away the oTokens to redeem the asset collateral
@@ -355,7 +301,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
             emit WithdrawalWindowActivated(withdrawalWindowExpires);
         }
 
-        emit CallsBurned(_amount);
+        emit OptionsBurned(_amount);
     }
     
     /// @notice Operation to sell calls to an EXISTING order on AirSwap
@@ -364,45 +310,60 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @param _premiumAmount Token amount to receive of the premium
     /// @param _otherParty Address of the counterparty
     /// @param _nonce Other party's AirSwap nonce
-    function sellCalls(uint256 _amount, uint256 _premiumAmount, address _otherParty, uint256 _nonce) external onlyManager nonReentrant() whenNotPaused() {
-        if(!_withdrawalWindowCheck(false))
-            revert WithdrawalWindowActive();
-        if(_amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
-            revert Invalid();
-        if(!ISwap(IFactory(factory).airswapExchange()).signerAuthorizations(_otherParty, address(this)))
-            revert Unauthorized_COUNTERPARTY_DID_NOT_SIGN();
+    function sellOptions(uint256 _amount, uint256 _premiumAmount, address _otherParty, uint256 _nonce) external onlyManager nonReentrant() whenNotPaused() {
+        _sellOptions(_amount, _premiumAmount, _otherParty, _nonce);
+    }
 
-        // Prepare the AirSwap order
-        Types.Order memory sellOrder;
-        Types.Party memory signer;
-        Types.Party memory sender;
+    /// @notice Operation to both write AND sell options
+    /// @dev Operation that can handle both the `writeOptions()` and `sellCalls()` at the same time
+    /// @param _amount Amount of the asset token to collateralize the option
+    /// @param _oToken Address of the oToken to write with
+    /// @param _premiumAmount Amount of the oTokens to sell
+    /// @param _otherParty address of the counterparty via AirSwap
+    /// @param _nonce other party's AirSwap nonce
+    function writeAndSellOptions(
+        uint256 _amount,
+        address _oToken,
+        uint256 _premiumAmount,
+        address _otherParty,
+        uint256 _nonce
+    ) external onlyManager nonReentrant() whenNotPaused() {
+        uint256 oTokenPrevBal = IERC20(_oToken).balanceOf(address(this));
 
-        // Prepare the signer Types.Party portion (counterparty) of the order
-        signer.kind = 0x36372b07; // ERC20_INTERFACE_ID
-        signer.wallet = _otherParty;
-        signer.token = asset;
-        signer.amount = _premiumAmount;
+        _writeOptions(
+            _amount,
+            _oToken
+        );
+        _sellOptions(
+            IERC20(_oToken).balanceOf(address(this)) - oTokenPrevBal, // This should NEVER underflow
+            _premiumAmount,
+            _otherParty,
+            _nonce
+        );
+    }
 
-        // Prepare the sender Types.Party portion (this contract) of the order
-        sender.kind = 0x36372b07; // ERC20_INTERFACE_ID
-        sender.token = oToken;
-        sender.amount = _amount;
+    function writeAndSellOptions(
+        uint16 _percentage,
+        address _oToken,
+        uint256 _premiumAmount,
+        address _otherParty,
+        uint256 _nonce
+    ) external onlyManager nonReentrant() whenNotPaused() {
+        uint256 oTokenPrevBal = IERC20(_oToken).balanceOf(address(this));
 
-        // Define Types.Order
-        sellOrder.nonce = _nonce;
-        sellOrder.expiry = block.timestamp + 1 days;
-        sellOrder.signer = signer;
-        sellOrder.sender = sender;
-        
-        // Approve
-        IERC20(oToken).approve(IFactory(factory).airswapExchange(), _amount);
-
-        ISwap(IFactory(factory).airswapExchange()).swap(sellOrder);
-        
-        // Calculate performance fee
-        obligatedFees += _calculateFees(_premiumAmount, performanceFee);
-
-        emit CallsSold(_amount, _premiumAmount);
+        _writeOptions(
+            _percentMultiply(
+                IERC20(asset).balanceOf(address(this)) - obligatedFees,
+                _percentage
+            ),
+            _oToken
+        );
+        _sellOptions(
+            IERC20(_oToken).balanceOf(address(this)) - oTokenPrevBal, // This should NEVER underflow
+            _premiumAmount,
+            _otherParty,
+            _nonce
+        );
     }
 
     /// @notice Operation to settle the vault
@@ -440,6 +401,121 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         emit WithdrawalWindowActivated(withdrawalWindowExpires);
     }
 
+    function _writeOptions(uint256 _amount, address _oToken) internal {
+        if(!_withdrawalWindowCheck(false))
+            revert WithdrawalWindowActive();
+        if(_amount == 0 || _oToken == address(0))
+            revert Invalid();
+        if(_amount > IERC20(asset).balanceOf(address(this)) - obligatedFees)
+            revert NotEnoughFunds();
+        if(_oToken != oToken && oToken != address(0))
+            revert oTokenNotCleared();
+
+        Actions.ActionArgs[] memory actions;
+        GammaTypes.Vault memory vault;
+
+        IController controller = IController(addressBook.getController());
+
+        // Check if the vault is even open and open if no vault is open
+        vault = controller.getVault(address(this), currentVaultId);
+        if(
+            vault.shortOtokens.length == 0 &&
+            vault.collateralAssets.length == 0
+        ) {
+            actions = new Actions.ActionArgs[](3);
+            currentVaultId = controller.getAccountVaultCounter(address(this)) + 1;
+
+            actions[0] = Actions.ActionArgs(
+                Actions.ActionType.OpenVault,
+                address(this),
+                address(this),
+                address(0),
+                currentVaultId,
+                0,
+                0,
+                ""
+            );
+            
+        } else {
+            actions = new Actions.ActionArgs[](2);
+        }
+
+        // Deposit _amount of asset to the vault
+        actions[actions.length - 2] = Actions.ActionArgs(
+                Actions.ActionType.DepositCollateral,
+                address(this),
+                address(this),
+                asset,
+                currentVaultId,
+                _amount,
+                0,
+                ""
+            );
+        // Write options
+        actions[actions.length - 1] = Actions.ActionArgs(
+                Actions.ActionType.MintShortOption,
+                address(this),
+                address(this),
+                _oToken,
+                currentVaultId,
+                _normalize(_amount, ERC20(asset).decimals(), 8),
+                0,
+                ""
+            );
+        // Approve the tokens to be moved
+        IERC20(asset).approve(addressBook.getMarginPool(), _amount);
+        
+        // Submit the operations to the controller contract
+        controller.operate(actions);
+
+        collateralAmount += _amount;
+        if(oToken != _oToken)
+            oToken = _oToken;
+
+        emit OptionsMinted(_amount, oToken, controller.getAccountVaultCounter(address(this)));
+    }
+
+    function _sellOptions(uint256 _amount, uint256 _premiumAmount, address _otherParty, uint256 _nonce) internal {
+        if(!_withdrawalWindowCheck(false))
+            revert WithdrawalWindowActive();
+        if(_amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
+            revert Invalid();
+        if(!ISwap(IFactory(factory).airswapExchange()).signerAuthorizations(_otherParty, address(this)))
+            revert Unauthorized_COUNTERPARTY_DID_NOT_SIGN();
+
+        // Prepare the AirSwap order
+        Types.Order memory sellOrder;
+        Types.Party memory signer;
+        Types.Party memory sender;
+
+        // Prepare the signer Types.Party portion (counterparty) of the order
+        signer.kind = 0x36372b07; // ERC20_INTERFACE_ID
+        signer.wallet = _otherParty;
+        signer.token = asset;
+        signer.amount = _premiumAmount;
+
+        // Prepare the sender Types.Party portion (this contract) of the order
+        sender.kind = 0x36372b07; // ERC20_INTERFACE_ID
+        sender.token = oToken;
+        sender.amount = _amount;
+
+        // Define Types.Order
+        sellOrder.nonce = _nonce;
+        sellOrder.expiry = block.timestamp + 1 days;
+        sellOrder.signer = signer;
+        sellOrder.sender = sender;
+        
+        // Approve
+        IERC20(oToken).approve(IFactory(factory).airswapExchange(), _amount);
+
+        ISwap(IFactory(factory).airswapExchange()).swap(sellOrder);
+        
+        // Calculate performance fee
+        obligatedFees += _percentMultiply(_premiumAmount, performanceFee);
+
+        emit OptionsSold(_amount, _premiumAmount);
+    }
+
     function _onlyManager() internal view {
         if(msg.sender != manager)
             revert Unauthorized();
@@ -468,7 +544,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         return block.timestamp > withdrawalWindowExpires;
     }
 
-    function _calculateFees(uint256 _subtotal, uint16 _fee) internal pure returns(uint256) {
+    function _percentMultiply(uint256 _subtotal, uint16 _fee) internal pure returns(uint256) {
         return _subtotal * _fee / 10000;
     }
 }
