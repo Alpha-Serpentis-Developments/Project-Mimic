@@ -19,6 +19,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     error Unauthorized_COUNTERPARTY_DID_NOT_SIGN();
     error Invalid();
     error NotEnoughFunds();
+    error NotEnoughFunds_ReserveViolation();
     error MaximumFundsReached();
     error RatioAlreadyDefined();
     error RatioNotDefined();
@@ -26,6 +27,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     error WithdrawalWindowActive();
     error oTokenNotCleared();
     error SettlementNotReady();
+    error ClosedPermanently();
 
     /// @notice Time in which the withdrawal window expires
     uint256 public withdrawalWindowExpires;
@@ -43,8 +45,12 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     uint16 public depositFee;
     /// @notice Take profit fee
     uint16 public withdrawalFee;
-    /// @notice Performance fee
+    /// @notice Performance fee (taken when options are sold)
     uint16 public performanceFee;
+    /// @notice Withdrawal reserve percentage
+    uint16 public withdrawalReserve;
+    /// @notice Current reserves
+    uint256 public currentReserves;
     /// @notice Address of the current oToken
     address public oToken;
     /// @notice Address of the AddressBook
@@ -55,6 +61,8 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     address public manager;
     /// @notice Address of the factory
     address public factory;
+    /// @notice Determines if the vault is closed permanently
+    bool public closedPermanently;
 
     event Deposit(uint256 assetDeposited, uint256 vaultTokensMinted);
     event Withdrawal(uint256 assetWithdrew, uint256 vaultTokensBurned);
@@ -62,9 +70,11 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     event OptionsMinted(uint256 collateralDeposited, address indexed newOtoken, uint256 vaultId);
     event OptionsBurned(uint256 oTokensBurned);
     event OptionsSold(uint256 amountSold, uint256 premiumReceived);
+    event ReservesEstablished(uint256 allocatedReserves);
     event DepositFeeModified(uint16 newFee);
     event WithdrawalFeeModified(uint16 newFee);
     event PerformanceFeeModified(uint16 newFee);
+    event WithdrawalReserveModified(uint16 newReserve);
 
     modifier onlyManager {
         _onlyManager();
@@ -107,13 +117,16 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @notice Changes the maximum allowed deposits under management
     /// @dev Changes the maximumAssets to the new amount
     /// @param _newValue new maximumAssets value
-    function adjustTheMaximumAssets(uint256 _newValue) public onlyManager nonReentrant() whenNotPaused() {
+    function adjustTheMaximumAssets(uint256 _newValue) external onlyManager nonReentrant() whenNotPaused() {
         if(_newValue < collateralAmount + IERC20(asset).balanceOf(address(this)))
             revert Invalid();
 
         maximumAssets = _newValue;
     }
 
+    /// @notice Changes the deposit fee
+    /// @dev Changes the depositFee with two decimals of precision up to 50.00% (5000)
+    /// @param _newValue new depositFee with two decimals of precision
     function adjustDepositFee(uint16 _newValue) external onlyManager nonReentrant() whenNotPaused() {
         if(_newValue > 5000)
             revert Invalid();
@@ -123,6 +136,9 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         emit DepositFeeModified(_newValue);
     }
 
+    /// @notice Changes the withdrawal fee
+    /// @dev Changes the withdrawalFee with two decimals of precision up to 50.00% (5000)
+    /// @param _newValue new withdrawalFee with two decimals of precision
     function adjustWithdrawalFee(uint16 _newValue) external onlyManager nonReentrant() whenNotPaused() {
         if(_newValue > 5000)
             revert Invalid();
@@ -132,6 +148,9 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         emit WithdrawalFeeModified(_newValue);
     }
     
+    /// @notice Changes the performance fee
+    /// @dev Changes the performanceFee with two decimals of precision up to 50.00% (5000)
+    /// @param _newValue new performanceFee with two decimals of precision
     function adjustPerformanceFee(uint16 _newValue) external onlyManager nonReentrant() whenNotPaused() {
         if(_newValue > 5000)
             revert Invalid();
@@ -141,6 +160,21 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         emit PerformanceFeeModified(_newValue);
     }
 
+    /// @notice Changes the withdrawal reserve percentage
+    /// @dev Changes the withdrawalReserve with two decimals of precision up to 50.00% (5000)
+    /// @param _newValue new withdrawalReserve with two decimals of precision
+    function adjustWithdrawalReserve(uint16 _newValue) external onlyManager nonReentrant() whenNotPaused() {
+        if(_newValue > 5000)
+            revert Invalid();
+
+        withdrawalReserve = _newValue;
+
+        emit WithdrawalReserveModified(_newValue);
+    }
+
+    /// @notice Changes the withdrawal window length
+    /// @dev Changes the withdrawalWindowLength with 6 hour minimum
+    /// @param _newValue new withdrawalWindowLength that's at least 6 hours
     function adjustWithdrawalWindowLength(uint256 _newValue) external onlyManager nonReentrant() whenNotPaused() {
         if(_newValue < 21600) // 6 hour minimum
             revert Invalid();
@@ -148,6 +182,8 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         withdrawalWindowLength = _newValue;
     }
 
+    /// @notice Allows the manager to collect fees
+    /// @dev Transfers all of the obligatedFees to the manager and sets it to zero
     function sweepFees() external onlyManager nonReentrant() whenNotPaused() {
         IERC20(asset).safeTransfer(msg.sender, obligatedFees);
         obligatedFees = 0;
@@ -157,6 +193,8 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @dev Deposits an amount of assets specified then mints vault tokens to the msg.sender
     /// @param _amount amount to deposit of ASSET
     function deposit(uint256 _amount) external nonReentrant() whenNotPaused() {
+        if(closedPermanently)
+            revert ClosedPermanently();
         if(_amount == 0)
             revert Invalid();
         if(collateralAmount + IERC20(asset).balanceOf(address(this)) + _amount - obligatedFees > maximumAssets)
@@ -199,7 +237,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @notice Redeem vault tokens for assets
     /// @dev Burns vault tokens in redemption for the assets to msg.sender
     /// @param _amount amount of VAULT TOKENS to burn
-    function withdraw(uint256 _amount) external withdrawalWindowCheck(true) nonReentrant() whenNotPaused() {
+    function withdraw(uint256 _amount) external nonReentrant() whenNotPaused() {
         if(_amount == 0)
             revert Invalid();
 
@@ -245,7 +283,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
 
     /// @notice Write calls for a _percentage of the current balance of the vault
     /// @dev Uses percentage of the vault instead of a specific number (helpful for multi-sigs)
-    /// @param _percentage A uint16 representing up to 10000 (100.00%) with two decimals of precision
+    /// @param _percentage A uint16 representing up to 10000 (100.00%) with two decimals of precision for the amount of asset tokens to write
     /// @param _oToken address of the oToken
     function writeOptions(uint16 _percentage, address _oToken) external onlyManager nonReentrant() whenNotPaused() {
         _writeOptions(
@@ -342,6 +380,13 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         );
     }
 
+    /// @notice Operation to both write AND sell options
+    /// @dev Operation that can handle both the `writeOptions()` and `sellCalls()` at the same time
+    /// @param _percentage Percentage of the available asset tokens to write and sell
+    /// @param _oToken Address of the oToken to write with
+    /// @param _premiumAmount Amount of the oTokens to sell
+    /// @param _otherParty address of the counterparty via AirSwap
+    /// @param _nonce other party's AirSwap nonce
     function writeAndSellOptions(
         uint16 _percentage,
         address _oToken,
@@ -410,6 +455,14 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
             revert NotEnoughFunds();
         if(_oToken != oToken && oToken != address(0))
             revert oTokenNotCleared();
+
+        // Calculate reserves if not already done
+        if(oToken == address(0))
+            _calculateAndSetReserves();
+
+        // Check if the _amount exceeds the reserves
+        if(_amount > IERC20(asset).balanceOf(address(this)) - obligatedFees - currentReserves)
+            revert NotEnoughFunds_ReserveViolation();
 
         Actions.ActionArgs[] memory actions;
         GammaTypes.Vault memory vault;
@@ -514,6 +567,10 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         obligatedFees += _percentMultiply(_premiumAmount, performanceFee);
 
         emit OptionsSold(_amount, _premiumAmount);
+    }
+
+    function _calculateAndSetReserves() internal {
+        currentReserves = _percentMultiply(IERC20(asset).balanceOf(address(this)), withdrawalReserve);
     }
 
     function _onlyManager() internal view {
