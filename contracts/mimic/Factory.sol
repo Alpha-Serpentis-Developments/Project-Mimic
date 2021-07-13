@@ -23,7 +23,7 @@ contract Factory {
     /// @notice Address of the Gamma AddressBook
     address public immutable addressBook;
     /// @notice Address of the admin
-    address public immutable admin;
+    address public admin;
     /// @notice Address of the airswap exchange
     address public immutable airswapExchange;
 
@@ -31,6 +31,7 @@ contract Factory {
     event DepositFeeModified(uint16 newFee);
     event WithdrawalFeeModified(uint16 newFee);
     event ImplementationChanged(address newImplementation);
+    event AdminChanged(address newAdmin);
 
     constructor(address _exchange, address _addressBook, address _currentImplementation, address _admin) {
         require(_exchange != address(0) || _addressBook != address(0) || _admin != address(0), "0 address");
@@ -72,11 +73,22 @@ contract Factory {
         emit ImplementationChanged(_newImplementation);
     }
 
+    function changeAdmin(address _newAdmin) external onlyAdmin {
+        if(_newAdmin == address(0))
+            revert ZeroAddress();
+
+        admin = _newAdmin;
+
+        emit AdminChanged(_newAdmin);
+    }
+
     /// @notice Deploys a new vault token
     /// @dev Deploys a new vault token under the given parameters for the caller
     /// @param _name name of the vault token
     /// @param _symbol symbol of the vault token
     /// @param _asset address of the asset token (what the vault is denominated in)
+    /// @param _withdrawalWindowLength length of the withdrawal window
+    /// @param _maximumAssets max AUM denominated in the asset token
     function deployNewVaultToken(
         string memory _name,
         string memory _symbol,

@@ -22,7 +22,6 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     error NotEnoughFunds_ReserveViolation();
     error MaximumFundsReached();
     error RatioAlreadyDefined();
-    error RatioNotDefined();
     error WithdrawalWindowNotActive();
     error WithdrawalWindowActive();
     error oTokenNotCleared();
@@ -60,7 +59,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @notice Address of the manager (admin)
     address public manager;
     /// @notice Address of the factory
-    address public factory;
+    IFactory public factory;
     /// @notice Determines if the vault is closed permanently
     bool public closedPermanently;
 
@@ -71,6 +70,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     event OptionsBurned(uint256 oTokensBurned);
     event OptionsSold(uint256 amountSold, uint256 premiumReceived);
     event ReservesEstablished(uint256 allocatedReserves);
+    event MaximumAssetsModified(uint256 newAUM);
     event DepositFeeModified(uint16 newFee);
     event WithdrawalFeeModified(uint16 newFee);
     event PerformanceFeeModified(uint16 newFee);
@@ -99,7 +99,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         asset = _asset;
         manager = _manager;
         addressBook = IAddressBook(_addressBook);
-        factory = _factory;
+        factory = IFactory(_factory);
         withdrawalWindowLength = _withdrawalWindowLength;
         maximumAssets = _maximumAssets;
     }
@@ -107,7 +107,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @notice For emergency use
     /// @dev Stops all activities on the vault (or reactivates them)
     /// @param _pause true to pause the vault, false to unpause the vault
-    function emergency(bool _pause) public onlyManager {
+    function emergency(bool _pause) external onlyManager {
         if(_pause)
             super._pause();
         else
@@ -122,6 +122,8 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
             revert Invalid();
 
         maximumAssets = _newValue;
+
+        emit MaximumAssetsModified(_newValue);
     }
 
     /// @notice Changes the deposit fee
@@ -205,8 +207,8 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         uint256 vaultFees;
 
         // Calculate protocol-level fees
-        if(IFactory(factory).depositFee() != 0) {
-            protocolFees = _percentMultiply(_amount, IFactory(factory).depositFee());
+        if(factory.depositFee() != 0) {
+            protocolFees = _percentMultiply(_amount, factory.depositFee());
         }
 
         // Calculate vault-level fees
@@ -228,7 +230,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
             revert Invalid();
 
         IERC20(asset).safeTransferFrom(msg.sender, address(this), _amount);
-        IERC20(asset).safeTransfer(IFactory(factory).admin(), protocolFees);
+        IERC20(asset).safeTransfer(factory.admin(), protocolFees);
         _mint(msg.sender, vaultMint);
 
         emit Deposit(_amount, vaultMint);
@@ -241,17 +243,25 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         if(_amount == 0)
             revert Invalid();
 
-        uint256 assetAmount = _amount * (IERC20(asset).balanceOf(address(this)) - obligatedFees) / totalSupply();
+        uint256 assetAmount = _amount * (IERC20(asset).balanceOf(address(this)) + collateralAmount - obligatedFees) / totalSupply();
         uint256 protocolFee;
         
-        if(IFactory(factory).withdrawalFee() > 0) {
-            protocolFee = _percentMultiply(_amount, IFactory(factory).withdrawalFee());
-            IERC20(asset).safeTransfer(IFactory(factory).admin(), protocolFee);
+        if(factory.withdrawalFee() > 0) {
+            protocolFee = _percentMultiply(_amount, factory.withdrawalFee());
+            IERC20(asset).safeTransfer(factory.admin(), protocolFee);
         }
         uint256 vaultFee = _percentMultiply(_amount, withdrawalFee);
 
         assetAmount -= (protocolFee + vaultFee);
         obligatedFees += vaultFee;
+
+        // Safety check
+        if(assetAmount == 0)
+            revert Invalid();
+
+        // (Reserve) safety check
+        if(assetAmount > currentReserves && _withdrawalWindowCheck(false))
+            revert NotEnoughFunds_ReserveViolation();
 
         IERC20(asset).safeTransfer(msg.sender, assetAmount); // Vault Token Amount to Burn * Balance of Vault for Asset  / Total Vault Token Supply
         _burn(address(msg.sender), _amount);
@@ -533,7 +543,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
             revert WithdrawalWindowActive();
         if(_amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
             revert Invalid();
-        if(!ISwap(IFactory(factory).airswapExchange()).signerAuthorizations(_otherParty, address(this)))
+        if(!ISwap(factory.airswapExchange()).signerAuthorizations(_otherParty, address(this)))
             revert Unauthorized_COUNTERPARTY_DID_NOT_SIGN();
 
         // Prepare the AirSwap order
@@ -559,9 +569,9 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         sellOrder.sender = sender;
         
         // Approve
-        IERC20(oToken).approve(IFactory(factory).airswapExchange(), _amount);
+        IERC20(oToken).approve(factory.airswapExchange(), _amount);
 
-        ISwap(IFactory(factory).airswapExchange()).swap(sellOrder);
+        ISwap(factory.airswapExchange()).swap(sellOrder);
         
         // Calculate performance fee
         obligatedFees += _percentMultiply(_premiumAmount, performanceFee);
