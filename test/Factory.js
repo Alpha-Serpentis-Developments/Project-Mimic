@@ -2,40 +2,53 @@ const { ethers } = require("hardhat");
 const { expect } = require("chai");
 
 describe('TestToken contract', () => {
-    let TestToken, Factory, testToken, factory, manager, fake_controller;
+    let TestToken, Factory, testToken, factory, deployer, manager, fake_controller, fake_airswap, fake_addressBook;
 
     beforeEach(async () => {
         TestToken = await ethers.getContractFactory('TestToken');
         Factory = await ethers.getContractFactory('contracts\\mimic\\Factory.sol:Factory');
+        VaultToken = await ethers.getContractFactory('VaultToken');
 
-        [deployer, manager, fake_airswap, fake_controller] = await ethers.getSigners();
+        [deployer, manager, fake_airswap, fake_controller, fake_addressBook] = await ethers.getSigners();
         testToken = await TestToken.deploy("Asset Token", "ASSET", 6, 100000e6);
-        factory = await Factory.deploy(fake_airswap.address, deployer.address);
+        vaultToken = await VaultToken.deploy();
+
+        await vaultToken.connect(manager).initialize(
+            "INIT",
+            "INIT",
+            "0x0000000000000000000000000000000000000000",
+            "0x0000000000000000000000000000000000000000",
+            "0x0000000000000000000000000000000000000000",
+            "0x0000000000000000000000000000000000000000",
+            0,
+            0
+        );
+
+        factory = await Factory.deploy(fake_airswap.address, fake_addressBook.address, "0x0000000000000000000000000000000000000000", deployer.address);
     });
 
     describe('Deploy Vault Tokens', () => {
-        it('Should NOT deploy w/ zero address parameters', async () => {
+        it('Should revert for zero address implementation', async () => {
             await expect(
                 factory.connect(manager).deployNewVaultToken(
-                    "Asset Vault",
-                    "VAULT",
-                    "0x0000000000000000000000000000000000000000",
-                    "0x0000000000000000000000000000000000000000",
+                    "Test",
+                    "TEST",
+                    testToken.address,
                     86400, // 1 day
-                    100e6
+                    0
                 )
             ).to.be.revertedWith("ZeroAddress()");
         });
+        it('Should deploy successfully', async () => {
+            await factory.connect(deployer).changeCurrentImplementation(vaultToken.address);
 
-        it('Should successfully deploy', async () => {
             await expect(
                 factory.connect(manager).deployNewVaultToken(
-                    "Asset Vault",
-                    "VAULT",
-                    fake_controller.address,
+                    "Test",
+                    "TEST",
                     testToken.address,
                     86400, // 1 day
-                    100e6
+                    0
                 )
             ).to.not.be.reverted;
         });

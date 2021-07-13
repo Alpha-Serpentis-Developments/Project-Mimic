@@ -75,14 +75,26 @@ describe('VaultToken contract (full test)', () => {
             18,
             ethers.utils.parseUnits('1000', 18)  
         );
+        vaultToken = await VaultToken.deploy();
+        await vaultToken.initialize(
+            "INIT",
+            "INIT",
+            "0x0000000000000000000000000000000000000000",
+            "0x0000000000000000000000000000000000000000",
+            "0x0000000000000000000000000000000000000000",
+            "0x0000000000000000000000000000000000000000",
+            0,
+            0
+        );
         factory = await Factory.connect(deployer).deploy(
             fake_airswap.address,
+            addressBook.address,
+            vaultToken.address,
             deployer.address
         );
         vaultTokenTransaction = await factory.connect(manager).deployNewVaultToken(
             "Vault",
             "VAULT",
-            addressBook.address,
             mockWETH.address,
             86400, // 1 day
             ethers.utils.parseUnits('100', 18)
@@ -201,10 +213,9 @@ describe('VaultToken contract (full test)', () => {
     describe("Fail to write options during the withdrawal window", () => {
         it('Should revert on attempting to write options', async () => {
             await expect(
-                vaultToken.connect(manager).writeCalls(
+                vaultToken.connect(manager).writeOptions(
                     ethers.utils.parseUnits('105', 18),
-                    mockOtokenAddr,
-                    marginPool.address
+                    mockOtokenAddr
                 )
             ).to.be.reverted;
         });
@@ -217,7 +228,7 @@ describe('VaultToken contract (full test)', () => {
         });
         it('Should write calls when the withdrawal window is closed', async () => {
             await expect(
-                vaultToken.connect(manager).writeCalls(
+                vaultToken.connect(manager).writeOptions(
                     ethers.utils.parseUnits('105', 18),
                     mockOtokenAddr
                 )
@@ -233,7 +244,7 @@ describe('VaultToken contract (full test)', () => {
             expect(await vaultToken.balanceOf(depositor.address)).to.equal(ethers.utils.parseUnits('11', 18));
         });
         it('Should write calls again to the same vault', async () => {
-            await vaultToken.connect(manager).writeCalls(
+            await vaultToken.connect(manager).writeOptions(
                 ethers.utils.parseUnits('1', 18),
                 mockOtokenAddr
             );
@@ -247,7 +258,7 @@ describe('VaultToken contract (full test)', () => {
             ).to.be.reverted;
         });
         it('Should burn calls', async () => {
-            await vaultToken.connect(manager).burnCalls(ethers.utils.parseUnits('1', 8));
+            await vaultToken.connect(manager).burnOptions(ethers.utils.parseUnits('1', 8));
 
             expect(await mockOtoken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('105', 8));
             expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('1', 18));
@@ -256,7 +267,7 @@ describe('VaultToken contract (full test)', () => {
 
     describe("Withdrawal window reactivation", () => {
         it('Should allow a depositor to withdraw', async () => {
-            await vaultToken.connect(manager).burnCalls(await mockOtoken.balanceOf(vaultToken.address));
+            await vaultToken.connect(manager).burnOptions(await mockOtoken.balanceOf(vaultToken.address));
 
             const priorBalance = await mockWETH.balanceOf(depositor.address);
 
@@ -337,7 +348,7 @@ describe('VaultToken contract (full test)', () => {
 
     describe("Fail to settle the vault", () => {
         before(async () => {
-            await vaultToken.connect(manager).writeCalls( // To resolve the earlier burn test
+            await vaultToken.connect(manager).writeOptions( // To resolve the earlier burn test
                 ethers.utils.parseUnits('1', 18),
                 mockOtokenAddr
             );

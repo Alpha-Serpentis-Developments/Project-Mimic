@@ -96,7 +96,7 @@ contract Factory {
         uint256 _withdrawalWindowLength,
         uint256 _maximumAssets
     ) external {
-        if(_asset == address(0))
+        if(_asset == address(0) || currentImplementation == address(0))
             revert ZeroAddress();
         if(_withdrawalWindowLength == 0)
             revert Invalid();

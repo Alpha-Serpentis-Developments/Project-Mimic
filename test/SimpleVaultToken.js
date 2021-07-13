@@ -7,7 +7,21 @@ describe('VaultToken contract (simple test)', () => {
     before(async () => {
         TestToken = await ethers.getContractFactory('TestToken');
         Factory = await ethers.getContractFactory('Factory');
+        VaultToken = await ethers.getContractFactory('VaultToken');
         [deployer, manager, depositor, fake_addressBook, fake_controller, fake_airswap] = await ethers.getSigners();
+
+        vaultToken = await VaultToken.deploy();
+
+        await vaultToken.initialize(
+            "INIT",
+            "INIT",
+            "0x0000000000000000000000000000000000000000",
+            "0x0000000000000000000000000000000000000000",
+            "0x0000000000000000000000000000000000000000",
+            "0x0000000000000000000000000000000000000000",
+            0,
+            0
+        );
 
         testToken = await TestToken.connect(depositor).deploy(
             "Mock Asset",
@@ -17,13 +31,14 @@ describe('VaultToken contract (simple test)', () => {
         );
         factory = await Factory.connect(deployer).deploy(
             fake_airswap.address,
+            fake_addressBook.address,
+            vaultToken.address,
             deployer.address
         );
 
         vaultTokenTransaction = await factory.connect(manager).deployNewVaultToken(
             "Vault",
             "VAULT",
-            fake_addressBook.address,
             testToken.address,
             86400, // 1 day
             500e6
@@ -166,7 +181,6 @@ describe('VaultToken contract (simple test)', () => {
             vaultTokenTransaction = await factory.connect(manager).deployNewVaultToken(
                 "Vault",
                 "VAULT",
-                fake_addressBook.address,
                 testToken.address,
                 86400, // 1 day
                 ethers.utils.parseUnits('500', 20)
@@ -210,7 +224,6 @@ describe('VaultToken contract (simple test)', () => {
             vaultTokenTransaction = await factory.connect(manager).deployNewVaultToken(
                 "Vault",
                 "VAULT",
-                fake_addressBook.address,
                 testToken.address,
                 86400, // 1 day
                 ethers.utils.parseUnits('500', 18)

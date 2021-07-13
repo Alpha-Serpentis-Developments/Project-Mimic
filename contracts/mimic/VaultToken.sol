@@ -307,7 +307,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @notice Burns away the oTokens to redeem the asset collateral
     /// @dev Operation to burn away the oTOkens in redemption of the asset collateral
     /// @param _amount Amount of calls to burn
-    function burnCalls(uint256 _amount) external onlyManager nonReentrant() whenNotPaused() {
+    function burnOptions(uint256 _amount) external onlyManager nonReentrant() whenNotPaused() {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
         if(_amount > IERC20(oToken).balanceOf(address(this)))
