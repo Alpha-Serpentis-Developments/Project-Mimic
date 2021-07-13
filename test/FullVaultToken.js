@@ -6,6 +6,13 @@ describe('VaultToken contract (full test)', () => {
     let factory, vaultToken, mockUSDC, mockWETH, mockOtoken, mockOtokenAddr, otokenFactory, otokenImpl, whitelist, oracle, marginPool, marginCalculator, addressBook, controller, marginVault;
     let manager, depositor, depositor_1, depositor_2, deployer, pricer;
 
+    let normalVaultToken;
+
+    const abi = [
+        "function writeOptions(uint256,address) external",
+        "function writeOptions(uint16,address) external"
+    ];
+
     before(async () => {
         console.log("IMPORTANT: SimpleVaultToken.js has extensive testing on the deposit/withdraw functions");
 
@@ -212,12 +219,16 @@ describe('VaultToken contract (full test)', () => {
 
     describe("Fail to write options during the withdrawal window", () => {
         it('Should revert on attempting to write options', async () => {
+            normalVaultToken = vaultToken;
+            vaultToken = new ethers.Contract(vaultToken.address, abi, manager);
+
             await expect(
-                vaultToken.connect(manager).writeOptions(
+                vaultToken.connect(manager)['writeOptions(uint256,address)'](
                     ethers.utils.parseUnits('105', 18),
                     mockOtokenAddr
                 )
             ).to.be.reverted;
+            vaultToken = normalVaultToken;
         });
     });
 
@@ -227,12 +238,16 @@ describe('VaultToken contract (full test)', () => {
             await network.provider.send('evm_increaseTime', [86400]);
         });
         it('Should write calls when the withdrawal window is closed', async () => {
+            normalVaultToken = vaultToken;
+            vaultToken = new ethers.Contract(vaultToken.address, abi, manager);
+
             await expect(
-                vaultToken.connect(manager).writeOptions(
+                vaultToken.connect(manager)['writeOptions(uint256,address)'](
                     ethers.utils.parseUnits('105', 18),
                     mockOtokenAddr
                 )
             ).to.not.be.reverted;
+            vaultToken = normalVaultToken;
             expect(await mockOtoken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('105', 8));
             expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(0);
         });
@@ -244,10 +259,16 @@ describe('VaultToken contract (full test)', () => {
             expect(await vaultToken.balanceOf(depositor.address)).to.equal(ethers.utils.parseUnits('11', 18));
         });
         it('Should write calls again to the same vault', async () => {
-            await vaultToken.connect(manager).writeOptions(
-                ethers.utils.parseUnits('1', 18),
-                mockOtokenAddr
-            );
+            normalVaultToken = vaultToken;
+            vaultToken = new ethers.Contract(vaultToken.address, abi, manager);
+
+            await expect(
+                vaultToken.connect(manager)['writeOptions(uint256,address)'](
+                    ethers.utils.parseUnits('1', 18),
+                    mockOtokenAddr
+                )
+            ).to.not.be.reverted;
+            vaultToken = normalVaultToken;
 
             expect(await mockOtoken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('106', 8));
             expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(0);
@@ -348,10 +369,16 @@ describe('VaultToken contract (full test)', () => {
 
     describe("Fail to settle the vault", () => {
         before(async () => {
-            await vaultToken.connect(manager).writeOptions( // To resolve the earlier burn test
-                ethers.utils.parseUnits('1', 18),
-                mockOtokenAddr
-            );
+            normalVaultToken = vaultToken;
+            vaultToken = new ethers.Contract(vaultToken.address, abi, manager);
+
+            await expect(
+                vaultToken.connect(manager)['writeOptions(uint256,address)'](
+                    ethers.utils.parseUnits('1', 18),
+                    mockOtokenAddr
+                )
+            ).to.not.be.reverted;
+            vaultToken = normalVaultToken;
             await network.provider.send('evm_setNextBlockTimestamp', [1640937601]);
         });
         it('Should REVERT in an attempt to settle the vault', async () => {
