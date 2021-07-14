@@ -12,6 +12,8 @@ import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 import {PausableUpgradeable} from "../oz/security/PausableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "../oz/security/ReentrancyGuardUpgradeable.sol";
 
+import "hardhat/console.sol";
+
 contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20 for IERC20;
 
@@ -296,9 +298,17 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @param _percentage A uint16 representing up to 10000 (100.00%) with two decimals of precision for the amount of asset tokens to write
     /// @param _oToken address of the oToken
     function writeOptions(uint16 _percentage, address _oToken) external onlyManager nonReentrant() whenNotPaused() {
+        if(_percentage > 10000)
+            revert Invalid();
+
+        if(_percentage > _percentage - withdrawalReserve)
+            _percentage -= withdrawalReserve;
+
+        console.log(_percentage);
+        
         _writeOptions(
             _percentMultiply(
-                IERC20(asset).balanceOf(address(this)) - obligatedFees, _percentage
+                IERC20(asset).balanceOf(address(this)) - currentReserves - obligatedFees, _percentage
             ),
             _oToken
         );
@@ -452,6 +462,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
         collateralAmount = 0;
         oToken = address(0);
+        currentReserves = 0;
         
         emit WithdrawalWindowActivated(withdrawalWindowExpires);
     }
@@ -469,6 +480,11 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         // Calculate reserves if not already done
         if(oToken == address(0))
             _calculateAndSetReserves();
+
+        console.log(_amount);
+        console.log(currentReserves);
+        console.log(obligatedFees);
+        console.log(IERC20(asset).balanceOf(address(this)));
 
         // Check if the _amount exceeds the reserves
         if(_amount > IERC20(asset).balanceOf(address(this)) - obligatedFees - currentReserves)
@@ -580,7 +596,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     }
 
     function _calculateAndSetReserves() internal {
-        currentReserves = _percentMultiply(IERC20(asset).balanceOf(address(this)), withdrawalReserve);
+        currentReserves = _percentMultiply(IERC20(asset).balanceOf(address(this)) - obligatedFees, withdrawalReserve);
     }
 
     function _onlyManager() internal view {

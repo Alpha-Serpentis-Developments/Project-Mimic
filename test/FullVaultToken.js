@@ -10,7 +10,12 @@ describe('VaultToken contract (full test)', () => {
 
     const abi = [
         "function writeOptions(uint256,address) external",
-        "function writeOptions(uint16,address) external"
+        "function writeOptions(uint16,address) external",
+        "error Invalid()",
+        "error NotEnoughFunds()",
+        "error NotEnoughFunds_ReserveViolation()",
+        "error oTokenNotCleared()",
+        "error WithdrawalWindowActive()",
     ];
 
     before(async () => {
@@ -543,6 +548,66 @@ describe('VaultToken contract (full test)', () => {
                 vaultToken.reactivateWithdrawalWindow()
             ).to.not.be.reverted;
         });
+    });
+
+    describe("Reserves test", () => {
+        before(async () => {
+            await vaultToken.connect(manager).adjustWithdrawalReserve(2000);
+            await vaultToken.connect(manager).sweepFees();
+
+            // Prepare the oToken
+            mockOtokenTransaction = await otokenFactory.connect(fake_multisig).createOtoken(
+                mockWETH.address,
+                mockUSDC.address,
+                mockWETH.address,
+                ethers.utils.parseUnits('1000', 18),
+                1640937600 + 604800 , // 2022 Jan. 7 @ 8 UTC
+                false
+            );
+
+            const mockOtokenReceipt = await mockOtokenTransaction.wait();
+            mockOtokenAddr = mockOtokenReceipt.events[1].args[0];
+
+            mockOtoken = await ethers.getContractAt(
+                'Otoken',
+                mockOtokenAddr,
+                fake_multisig
+            );
+
+            await network.provider.send('evm_increaseTime', [86400]);
+        });
+
+        it('Should naturally adjust for 100%', async () => {
+            const mockWETHBalance = await mockWETH.balanceOf(vaultToken.address);
+            
+            normalVaultToken = vaultToken;
+            vaultToken = new ethers.Contract(vaultToken.address, abi, manager);
+
+            await expect(
+                vaultToken.connect(manager)['writeOptions(uint16,address)'](
+                    10000,
+                    mockOtokenAddr
+                )
+            ).to.not.be.reverted;
+            expect(await mockWETH.balanceOf(vaultToken.address)).to.be.equal(mockWETHBalance.mul(20).div(100))
+            vaultToken = normalVaultToken;
+        });
+
+        it('Should expend some of the current reserves', async () => {
+
+        });
+
+        it('Should fail to expend the reserves due to insufficient reserves', async () => {
+
+        });
+
+        it('Should drain the rest of the reserves', async () => {
+
+        });
+    });
+
+    describe("Put test", async () => {
+
     });
 
 });
