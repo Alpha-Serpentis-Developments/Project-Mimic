@@ -12,8 +12,6 @@ import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 import {PausableUpgradeable} from "../oz/security/PausableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "../oz/security/ReentrancyGuardUpgradeable.sol";
 
-import "hardhat/console.sol";
-
 contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20 for IERC20;
 
@@ -265,6 +263,9 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         if(assetAmount > currentReserves && _withdrawalWindowCheck(false))
             revert NotEnoughFunds_ReserveViolation();
 
+        if(_withdrawalWindowCheck(false))
+            currentReserves -= assetAmount;
+
         IERC20(asset).safeTransfer(msg.sender, assetAmount); // Vault Token Amount to Burn * Balance of Vault for Asset  / Total Vault Token Supply
         _burn(address(msg.sender), _amount);
 
@@ -303,8 +304,6 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
 
         if(_percentage > _percentage - withdrawalReserve)
             _percentage -= withdrawalReserve;
-
-        console.log(_percentage);
         
         _writeOptions(
             _percentMultiply(
@@ -481,11 +480,6 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         if(oToken == address(0))
             _calculateAndSetReserves();
 
-        console.log(_amount);
-        console.log(currentReserves);
-        console.log(obligatedFees);
-        console.log(IERC20(asset).balanceOf(address(this)));
-
         // Check if the _amount exceeds the reserves
         if(_amount > IERC20(asset).balanceOf(address(this)) - obligatedFees - currentReserves)
             revert NotEnoughFunds_ReserveViolation();
@@ -530,6 +524,15 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
                 0,
                 ""
             );
+        // Determine the amount of options to write
+        uint256 oTokensToWrite;
+
+        if(OtokenInterface(_oToken).isPut()) {
+            oTokensToWrite = _normalize(_amount, ERC20(asset).decimals(), 14) / OtokenInterface(_oToken).strikePrice();
+        } else {
+            oTokensToWrite = _normalize(_amount, ERC20(asset).decimals(), 8);
+        }
+
         // Write options
         actions[actions.length - 1] = Actions.ActionArgs(
                 Actions.ActionType.MintShortOption,
@@ -537,7 +540,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
                 address(this),
                 _oToken,
                 currentVaultId,
-                _normalize(_amount, ERC20(asset).decimals(), 8),
+                oTokensToWrite,
                 0,
                 ""
             );

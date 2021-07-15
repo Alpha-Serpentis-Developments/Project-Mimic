@@ -127,11 +127,19 @@ describe('VaultToken contract (full test)', () => {
 
         // Prepare the whitelist
         await whitelist.connect(fake_multisig).whitelistCollateral(mockWETH.address);
+        await whitelist.connect(fake_multisig).whitelistCollateral(mockUSDC.address);
         await whitelist.connect(fake_multisig).whitelistProduct(
             mockWETH.address,
             mockUSDC.address,
             mockWETH.address,
             false
+        );
+
+        await whitelist.connect(fake_multisig).whitelistProduct(
+            mockWETH.address,
+            mockUSDC.address,
+            mockUSDC.address,
+            true
         );
 
         // Prepare the oToken
@@ -535,6 +543,10 @@ describe('VaultToken contract (full test)', () => {
     describe("Reactivate withdrawal window", () => {
         before(async () => {
             await network.provider.send('evm_increaseTime', [86400]);
+            await vaultToken.connect(manager).adjustDepositFee(0);
+            await vaultToken.connect(manager).adjustWithdrawalFee(0);
+            await factory.connect(deployer).changeDepositFee(0);
+            await factory.connect(deployer).changeWithdrawalFee(0);
         });
         it("Shouldn't reopen the withdrawal window", async () => {
             await expect(
@@ -594,20 +606,105 @@ describe('VaultToken contract (full test)', () => {
         });
 
         it('Should expend some of the current reserves', async () => {
+            const reserveAmount = await vaultToken.currentReserves();
+            const prevBal_VT = await vaultToken.balanceOf(depositor.address);
+            const prevBal_mockWETH = await mockWETH.balanceOf(depositor.address);
 
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('0.2', 18));
+
+            expect(await vaultToken.currentReserves()).to.be.equal(reserveAmount.sub(ethers.utils.parseUnits('0.2', 18)));
+            expect(await vaultToken.balanceOf(depositor.address)).to.be.equal(prevBal_VT.sub(ethers.utils.parseUnits('0.2', 18)));
+            expect(await mockWETH.balanceOf(depositor.address)).to.be.equal(prevBal_mockWETH.add(ethers.utils.parseUnits('0.2', 18)));
         });
 
         it('Should fail to expend the reserves due to insufficient reserves', async () => {
-
-        });
-
-        it('Should drain the rest of the reserves', async () => {
-
+            await expect(
+                vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('1', 18))
+            ).to.be.revertedWith("NotEnoughFunds_ReserveViolation()");
         });
     });
 
     describe("Put test", async () => {
+        before(async () => {
+            vaultTokenTransaction = await factory.connect(manager).deployNewVaultToken(
+                "Vault Put",
+                "PUT",
+                mockUSDC.address,
+                86400, // 1 day
+                ethers.utils.parseUnits('100', 18)
+            );
+    
+            const receipt = await vaultTokenTransaction.wait();
+    
+            vaultToken = await ethers.getContractAt(
+                'VaultToken',
+                receipt.events[0].args.vaultToken,
+                manager
+            );
 
+            mockOtokenTransaction = await otokenFactory.connect(fake_multisig).createOtoken(
+                mockWETH.address,
+                mockUSDC.address,
+                mockUSDC.address,
+                ethers.utils.parseUnits('1000', 6),
+                1640937600 + 2419200, // 2022 Jan. 28 @ 8 UTC
+                true
+            );
+
+            const mockOtokenReceipt = await mockOtokenTransaction.wait();
+            mockOtokenAddr = mockOtokenReceipt.events[1].args[0];
+
+            mockOtoken = await ethers.getContractAt(
+                'Otoken',
+                mockOtokenAddr,
+                fake_multisig
+            );
+        });
+
+        it('Should allow deposits in mockUSDC', async () => {
+            await mockUSDC.connect(depositor).approve(vaultToken.address, 1000e6);
+            await vaultToken.connect(depositor).deposit(1000e6);
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.be.equal(ethers.utils.parseUnits('1000', 18));
+            expect(await mockUSDC.balanceOf(vaultToken.address)).to.be.equal(1000e6);
+        });
+
+        it('Should withdraw fine', async () => {
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('500', 18));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.be.equal(ethers.utils.parseUnits('500', 18));
+            expect(await mockUSDC.balanceOf(vaultToken.address)).to.be.equal(500e6);
+        });
+
+        it('Should accept put writes', async () => {
+            await network.provider.send('evm_increaseTime', [86400]);
+
+            normalVaultToken = vaultToken;
+            vaultToken = new ethers.Contract(vaultToken.address, abi, manager);
+
+            await expect(
+                vaultToken.connect(manager)['writeOptions(uint256,address)'](
+                    500e6,
+                    mockOtokenAddr
+                )
+            ).to.not.be.reverted;
+            vaultToken = normalVaultToken;
+            expect(await mockOtoken.balanceOf(vaultToken.address)).to.be.equal(0.5e8);
+        });
+
+        it('Should settle fine without exercise', async () => {
+            // Prepare the settlement
+            await network.provider.send('evm_setNextBlockTimestamp', [ethers.BigNumber.from(await mockOtoken.expiryTimestamp()).toNumber() + 1]);
+            await oracle.connect(pricer).setExpiryPrice(
+                mockWETH.address,
+                1640937600 + 2419200,
+                1000e8
+            );
+
+            await vaultToken.settleVault();
+
+            expect(await mockUSDC.balanceOf(vaultToken.address)).to.be.equal(500e6);
+        });
     });
 
 });
