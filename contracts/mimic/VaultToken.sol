@@ -243,15 +243,18 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
 
         uint256 assetAmount = _amount * (IERC20(asset).balanceOf(address(this)) + collateralAmount - obligatedFees) / totalSupply();
         uint256 protocolFee;
+        uint256 vaultFee;
         
         if(factory.withdrawalFee() > 0) {
             protocolFee = _percentMultiply(_amount, factory.withdrawalFee());
             IERC20(asset).safeTransfer(factory.admin(), protocolFee);
         }
-        uint256 vaultFee = _percentMultiply(_amount, withdrawalFee);
+        if(withdrawalFee > 0) {
+            vaultFee = _percentMultiply(_amount, withdrawalFee);
+            obligatedFees += vaultFee;
+        }
 
         assetAmount -= (protocolFee + vaultFee);
-        obligatedFees += vaultFee;
 
         // Safety check
         if(assetAmount == 0)
