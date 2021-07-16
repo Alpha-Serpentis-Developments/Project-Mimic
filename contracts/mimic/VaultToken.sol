@@ -227,7 +227,8 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
             revert Invalid();
 
         IERC20(asset).safeTransferFrom(msg.sender, address(this), _amount);
-        IERC20(asset).safeTransfer(factory.admin(), protocolFees);
+        if(protocolFees > 0)
+            IERC20(asset).safeTransfer(factory.admin(), protocolFees);
         _mint(msg.sender, vaultMint);
 
         emit Deposit(_amount, vaultMint);
@@ -260,7 +261,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         if(assetAmount > currentReserves && _withdrawalWindowCheck(false) && oToken != address(0))
             revert NotEnoughFunds_ReserveViolation();
 
-        if(_withdrawalWindowCheck(false))
+        if(_withdrawalWindowCheck(false) && oToken != address(0))
             currentReserves -= assetAmount;
 
         IERC20(asset).safeTransfer(msg.sender, assetAmount); // Vault Token Amount to Burn * Balance of Vault for Asset  / Total Vault Token Supply

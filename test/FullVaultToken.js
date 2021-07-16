@@ -548,6 +548,11 @@ describe('VaultToken contract (full test)', () => {
             await factory.connect(deployer).changeDepositFee(0);
             await factory.connect(deployer).changeWithdrawalFee(0);
         });
+        it('Should allow someone to withdraw without oToken being written', async () => {
+            await expect(
+                vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('1', 18))
+            );
+        });
         it("Shouldn't reopen the withdrawal window", async () => {
             await expect(
                 vaultToken.reactivateWithdrawalWindow()
