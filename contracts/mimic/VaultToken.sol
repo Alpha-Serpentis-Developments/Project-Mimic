@@ -175,12 +175,9 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     }
 
     /// @notice Changes the withdrawal window length
-    /// @dev Changes the withdrawalWindowLength with 6 hour minimum
-    /// @param _newValue new withdrawalWindowLength that's at least 6 hours
+    /// @dev Changes the withdrawalWindowLength
+    /// @param _newValue new withdrawalWindowLength period
     function adjustWithdrawalWindowLength(uint256 _newValue) external onlyManager nonReentrant() whenNotPaused() {
-        if(_newValue < 21600) // 6 hour minimum
-            revert Invalid();
-
         withdrawalWindowLength = _newValue;
     }
 
@@ -260,7 +257,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
             revert Invalid();
 
         // (Reserve) safety check
-        if(assetAmount > currentReserves && _withdrawalWindowCheck(false))
+        if(assetAmount > currentReserves && _withdrawalWindowCheck(false) && oToken != address(0))
             revert NotEnoughFunds_ReserveViolation();
 
         if(_withdrawalWindowCheck(false))
@@ -369,6 +366,16 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @param _nonce Other party's AirSwap nonce
     function sellOptions(uint256 _amount, uint256 _premiumAmount, address _otherParty, uint256 _nonce) external onlyManager nonReentrant() whenNotPaused() {
         _sellOptions(_amount, _premiumAmount, _otherParty, _nonce);
+    }
+
+    /// @notice Operation to sell calls to an EXISTING order on AirSwap (via off-chain signature)
+    /// @dev Sells calls via AirSwap that exists by the counterparty grabbed off-chain
+    /// @param _order AirSwap order details
+    function sellOptions(Types.Order memory _order) external onlyManager nonReentrant() whenNotPaused() {
+        if(!_withdrawalWindowCheck(false))
+            revert WithdrawalWindowActive();
+
+        _sellOptions(_order);
     }
 
     /// @notice Operation to both write AND sell options
@@ -555,6 +562,10 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
             oToken = _oToken;
 
         emit OptionsMinted(_amount, oToken, controller.getAccountVaultCounter(address(this)));
+    }
+
+    function _sellOptions(Types.Order memory _order) internal {
+
     }
 
     function _sellOptions(uint256 _amount, uint256 _premiumAmount, address _otherParty, uint256 _nonce) internal {
