@@ -3,8 +3,13 @@ import { Modal, Button } from "semantic-ui-react";
 import VaultTokenInfo from "./VaultTokenInfo";
 import styled from "styled-components";
 
+const VTAddress = styled.span`
+  margin-left: 20px;
+  font-size: 10px;
+  color: grey;
+`;
 const VTCardContainer = styled.div`
-  background-color: pink;
+  background-color: #ffb3c1;
   margin-bottom: 10px;
   border-radius: 30px;
   display: flex;
@@ -13,7 +18,11 @@ const VTCardContainer = styled.div`
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
   cursor: pointer;
   &:hover {
-    background-color: orange;
+    background-color: #fa5456;
+    color: white;
+    .tAddr {
+      color: white;
+    }
   }
 `;
 const VTNameContainer = styled.div`
@@ -25,11 +34,7 @@ const VTName = styled.div`
   font-size: 20px;
   font-weight: 800;
 `;
-const VTAddress = styled.span`
-  margin-left: 20px;
-  font-size: 10px;
-  color: grey;
-`;
+
 const ManagedText = styled.div`
   font-size: 15px;
   margin-bottom: 20px;
@@ -101,7 +106,7 @@ export default function VTCard(props) {
         <VTNameContainer>
           <VTName>
             {item.name()}
-            <VTAddress>{item.address}</VTAddress>
+            <VTAddress className="tAddr">{item.address}</VTAddress>
           </VTName>
         </VTNameContainer>
         <VtContentcontainer>
