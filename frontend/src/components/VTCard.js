@@ -17,6 +17,9 @@ const VTCardContainer = styled.div`
   width: 600px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
   cursor: pointer;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
   &:hover {
     background-color: #fa5456;
     color: white;
