@@ -2,43 +2,44 @@ import React from "react";
 import MMConnect from "./MMconnection";
 import optionalProfile from "../images/optionalProfile.png";
 import cover from "../images/cover.png";
-import styled, { css } from "styled-components";
-import { Menu, Button, Header, Icon } from "semantic-ui-react";
+import styled from "styled-components";
+import { Button, Icon } from "semantic-ui-react";
+
+const MainNav = styled.nav`
+  height: 68px;
+  background-color: #0b0050;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+`;
+const NavLeft = styled.div``;
+const NavRight = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+`;
+const TitleLogo = styled.img`
+  width: 21.08px;
+  margin-left: 53.67px;
+  margin-bottom: 8px;
+`;
+const TitleImg = styled.img`
+  height: 39.49px;
+  width: 147px;
+  margin-left: 24px;
+  margin-top: 20px;
+`;
+
+const NavLinkGroup = styled.ul`
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  list-style-type: none;
+  width: 500px;
+  justify-content: space-evenly;
+`;
 
 export default function NavBar(props) {
-  const MainNav = styled.nav`
-    height: 68px;
-    background-color: #0b0050;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-  `;
-  const NavLeft = styled.div``;
-  const NavRight = styled.div`
-    display: flex;
-    flex-direction: row;
-    justify-content: start;
-  `;
-  const TitleLogo = styled.img`
-    width: 21.08px;
-    margin-left: 53.67px;
-    margin-bottom: 8px;
-  `;
-  const TitleImg = styled.img`
-    height: 39.49px;
-    width: 147px;
-    margin-left: 24px;
-    margin-top: 20px;
-  `;
-
-  const NavLinkGroup = styled.ul`
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    list-style-type: none;
-    width: 500px;
-    justify-content: space-evenly;
-  `;
   const NavLink = styled.li`
     font-family: Roboto Slab;
     font-style: normal;

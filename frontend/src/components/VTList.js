@@ -371,7 +371,7 @@ export default function VTList(props) {
             </Table.Cell> */}
             {props.renderManager && (
               <Table.Cell>
-                <TokenList
+                <VTCard
                   tList={managedList}
                   update={update}
                   title="Managed Token"
@@ -380,6 +380,15 @@ export default function VTList(props) {
                   showSpinner={vtList.length === 0}
                   ethBal={props.ethBal}
                 />
+                {/* <TokenList
+                  tList={managedList}
+                  update={update}
+                  title="Managed Token"
+                  acct={props.acctNum}
+                  mpAddress={props.mpAddress}
+                  showSpinner={vtList.length === 0}
+                  ethBal={props.ethBal}
+                /> */}
               </Table.Cell>
             )}
             {props.renderPortfolio && (
@@ -404,7 +413,7 @@ export default function VTList(props) {
             )}
             {props.renderFollow && (
               <Table.Cell>
-                <TokenList
+                <VTCard
                   tList={followList}
                   update={update}
                   title="Follow List"
@@ -412,6 +421,14 @@ export default function VTList(props) {
                   showSpinner={vtList.length === 0}
                   ethBal={props.ethBal}
                 />
+                {/* <TokenList
+                  tList={followList}
+                  update={update}
+                  title="Follow List"
+                  acct={props.acctNum}
+                  showSpinner={vtList.length === 0}
+                  ethBal={props.ethBal}
+                /> */}
               </Table.Cell>
             )}
           </Table.Row>

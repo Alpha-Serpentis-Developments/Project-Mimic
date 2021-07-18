@@ -1,8 +1,83 @@
 import { useState } from "react";
-import { Header, Modal, Button, Icon, Table } from "semantic-ui-react";
+import { Modal, Button } from "semantic-ui-react";
 import VaultTokenInfo from "./VaultTokenInfo";
-import styled, { css } from "styled-components";
-import { EDEADLK } from "constants";
+import styled from "styled-components";
+
+const VTCardContainer = styled.div`
+  background-color: pink;
+  margin-bottom: 10px;
+  border-radius: 30px;
+  display: flex;
+  flex-direction: column;
+  width: 500px;
+`;
+const VTNameContainer = styled.div`
+  margin: 10px 20px 0px 20px;
+  display: flex;
+  flex-direction: row;
+`;
+const VTName = styled.div`
+  font-size: 20px;
+  font-weight: 800;
+`;
+const VTAddress = styled.span`
+  margin-left: 20px;
+  font-size: 10px;
+  color: grey;
+`;
+const ManagedText = styled.div`
+  font-size: 15px;
+  margin-bottom: 20px;
+  margin-left: 0px;
+`;
+const VtContentcontainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+`;
+const LeftContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding-left: 0;
+`;
+const RightContent = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+const PercentContent = styled.div`
+  display: flex;
+  flex-direction: row;
+  margin-left: 20px;
+`;
+// last round/price detailed info
+const ItemInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-right: 20px;
+`;
+const ItemText = styled.div`
+  font-size: 15px;
+  margin-bottom: 15px;
+`;
+const ItemTextHeader = styled.div`
+  font-size: 15px;
+  margin-bottom: 15px;
+  font-weight: 600;
+`;
+const TXBtn = styled.div`
+  width: 150px;
+  height: 40px;
+  background-color: #5e2df3;
+  margin: 10px 20px 10px 0px;
+  border-radius: 10px;
+  color: white;
+  font-weight: 700;
+  padding: 10px;
+  cursor: pointer;
+  &:hover {
+    opacity: 0.33;
+  }
+`;
 
 export default function VTCard(props) {
   const [open, setOpen] = useState(false);
@@ -15,85 +90,9 @@ export default function VTCard(props) {
     setOpen(true);
   }
 
-  const VTCard = styled.div`
-    background-color: pink;
-    margin-bottom: 10px;
-    border-radius: 30px;
-    display: flex;
-    flex-direction: column;
-    width: 500px;
-  `;
-  const VTNameContainer = styled.div`
-    margin: 10px 20px 0px 20px;
-    display: flex;
-    flex-direction: row;
-  `;
-  const VTName = styled.div`
-    font-size: 20px;
-    font-weight: 800;
-  `;
-  const VTAddress = styled.span`
-    margin-left: 20px;
-    font-size: 10px;
-    color: grey;
-  `;
-  const ManagedText = styled.div`
-    font-size: 15px;
-    margin-bottom: 20px;
-    margin-left: 0px;
-  `;
-  const VtContentcontainer = styled.div`
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-  `;
-  const LeftContent = styled.div`
-    display: flex;
-    flex-direction: column;
-    padding-left: 0;
-  `;
-  const RightContent = styled.div`
-    display: flex;
-    flex-direction: column;
-  `;
-  const PercentContent = styled.div`
-    display: flex;
-    flex-direction: row;
-    margin-left: 20px;
-  `;
-  // last round/price detailed info
-  const ItemInfo = styled.div`
-    display: flex;
-    flex-direction: column;
-    margin-right: 20px;
-  `;
-  const ItemText = styled.div`
-    font-size: 15px;
-    margin-bottom: 15px;
-  `;
-  const ItemTextHeader = styled.div`
-    font-size: 15px;
-    margin-bottom: 15px;
-    font-weight: 600;
-  `;
-  const TXBtn = styled.div`
-    width: 150px;
-    height: 40px;
-    background-color: #5e2df3;
-    margin: 10px 20px 10px 0px;
-    border-radius: 10px;
-    color: white;
-    font-weight: 700;
-    padding: 10px;
-    cursor: pointer;
-    &:hover {
-      opacity: 0.33;
-    }
-  `;
   function oneCard(item) {
-    console.log(item);
     return (
-      <VTCard>
+      <VTCardContainer>
         <VTNameContainer>
           <VTName>
             {item.name()}
@@ -133,7 +132,7 @@ export default function VTCard(props) {
             </Button>
           </RightContent>
         </VtContentcontainer>
-      </VTCard>
+      </VTCardContainer>
     );
   }
 

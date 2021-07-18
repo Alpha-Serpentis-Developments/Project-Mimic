@@ -1,51 +1,52 @@
 import { Icon } from "semantic-ui-react";
-import styled, { css } from "styled-components";
+import styled from "styled-components";
 
 import "../App.css";
 
+const FooterContainer = styled.div`
+  text-align: center;
+  padding-bottom: 10px;
+  padding-top: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  // position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 250px;
+  background-color: #0b0050;
+`;
+const SocialStyle = styled.div`
+  transition: transform 0.5s;
+  cursor: pointer;
+  margin: 0px 28px;
+  width: 50px;
+  height: 50px;
+  background-color: #55acee;
+  border-radius: 30px;
+  &.github {
+    background-color: white;
+  }
+  &.discord {
+    background-color: white;
+  }
+`;
+
+const CopyRightText = styled.div`
+  font-size: 14px;
+  color: white;
+  margin-top: 30px;
+  margin-bottom: 100px;
+`;
+const SocialContainer = styled.div`
+  justify-content: center;
+
+  display: flex;
+  flex-directton: row;
+`;
+
 export default function Footer() {
-  const FooterContainer = styled.div`
-    text-align: center;
-    padding-bottom: 10px;
-    padding-top: 150px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    // position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    height: 250px;
-    background-color: #0b0050;
-  `;
-  const SocialStyle = styled.div`
-    transition: transform 0.5s;
-    cursor: pointer;
-    margin: 0px 28px;
-    width: 50px;
-    height: 50px;
-    background-color: #55acee;
-    border-radius: 30px;
-    &.github {
-      background-color: white;
-    }
-    &.discord {
-      background-color: white;
-    }
-  `;
-
-  const CopyRightText = styled.div`
-    font-size: 14px;
-    color: white;
-    margin-top: 30px;
-    margin-bottom: 100px;
-  `;
-  const SocialContainer = styled.div`
-    justify-content: center;
-
-    display: flex;
-    flex-directton: row;
-  `;
   return (
     <FooterContainer>
       <SocialContainer>
