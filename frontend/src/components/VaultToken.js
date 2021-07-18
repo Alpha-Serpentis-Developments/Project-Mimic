@@ -16,6 +16,8 @@ export class VaultToken extends ERC20 {
     this.manageToken = false;
     this.expireTime = -1;
     this.collateralAmount = -1;
+    this.oTokenAddr = "";
+    this.oTokenObj = null;
   }
   // return the manager address
 
@@ -147,5 +149,12 @@ export class VaultToken extends ERC20 {
   }
   setCA(a) {
     this.collateralAmount = a;
+  }
+
+  getOT(w, address) {
+    return w.eth.getStorageAt(address, 11);
+  }
+  setOT(a) {
+    this.oTokenAddr = a;
   }
 }

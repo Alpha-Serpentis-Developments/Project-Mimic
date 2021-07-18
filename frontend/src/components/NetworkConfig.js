@@ -7,6 +7,7 @@ export let nwConfig = {
     factoryAddress: "0xe73aFc806411859D49977dbADe5c9328CD565Bcb",
     addressBookAddr: "0x1E31F2DCBad4dc572004Eae6355fB18F9615cBe4",
     controllerAddress: "0x4ccc2339F87F6c59c6893E1A678c2266cA58dC72",
+    wethContractAddr: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
     aTokenAddrs: [
       {
         key: "1",
@@ -28,6 +29,7 @@ export let nwConfig = {
     factoryAddress: "0xa7CD2F79F9aebc0E0fe9bd33Ebf3ce9bD1eBE20c",
     addressBookAddr: "0x8812f219f507e8cfe9d2f1e790164714c5e06a73",
     controllerAddress: "0xdee7d0f8ccc0f7ac7e45af454e5e7ec1552e8e4e",
+    wethContractAddr: "0xd0a1e359811322d97991e03f863a0c30c2cf029c",
     aTokenAddrs: [
       {
         key: "1",

@@ -15,7 +15,7 @@ export default function MMconnect(props: {
   return (
     <div>
       <div onClick={props.connectMM}>
-        <p>{props.btnText}</p>
+        <p style={{ lineHeight: "0px" }}>{props.btnText}</p>
       </div>
     </div>
   );
