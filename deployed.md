@@ -1,12 +1,14 @@
+The following table is for v0.2.x!
+
 # Ethereum Mainnet
 
 File | Contract Address
 -----|-----------------
-[contracts/experimenting/Factory.sol](https://github.com/Alpha-Serpentis-Developments/Project-Mimic/blob/37b6cff9c19f5358f6518beb241bc792bf245ed8/contracts/experimenting/Factory.sol) | [0xe73afc806411859d49977dbade5c9328cd565bcb](https://etherscan.io/address/0xe73afc806411859d49977dbade5c9328cd565bcb)
+N/A  | N/A
 
 # Kovan
 
 File | Contract Address
 -----|-----------------
-[contracts/experimenting/Factory.sol](https://github.com/Alpha-Serpentis-Developments/Project-Mimic/blob/37b6cff9c19f5358f6518beb241bc792bf245ed8/contracts/experimenting/Factory.sol) | [0xee16846aee123e32cf3baa9ee17121e92abc174c](https://kovan.etherscan.io/address/0xee16846aee123e32cf3baa9ee17121e92abc174c)
+[contracts/mimic/Factory.sol](https://github.com/Alpha-Serpentis-Developments/Project-Mimic/blob/c15528bdc05cc32422a5e5123b97a1022eb07782/contracts/mimic/Factory.sol) | [0x8a93b03e034133bcfebeaced0c8469b87b46b21e](https://kovan.etherscan.io/address/0x8a93b03e034133bcfebeaced0c8469b87b46b21e)
 

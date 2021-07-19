@@ -34,12 +34,6 @@ module.exports = {
     ],
   },
   networks: {
-    hardhat: {
-      mining: {
-        auto: true,
-        interval: 5000
-      }
-    },
     kovan: {
       url: "url here"
     },
