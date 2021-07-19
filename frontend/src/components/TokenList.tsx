@@ -9,11 +9,13 @@ export default function TokenList(props: {
   acct: string;
   mpAddress: string;
   showSpinner: boolean;
+  ethBal: number | undefined;
 }) {
   const [open, setOpen] = useState<boolean>(false);
   const [clickedItem, setClickedItem] = useState<Object | null>();
 
   function showTokenInfo(e: any, i: any) {
+    console.log(i.value);
     setClickedItem(i.value);
     setOpen(true);
   }
@@ -149,6 +151,7 @@ export default function TokenList(props: {
             token={clickedItem}
             acct={props.acct}
             mpAddress={props.mpAddress}
+            ethBal={props.ethBal}
           />
         </Modal.Content>
       </Modal>

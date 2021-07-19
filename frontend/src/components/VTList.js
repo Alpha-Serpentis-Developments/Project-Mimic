@@ -4,9 +4,11 @@ import { Factory } from "./Factory";
 import { VaultToken } from "./VaultToken";
 import TokenList from "./TokenList";
 import BigNumber from "bignumber.js";
+import { Otoken } from "./Otoken";
 
 import { Table } from "semantic-ui-react";
 import { ERC20 } from "./Erc20";
+import VTCard from "./VTCard";
 
 export default function VTList(props) {
   const [vtList, setVTList] = useState([]);
@@ -158,8 +160,27 @@ export default function VTList(props) {
     if (v.collateralAmount === -1) {
       v.getCA(web3, v.address).then((result) => {
         let da = web3.utils.toBN(result).toString();
-
         v.setCA(da);
+      });
+    }
+    if (v.oTokenAddr === "") {
+      v.getOT(web3, v.address).then((result) => {
+        if (
+          result !==
+          "0x0000000000000000000000000000000000000000000000000000000000000000"
+        ) {
+          let oAddr = `0x${result.slice(-40)}`;
+          console.log(result);
+          v.setOT(oAddr);
+          if (v.oTokenAddr !== "") {
+            let o = new Otoken(web3, v.oTokenAddr);
+            console.log(o.name());
+            v.oTokenObj = o;
+            o.getName().then((result) => {
+              o.setName(result);
+            });
+          }
+        }
       });
     }
   }
@@ -350,36 +371,64 @@ export default function VTList(props) {
             </Table.Cell> */}
             {props.renderManager && (
               <Table.Cell>
-                <TokenList
+                <VTCard
                   tList={managedList}
                   update={update}
                   title="Managed Token"
                   acct={props.acctNum}
                   mpAddress={props.mpAddress}
                   showSpinner={vtList.length === 0}
+                  ethBal={props.ethBal}
                 />
+                {/* <TokenList
+                  tList={managedList}
+                  update={update}
+                  title="Managed Token"
+                  acct={props.acctNum}
+                  mpAddress={props.mpAddress}
+                  showSpinner={vtList.length === 0}
+                  ethBal={props.ethBal}
+                /> */}
               </Table.Cell>
             )}
             {props.renderPortfolio && (
               <Table.Cell>
-                <TokenList
+                <VTCard
                   tList={portfolioList}
                   update={update}
                   title="Portfolio"
                   acct={props.acctNum}
                   showSpinner={vtList.length === 0}
+                  ethBal={props.ethBal}
                 />
+                {/* <TokenList
+                  tList={portfolioList}
+                  update={update}
+                  title="Portfolio"
+                  acct={props.acctNum}
+                  showSpinner={vtList.length === 0}
+                  ethBal={props.ethBal}
+                /> */}
               </Table.Cell>
             )}
             {props.renderFollow && (
               <Table.Cell>
-                <TokenList
+                <VTCard
                   tList={followList}
                   update={update}
                   title="Follow List"
                   acct={props.acctNum}
                   showSpinner={vtList.length === 0}
+                  ethBal={props.ethBal}
                 />
+                {/* <TokenList
+                  tList={followList}
+                  update={update}
+                  title="Follow List"
+                  acct={props.acctNum}
+                  showSpinner={vtList.length === 0}
+                  ethBal={props.ethBal}
+                /> */}
               </Table.Cell>
             )}
           </Table.Row>

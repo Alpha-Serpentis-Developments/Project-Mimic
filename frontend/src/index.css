@@ -9,7 +9,8 @@ body {
   flex-direction: column;
   height: 100%;
   /* background-color: linear-gradient(#eddbf4, #f54aefad) !important; */
-  background-color: #eddbf4 !important;
+  /* background-color: #eddbf4 !important; */
+  background-color: #0b0050 !important;
 }
 ::-webkit-scrollbar {
   display: none;

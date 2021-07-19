@@ -3,10 +3,20 @@ import "semantic-ui-css/semantic.min.css";
 
 import { web3 } from "./components/Web3Handler";
 import VTList from "./components/VTList.js";
-import { Button, Icon, Grid, Menu, Sidebar, Message } from "semantic-ui-react";
+import {
+  Button,
+  Icon,
+  Grid,
+  Menu,
+  Sidebar,
+  Message,
+  Divider,
+} from "semantic-ui-react";
 import DeployNewVaultToken from "./components/DeployNewVaultToken";
 import TopMenu from "./components/TopMenu";
+import NavBar from "./components/NavBar";
 import Introduction from "./components/Introduction";
+import Landing from "./components/Landing";
 import Footer from "./components/Footer";
 import { AddressBook } from "./components/AddressBook";
 import TopSidebar from "./components/TopSideBar";
@@ -33,16 +43,15 @@ export default function App() {
   const [chainId, setChainId] = useState<number | undefined>();
   const [ethBal, setEthBal] = useState<number | undefined>();
   const [mpAddress, setMPAddress] = useState<string>("");
-
   const [renderHome, setRenderHome] = useState<boolean>(true);
   const [renderManager, setRenderManager] = useState<boolean>(false);
   const [renderFollow, setRenderFollow] = useState<boolean>(false);
   const [renderPortfolio, setRenderPortfolio] = useState<boolean>(false);
   const [openPlusModal, setOpenPlusModal] = useState<boolean>(false);
 
-  const [homeNav, setHomeNav] = useState("black");
-  const [managerNav, setManagerNav] = useState("black");
-  const [tradeNav, setTradeNav] = useState("black");
+  const [homeNav, setHomeNav] = useState("#0b0050");
+  const [managerNav, setManagerNav] = useState("#0b0050");
+  const [tradeNav, setTradeNav] = useState("#0b0050");
   const [mmColor, setMMColor] = useState("grey");
   const [showSidebar, setShowSidebar] = useState(false);
   const [showMMInstallModal, setShowMMInstallModal] = useState(false);
@@ -76,10 +85,20 @@ export default function App() {
       getChainID();
       setBtnText(t);
       getMarginPoolAddress();
+      getAccountDetail();
     }
 
     hasMMInstall();
   }, []);
+
+  async function getAccountDetail() {
+    getChainID();
+    const weiBal = await web3.eth.getBalance(acctNum);
+    console.log(weiBal);
+    const ethBal = parseInt(weiBal) / 1000000000000000000;
+    // setChainId(chain_Id);
+    setEthBal(ethBal);
+  }
 
   function getMarginPoolAddress() {
     let ab = new AddressBook(web3);
@@ -133,11 +152,13 @@ export default function App() {
       setAcctNum(account);
       setBtnText(wAddress);
       // const chain_Id = await web3.eth.getChainId();
-      getChainID();
-      const weiBal = await web3.eth.getBalance(account);
-      const ethBal = parseInt(weiBal) / 1000000000000000000;
-      // setChainId(chain_Id);
-      setEthBal(ethBal);
+      // getChainID();
+      // const weiBal = await web3.eth.getBalance(account);
+      // console.log(weiBal);
+      // const ethBal = parseInt(weiBal) / 1000000000000000000;
+      // // setChainId(chain_Id);
+      // setEthBal(ethBal);
+      getAccountDetail();
       localStorage.setItem("account", JSON.stringify(account));
     }
   }
@@ -148,9 +169,9 @@ export default function App() {
     setRenderManager(false);
     setRenderPortfolio(false);
     setRenderFollow(false);
-    setHomeNav("purple");
-    setManagerNav("black");
-    setTradeNav("black");
+    setHomeNav("#9604a2");
+    setManagerNav("#0b0050");
+    setTradeNav("#0b0050");
   }
   function clickTrade(e: any) {
     e.preventDefault();
@@ -158,9 +179,9 @@ export default function App() {
     setRenderManager(false);
     setRenderPortfolio(true);
     setRenderFollow(true);
-    setHomeNav("black");
-    setManagerNav("black");
-    setTradeNav("purple");
+    setHomeNav("#0b0050");
+    setManagerNav("#0b0050");
+    setTradeNav("#9604a2");
   }
   function clickManager(e: any) {
     e.preventDefault();
@@ -168,9 +189,9 @@ export default function App() {
     setRenderManager(true);
     setRenderPortfolio(false);
     setRenderFollow(false);
-    setHomeNav("black");
-    setManagerNav("purple");
-    setTradeNav("black");
+    setHomeNav("#0b0050");
+    setManagerNav("#9604a2");
+    setTradeNav("#0b0050");
   }
 
   function openModal() {
@@ -246,7 +267,7 @@ export default function App() {
             clickShowSidebar={clickShowSidebar}
             clickHideSidebar={clickHideSidebar}
           />
-          <TopMenu
+          <NavBar
             btnText={btnText}
             acctNum={acctNum}
             chainId={chainId}
@@ -264,6 +285,26 @@ export default function App() {
             managerNav={managerNav}
             mmColor={mmColor}
           />
+          {renderHome && <Landing clickTrade={clickTrade} />}
+          {/* <TopMenu
+            btnText={btnText}
+            acctNum={acctNum}
+            chainId={chainId}
+            ethBal={ethBal}
+            connectMM={connectMM}
+            clickHome={clickHome}
+            clickTrade={clickTrade}
+            clickManager={clickManager}
+            renderHome={renderHome}
+            renderManager={renderManager}
+            renderFollow={renderFollow}
+            renderPortfolio={renderPortfolio}
+            homeNav={homeNav}
+            tradeNav={tradeNav}
+            managerNav={managerNav}
+            mmColor={mmColor}
+          /> */}
+
           {!addr && (
             <div
               style={{
@@ -283,7 +324,7 @@ export default function App() {
               </a>{" "} */}
             </div>
           )}
-          {renderHome && <Introduction clickTrade={clickTrade} />}
+          {/* {renderHome && <Introduction clickTrade={clickTrade} />} */}
 
           {addr && (
             <div>
@@ -293,6 +334,7 @@ export default function App() {
                 renderManager={renderManager}
                 renderFollow={renderFollow}
                 renderPortfolio={renderPortfolio}
+                ethBal={ethBal}
               />
               {renderManager && (
                 <Grid centered padded>
@@ -324,12 +366,11 @@ export default function App() {
             acctNum={acctNum}
           />
         </div>
-        {/* {!renderHome && (
+        {!renderHome && (
           <>
             <Divider hidden />
-         
           </>
-        )} */}
+        )}
         <Footer />
       </Sidebar.Pusher>
       {/* </Sidebar.Pushable> */}
