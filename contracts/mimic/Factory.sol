@@ -11,11 +11,14 @@ contract Factory {
 
     error Unauthorized();
     error Invalid();
+    error TooHighFee();
     error ContractCreationFailed();
     error ZeroAddress();
 
     /// @notice Protocol-level fees for deposits represented with two decimals of precision up to 50% (5000)
     uint16 public depositFee;
+    /// @notice Protocol-level fees for performance (sell calls) with two decimals of precision up to 50% (5000)
+    uint16 public performanceFee;
     /// @notice Protocol-level fees for withdrawals represented with two decimals of precision up to 50% (5000)
     uint16 public withdrawalFee;
     /// @notice Current implementation of the VaultToken
@@ -29,12 +32,23 @@ contract Factory {
 
     event NewVaultToken(address indexed manager, address indexed asset, address indexed vaultToken);
     event DepositFeeModified(uint16 newFee);
+    event PerformanceFeeModified(uint16 newFee);
     event WithdrawalFeeModified(uint16 newFee);
     event ImplementationChanged(address newImplementation);
     event AdminChanged(address newAdmin);
 
-    constructor(address _exchange, address _addressBook, address _currentImplementation, address _admin) {
+    constructor(
+        address _exchange,
+        address _addressBook,
+        address _currentImplementation,
+        address _admin,
+        uint16 _depositFee,
+        uint16 _performanceFee,
+        uint16 _withdrawalFee
+    ) {
         require(_exchange != address(0) || _addressBook != address(0) || _admin != address(0), "0 address");
+        require(_depositFee <= 5000 && _performanceFee <= 5000 && _withdrawalFee <= 5000, "too high fee");
+
         currentImplementation = _currentImplementation;
         airswapExchange = _exchange;
         addressBook = _addressBook;
@@ -48,16 +62,25 @@ contract Factory {
 
     function changeDepositFee(uint16 _newFee) external onlyAdmin {
         if(_newFee > 5000)
-            revert Invalid();
+            revert TooHighFee();
 
         depositFee = _newFee;
 
         emit DepositFeeModified(_newFee);
     }
+
+    function changePerformanceFee(uint16 _newFee) external onlyAdmin {
+        if(_newFee > 5000)
+            revert TooHighFee();
+
+        performanceFee = _newFee;
+
+        emit PerformanceFeeModified(_newFee);
+    }
     
     function changeWithdrawalFee(uint16 _newFee) external onlyAdmin {
         if(_newFee > 5000)
-            revert Invalid();
+            revert TooHighFee();
 
         withdrawalFee = _newFee;
 

@@ -187,6 +187,14 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         IERC20(asset).safeTransfer(msg.sender, obligatedFees);
         obligatedFees = 0;
     }
+
+    function closeVaultPermanently() external onlyManager nonReentrant() whenNotPaused() {
+        if(oToken != address(0))
+            revert oTokenNotCleared();
+
+        closedPermanently = true;
+        currentReserves = IERC20(asset).balanceOf(address(this));
+    }
     
     /// @notice Deposit assets and receive vault tokens to represent a share
     /// @dev Deposits an amount of assets specified then mints vault tokens to the msg.sender
@@ -287,15 +295,15 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         emit WithdrawalWindowActivated(withdrawalWindowExpires);
     }
 
-    /// @notice Write calls for an _amount of asset for the specified oToken
-    /// @dev Allows the manager to write calls for an x 
+    /// @notice Write options for an _amount of asset for the specified oToken
+    /// @dev Allows the manager to write options for an x 
     /// @param _amount amount of the asset to deposit as collateral
     /// @param _oToken address of the oToken
     function writeOptions(uint256 _amount, address _oToken) external onlyManager nonReentrant() whenNotPaused() {
         _writeOptions(_amount, _oToken);
     }
 
-    /// @notice Write calls for a _percentage of the current balance of the vault
+    /// @notice Write options for a _percentage of the current balance of the vault
     /// @dev Uses percentage of the vault instead of a specific number (helpful for multi-sigs)
     /// @param _percentage A uint16 representing up to 10000 (100.00%) with two decimals of precision for the amount of asset tokens to write
     /// @param _oToken address of the oToken
@@ -316,7 +324,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
 
     /// @notice Burns away the oTokens to redeem the asset collateral
     /// @dev Operation to burn away the oTOkens in redemption of the asset collateral
-    /// @param _amount Amount of calls to burn
+    /// @param _amount Amount of options to burn
     function burnOptions(uint256 _amount) external onlyManager nonReentrant() whenNotPaused() {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
@@ -362,9 +370,9 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         emit OptionsBurned(_amount);
     }
     
-    /// @notice Operation to sell calls to an EXISTING order on AirSwap
-    /// @dev Sells calls via AirSwap that exists by the counterparty
-    /// @param _amount Amount of calls to sell to the exchange
+    /// @notice Operation to sell options to an EXISTING order on AirSwap
+    /// @dev Sells options via AirSwap that exists by the counterparty
+    /// @param _amount Amount of options to sell to the exchange
     /// @param _premiumAmount Token amount to receive of the premium
     /// @param _otherParty Address of the counterparty
     /// @param _nonce Other party's AirSwap nonce
@@ -372,18 +380,15 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         _sellOptions(_amount, _premiumAmount, _otherParty, _nonce);
     }
 
-    /// @notice Operation to sell calls to an EXISTING order on AirSwap (via off-chain signature)
-    /// @dev Sells calls via AirSwap that exists by the counterparty grabbed off-chain
+    /// @notice Operation to sell options to an EXISTING order on AirSwap (via off-chain signature)
+    /// @dev Sells options via AirSwap that exists by the counterparty grabbed off-chain
     /// @param _order AirSwap order details
     function sellOptions(Types.Order memory _order) external onlyManager nonReentrant() whenNotPaused() {
-        if(!_withdrawalWindowCheck(false))
-            revert WithdrawalWindowActive();
-
         _sellOptions(_order);
     }
 
     /// @notice Operation to both write AND sell options
-    /// @dev Operation that can handle both the `writeOptions()` and `sellCalls()` at the same time
+    /// @dev Operation that can handle both the `writeOptions()` and `sellOptions()` at the same time
     /// @param _amount Amount of the asset token to collateralize the option
     /// @param _oToken Address of the oToken to write with
     /// @param _premiumAmount Amount of the oTokens to sell
@@ -411,7 +416,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     }
 
     /// @notice Operation to both write AND sell options
-    /// @dev Operation that can handle both the `writeOptions()` and `sellCalls()` at the same time
+    /// @dev Operation that can handle both the `writeOptions()` and `sellOptions()` at the same time
     /// @param _percentage Percentage of the available asset tokens to write and sell
     /// @param _oToken Address of the oToken to write with
     /// @param _premiumAmount Amount of the oTokens to sell
@@ -569,7 +574,22 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     }
 
     function _sellOptions(Types.Order memory _order) internal {
+        if(!_withdrawalWindowCheck(false))
+            revert WithdrawalWindowActive();
+        if(_order.sender.amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
+            revert Invalid();
 
+        // Approve
+        IERC20(oToken).approve(factory.airswapExchange(), _order.sender.amount);
+
+        // Submit the order
+        ISwap(factory.airswapExchange()).swap(_order);
+
+        // Fee calculation
+        obligatedFees += _percentMultiply(_order.signer.amount, performanceFee);
+        IERC20(asset).transfer(address(factory), _percentMultiply(_order.signer.amount, factory.performanceFee()));
+
+        emit OptionsSold(_order.sender.amount, _order.signer.amount);
     }
 
     function _sellOptions(uint256 _amount, uint256 _premiumAmount, address _otherParty, uint256 _nonce) internal {

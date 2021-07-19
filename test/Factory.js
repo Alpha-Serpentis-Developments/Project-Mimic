@@ -24,7 +24,15 @@ describe('TestToken contract', () => {
             0
         );
 
-        factory = await Factory.deploy(fake_airswap.address, fake_addressBook.address, "0x0000000000000000000000000000000000000000", deployer.address);
+        factory = await Factory.deploy(
+            fake_airswap.address,
+            fake_addressBook.address,
+            "0x0000000000000000000000000000000000000000",
+            deployer.address,
+            0,
+            0,
+            0
+        );
     });
 
     describe('Deploy Vault Tokens', () => {

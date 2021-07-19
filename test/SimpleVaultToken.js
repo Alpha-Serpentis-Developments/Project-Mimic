@@ -33,7 +33,10 @@ describe('VaultToken contract (simple test)', () => {
             fake_airswap.address,
             fake_addressBook.address,
             vaultToken.address,
-            deployer.address
+            deployer.address,
+            0,
+            0,
+            0
         );
 
         vaultTokenTransaction = await factory.connect(manager).deployNewVaultToken(
