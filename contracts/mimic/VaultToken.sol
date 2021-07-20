@@ -369,16 +369,6 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
 
         emit OptionsBurned(_amount);
     }
-    
-    /// @notice Operation to sell options to an EXISTING order on AirSwap
-    /// @dev Sells options via AirSwap that exists by the counterparty
-    /// @param _amount Amount of options to sell to the exchange
-    /// @param _premiumAmount Token amount to receive of the premium
-    /// @param _otherParty Address of the counterparty
-    /// @param _nonce Other party's AirSwap nonce
-    function sellOptions(uint256 _amount, uint256 _premiumAmount, address _otherParty, uint256 _nonce) external onlyManager nonReentrant() whenNotPaused() {
-        _sellOptions(_amount, _premiumAmount, _otherParty, _nonce);
-    }
 
     /// @notice Operation to sell options to an EXISTING order on AirSwap (via off-chain signature)
     /// @dev Sells options via AirSwap that exists by the counterparty grabbed off-chain
@@ -391,15 +381,11 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @dev Operation that can handle both the `writeOptions()` and `sellOptions()` at the same time
     /// @param _amount Amount of the asset token to collateralize the option
     /// @param _oToken Address of the oToken to write with
-    /// @param _premiumAmount Amount of the oTokens to sell
-    /// @param _otherParty address of the counterparty via AirSwap
-    /// @param _nonce other party's AirSwap nonce
+    /// @param _order AirSwap order
     function writeAndSellOptions(
         uint256 _amount,
         address _oToken,
-        uint256 _premiumAmount,
-        address _otherParty,
-        uint256 _nonce
+        Types.Order memory _order
     ) external onlyManager nonReentrant() whenNotPaused() {
         uint256 oTokenPrevBal = IERC20(_oToken).balanceOf(address(this));
 
@@ -408,10 +394,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
             _oToken
         );
         _sellOptions(
-            IERC20(_oToken).balanceOf(address(this)) - oTokenPrevBal, // This should NEVER underflow
-            _premiumAmount,
-            _otherParty,
-            _nonce
+            _order
         );
     }
 
@@ -419,15 +402,11 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @dev Operation that can handle both the `writeOptions()` and `sellOptions()` at the same time
     /// @param _percentage Percentage of the available asset tokens to write and sell
     /// @param _oToken Address of the oToken to write with
-    /// @param _premiumAmount Amount of the oTokens to sell
-    /// @param _otherParty address of the counterparty via AirSwap
-    /// @param _nonce other party's AirSwap nonce
+    /// @param _order AirSwap order
     function writeAndSellOptions(
         uint16 _percentage,
         address _oToken,
-        uint256 _premiumAmount,
-        address _otherParty,
-        uint256 _nonce
+        Types.Order memory _order
     ) external onlyManager nonReentrant() whenNotPaused() {
         uint256 oTokenPrevBal = IERC20(_oToken).balanceOf(address(this));
 
@@ -438,12 +417,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
             ),
             _oToken
         );
-        _sellOptions(
-            IERC20(_oToken).balanceOf(address(this)) - oTokenPrevBal, // This should NEVER underflow
-            _premiumAmount,
-            _otherParty,
-            _nonce
-        );
+        _sellOptions(_order);
     }
 
     /// @notice Operation to settle the vault
@@ -590,47 +564,6 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         IERC20(asset).transfer(address(factory), _percentMultiply(_order.signer.amount, factory.performanceFee()));
 
         emit OptionsSold(_order.sender.amount, _order.signer.amount);
-    }
-
-    function _sellOptions(uint256 _amount, uint256 _premiumAmount, address _otherParty, uint256 _nonce) internal {
-        if(!_withdrawalWindowCheck(false))
-            revert WithdrawalWindowActive();
-        if(_amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
-            revert Invalid();
-        if(!ISwap(factory.airswapExchange()).signerAuthorizations(_otherParty, address(this)))
-            revert Unauthorized_COUNTERPARTY_DID_NOT_SIGN();
-
-        // Prepare the AirSwap order
-        Types.Order memory sellOrder;
-        Types.Party memory signer;
-        Types.Party memory sender;
-
-        // Prepare the signer Types.Party portion (counterparty) of the order
-        signer.kind = 0x36372b07; // ERC20_INTERFACE_ID
-        signer.wallet = _otherParty;
-        signer.token = asset;
-        signer.amount = _premiumAmount;
-
-        // Prepare the sender Types.Party portion (this contract) of the order
-        sender.kind = 0x36372b07; // ERC20_INTERFACE_ID
-        sender.token = oToken;
-        sender.amount = _amount;
-
-        // Define Types.Order
-        sellOrder.nonce = _nonce;
-        sellOrder.expiry = block.timestamp + 1 days;
-        sellOrder.signer = signer;
-        sellOrder.sender = sender;
-        
-        // Approve
-        IERC20(oToken).approve(factory.airswapExchange(), _amount);
-
-        ISwap(factory.airswapExchange()).swap(sellOrder);
-        
-        // Calculate performance fee
-        obligatedFees += _percentMultiply(_premiumAmount, performanceFee);
-
-        emit OptionsSold(_amount, _premiumAmount);
     }
 
     function _calculateAndSetReserves() internal {
