@@ -112,7 +112,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @notice For emergency use
     /// @dev Stops all activities on the vault (or reactivates them)
     /// @param _pause true to pause the vault, false to unpause the vault
-    function emergency(bool _pause) external onlyManager {
+    function emergency(bool _pause) external ifNotClosed onlyManager {
         if(_pause)
             super._pause();
         else
@@ -260,7 +260,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @notice Redeem vault tokens for assets
     /// @dev Burns vault tokens in redemption for the assets to msg.sender
     /// @param _amount amount of VAULT TOKENS to burn
-    function withdraw(uint256 _amount) external ifNotClosed nonReentrant() whenNotPaused() {
+    function withdraw(uint256 _amount) external nonReentrant() whenNotPaused() {
         if(_amount == 0)
             revert Invalid();
 

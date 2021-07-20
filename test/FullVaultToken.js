@@ -764,11 +764,40 @@ describe('VaultToken contract (full test)', () => {
         });
 
         it('Should NOT let the manager do anymore actions', async () => {
+            // randomly selected actions
+            await expect(
+                vaultToken.connect(manager).adjustTheMaximumAssets(1)
+            ).to.be.revertedWith("ClosedPermanently()");
 
+            normalVaultToken = vaultToken;
+            vaultToken = new ethers.Contract(vaultToken.address, abi, manager);
+
+            await expect(
+                vaultToken.connect(manager)['writeOptions(uint16,address)'](
+                    10000,
+                    mockOtokenAddr
+                )
+            ).to.be.revertedWith("ClosedPermanently()");
+            vaultToken = normalVaultToken;
         });
 
         it('Should NOT let anyone deposit', async () => {
+            await expect(
+                vaultToken.connect(depositor).deposit(
+                    ethers.utils.parseUnits('1', 18)
+                )
+            ).to.be.revertedWith("ClosedPermanently()");
+        });
 
+        it('Should let depositors withdraw', async () => {
+            const prevBal = await mockUSDC.balanceOf(depositor.address);
+
+            await vaultToken.connect(depositor).withdraw(
+                ethers.utils.parseUnits('500', 18)
+            );
+
+            expect(await mockUSDC.balanceOf(depositor.address) - prevBal).to.be.equal(500e6);
+            expect(await vaultToken.totalSupply()).to.be.equal(0);
         });
     });
 
