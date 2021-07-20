@@ -204,7 +204,10 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
             revert ClosedPermanently();
         if(_amount == 0)
             revert Invalid();
-        if(collateralAmount + IERC20(asset).balanceOf(address(this)) + _amount - obligatedFees > maximumAssets)
+        
+        uint256 adjustedBal = collateralAmount + IERC20(asset).balanceOf(address(this)) - obligatedFees;
+            
+        if(adjustedBal + _amount > maximumAssets)
             revert MaximumFundsReached();
 
         uint256 vaultMint;
@@ -226,7 +229,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
             vaultMint = _normalize(_amount - protocolFees - vaultFees, ERC20(asset).decimals(), decimals());
             withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
         } else {
-            vaultMint = totalSupply() * (_amount - protocolFees - vaultFees) / (IERC20(asset).balanceOf(address(this)) + collateralAmount - obligatedFees);
+            vaultMint = totalSupply() * (_amount - protocolFees - vaultFees) / (adjustedBal);
         }
 
         obligatedFees += vaultFees;
@@ -387,8 +390,6 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         address _oToken,
         Types.Order memory _order
     ) external onlyManager nonReentrant() whenNotPaused() {
-        uint256 oTokenPrevBal = IERC20(_oToken).balanceOf(address(this));
-
         _writeOptions(
             _amount,
             _oToken
@@ -408,8 +409,6 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         address _oToken,
         Types.Order memory _order
     ) external onlyManager nonReentrant() whenNotPaused() {
-        uint256 oTokenPrevBal = IERC20(_oToken).balanceOf(address(this));
-
         _writeOptions(
             _percentMultiply(
                 IERC20(asset).balanceOf(address(this)) - obligatedFees,
