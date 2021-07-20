@@ -5,8 +5,9 @@ import {VaultToken} from "./VaultToken.sol";
 import {Clones} from "../oz/proxy/Clones.sol";
 import {IERC20} from "../oz/token/ERC20/IERC20.sol";
 import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
+import {ReentrancyGuard} from "../oz/security/ReentrancyGuard.sol";
 
-contract Factory {
+contract Factory is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     error Unauthorized();
@@ -60,7 +61,7 @@ contract Factory {
         _;
     }
 
-    function changeDepositFee(uint16 _newFee) external onlyAdmin {
+    function changeDepositFee(uint16 _newFee) external nonReentrant() onlyAdmin {
         if(_newFee > 5000)
             revert TooHighFee();
 
@@ -69,7 +70,7 @@ contract Factory {
         emit DepositFeeModified(_newFee);
     }
 
-    function changePerformanceFee(uint16 _newFee) external onlyAdmin {
+    function changePerformanceFee(uint16 _newFee) external nonReentrant() onlyAdmin {
         if(_newFee > 5000)
             revert TooHighFee();
 
@@ -78,7 +79,7 @@ contract Factory {
         emit PerformanceFeeModified(_newFee);
     }
     
-    function changeWithdrawalFee(uint16 _newFee) external onlyAdmin {
+    function changeWithdrawalFee(uint16 _newFee) external nonReentrant() onlyAdmin {
         if(_newFee > 5000)
             revert TooHighFee();
 
@@ -87,7 +88,7 @@ contract Factory {
         emit WithdrawalFeeModified(_newFee);
     }
     
-    function changeCurrentImplementation(address _newImplementation) external onlyAdmin {
+    function changeCurrentImplementation(address _newImplementation) external nonReentrant() onlyAdmin {
         if(_newImplementation == address(0))
             revert ZeroAddress();
             
@@ -96,7 +97,7 @@ contract Factory {
         emit ImplementationChanged(_newImplementation);
     }
 
-    function changeAdmin(address _newAdmin) external onlyAdmin {
+    function changeAdmin(address _newAdmin) external nonReentrant() onlyAdmin {
         if(_newAdmin == address(0))
             revert ZeroAddress();
 
@@ -118,11 +119,9 @@ contract Factory {
         address _asset,
         uint256 _withdrawalWindowLength,
         uint256 _maximumAssets
-    ) external {
+    ) external nonReentrant() {
         if(_asset == address(0) || currentImplementation == address(0))
             revert ZeroAddress();
-        if(_withdrawalWindowLength == 0)
-            revert Invalid();
         
         VaultToken vToken = VaultToken(Clones.clone(currentImplementation));
 

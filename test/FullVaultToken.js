@@ -715,4 +715,61 @@ describe('VaultToken contract (full test)', () => {
         });
     });
 
+    describe('Closing the vault permanently', async () => {
+        it('Should NOT close the vault', async () => {
+            await network.provider.send('evm_increaseTime', [86400]);
+
+            // Prepare another oToken
+            mockOtokenTransaction = await otokenFactory.connect(fake_multisig).createOtoken(
+                mockWETH.address,
+                mockUSDC.address,
+                mockUSDC.address,
+                ethers.utils.parseUnits('1000', 6),
+                1643961600, // 2022 Feb. 4 @ 8 UTC
+                true
+            );
+
+            const mockOtokenReceipt = await mockOtokenTransaction.wait();
+            mockOtokenAddr = mockOtokenReceipt.events[1].args[0];
+
+            mockOtoken = await ethers.getContractAt(
+                'Otoken',
+                mockOtokenAddr,
+                fake_multisig
+            );
+
+            normalVaultToken = vaultToken;
+            vaultToken = new ethers.Contract(vaultToken.address, abi, manager);
+
+            await expect(
+                vaultToken.connect(manager)['writeOptions(uint16,address)'](
+                    10000,
+                    mockOtokenAddr
+                )
+            ).to.not.be.reverted;
+            vaultToken = normalVaultToken;
+
+            await expect(
+                vaultToken.connect(manager).closeVaultPermanently()
+            ).to.be.revertedWith("oTokenNotCleared()");
+        });
+
+        it('Should close the vault', async () => {
+            await vaultToken.connect(manager).burnOptions(await mockOtoken.balanceOf(vaultToken.address));
+
+            await expect(
+                vaultToken.connect(manager).closeVaultPermanently()
+            ).to.not.be.reverted;
+            expect(await vaultToken.closedPermanently()).to.be.equal(true);
+        });
+
+        it('Should NOT let the manager do anymore actions', async () => {
+
+        });
+
+        it('Should NOT let anyone deposit', async () => {
+
+        });
+    });
+
 });
