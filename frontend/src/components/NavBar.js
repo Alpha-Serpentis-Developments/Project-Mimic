@@ -122,10 +122,19 @@ export default function NavBar(props) {
           onClose={() => setShowAlertMsg(false)}
           onOpen={() => setShowAlertMsg(true)}
         >
-          <Modal.Header>Thank you!</Modal.Header>
+          <Modal.Header>NOTICE</Modal.Header>
           <Modal.Content>
             <Modal.Description>
-              Your subscription has been confirmed
+              <b>Optional is an experimental product and may bear significant risks which are not limited to:</b>
+              <br></br>
+              <br></br>- Smart Contract Risks with Optional
+              <br></br>- Smart Contract Risks with Opyn
+              <br></br>- Volatility in the options market
+              <br></br>- Social Tokens getting exercised
+              <br></br>- Social Traders that act against their followers
+              <br></br>
+              <br></br>
+              Optional nor Alpha Serpentis Developments does not endorse any of the vaults listed in the site. These are purely for informational purposes, are not an endorsement of investment, and users must perform their own due-diligence.
             </Modal.Description>
           </Modal.Content>
           <Modal.Actions>
