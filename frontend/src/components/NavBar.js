@@ -1,13 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import MMConnect from "./MMconnection";
 import optionalProfile from "../images/optionalProfile.png";
-import cover from "../images/cover.png";
 import styled from "styled-components";
 import { Button, Icon, Modal } from "semantic-ui-react";
 
 const MainNav = styled.nav`
   height: 68px;
-  background-color: #0b0050;
+  background-color: #8b1bef;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -53,16 +52,16 @@ export default function NavBar(props) {
     cursor: pointer;
 
     &.navHomeLink {
-      border-bottom: ${props.homeNav} 4px solid;
+      border-bottom: #ff89fdba 4px solid;
     }
     &.navTradeLink {
-      border-bottom: ${props.tradeNav} 4px solid;
+      border-bottom: #ff89fdba 4px solid;
     }
     &.navMgrLink {
-      border-bottom: ${props.managerNav} 4px solid;
+      border-bottom: #ff89fdba 4px solid;
     }
     &:hover {
-      border-bottom: #9604a2 4px solid;
+      border-bottom: #9489ffba 4px solid;
     }
   `;
 
