@@ -97,7 +97,6 @@ export default function App() {
   async function clickToVisit() {
     await setVisited(false);
     localStorage.setItem("new", "false");
-    console.log(localStorage.getItem("new"));
   }
 
   async function getAccountDetail() {
