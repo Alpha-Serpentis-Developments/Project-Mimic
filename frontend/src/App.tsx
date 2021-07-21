@@ -36,6 +36,9 @@ let nC: any = nwConfig;
 
 export default function App() {
   let addr: string = JSON.parse(localStorage.getItem("account") || "false");
+  let isVisit: boolean = JSON.parse(localStorage.getItem("new") || "true");
+  console.log(isVisit);
+  const [visited, setVisited] = useState(isVisit);
 
   const [hasMM, setHasMM] = useState<boolean>(false);
   const [btnText, setBtnText] = useState<string>("Connect MetaMask");
@@ -87,9 +90,14 @@ export default function App() {
       getMarginPoolAddress();
       getAccountDetail();
     }
-
+    localStorage.setItem("new", JSON.stringify(visited));
     hasMMInstall();
   }, []);
+
+  async function clickToVisit() {
+    await setVisited(false);
+    localStorage.setItem("new", "false");
+  }
 
   async function getAccountDetail() {
     getChainID();
@@ -284,6 +292,8 @@ export default function App() {
             tradeNav={tradeNav}
             managerNav={managerNav}
             mmColor={mmColor}
+            visited={visited}
+            clickToVisit={clickToVisit}
           />
           {renderHome && <Landing clickTrade={clickTrade} />}
           {/* <TopMenu

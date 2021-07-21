@@ -1,27 +1,29 @@
 import { useState } from "react";
-import { Modal, Button } from "semantic-ui-react";
+import { Modal, Button, Icon } from "semantic-ui-react";
 import VaultTokenInfo from "./VaultTokenInfo";
 import styled from "styled-components";
 
 const VTAddress = styled.span`
   margin-left: 20px;
   font-size: 10px;
-  color: grey;
+  color: #333333;
 `;
 const VTCardContainer = styled.div`
-  background-color: #ffb3c1;
-  margin-bottom: 10px;
-  border-radius: 30px;
+  background-color: #af84e7;
+  margin-bottom: 20px;
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
   width: 600px;
+  border: 1px solid #d9d9d9;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
   cursor: pointer;
   display: inline-block;
   margin-left: auto;
   margin-right: auto;
+
   &:hover {
-    background-color: #fa5456;
+    background-color: #8a02b2;
     color: white;
     .tAddr {
       color: white;
@@ -30,18 +32,22 @@ const VTCardContainer = styled.div`
 `;
 const VTNameContainer = styled.div`
   margin: 10px 20px 0px 20px;
+
   display: flex;
   flex-direction: row;
+  justify-content: space-between;
 `;
 const VTName = styled.div`
+  font-family: "Quantico", sans-serif;
+  text-shadow: white 1px 0 3px;
   font-size: 20px;
   font-weight: 800;
 `;
 
 const ManagedText = styled.div`
+  margin-top: 5px;
   font-size: 15px;
   margin-bottom: 20px;
-  margin-left: 0px;
 `;
 const VtContentcontainer = styled.div`
   display: flex;
@@ -107,10 +113,8 @@ export default function VTCard(props) {
     return (
       <VTCardContainer>
         <VTNameContainer>
-          <VTName>
-            {item.name()}
-            <VTAddress className="tAddr">{item.address}</VTAddress>
-          </VTName>
+          <VTName>{item.name()}</VTName>
+          <VTAddress className="tAddr">{item.address}</VTAddress>
         </VTNameContainer>
         <VtContentcontainer>
           <LeftContent>
@@ -120,11 +124,11 @@ export default function VTCard(props) {
             <PercentContent>
               <ItemInfo>
                 <ItemTextHeader>Last Round</ItemTextHeader>
-                <ItemText>30%</ItemText>
+                <ItemText>+30%</ItemText>
               </ItemInfo>
               <ItemInfo>
-                <ItemTextHeader>Last Round</ItemTextHeader>
-                <ItemText>30%</ItemText>
+                <ItemTextHeader>NAV</ItemTextHeader>
+                <ItemText>$1000.00</ItemText>
               </ItemInfo>
             </PercentContent>
           </LeftContent>
@@ -132,13 +136,13 @@ export default function VTCard(props) {
             <Button
               onClick={showTokenInfo}
               value={item}
-              color="purple"
               disabled={!item.status}
               style={{
                 marginRight: "20px",
                 marginTop: "30px",
                 borderRadius: "30px",
                 padding: "10px 30px",
+                backgroundColor: "#7950EE",
               }}
             >
               Trade
@@ -151,6 +155,9 @@ export default function VTCard(props) {
 
   return (
     <div>
+      {props.showSpinner && (
+        <Icon name="spinner" loading size="large" inverted />
+      )}
       <div>
         {props.tList.map((item, i) => {
           return (

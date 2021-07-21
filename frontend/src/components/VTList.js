@@ -362,7 +362,11 @@ export default function VTList(props) {
   }, [update]);
   return (
     <div>
-      <Table textAlign="center" celled={true} style={{ borderStyle: "none" }}>
+      <Table
+        textAlign="center"
+        celled={true}
+        style={{ borderStyle: "none", backgroundColor: "#070036" }}
+      >
         <Table.Body>
           <Table.Row verticalAlign="top">
             {/* <Table.Cell>
@@ -371,6 +375,7 @@ export default function VTList(props) {
             </Table.Cell> */}
             {props.renderManager && (
               <Table.Cell>
+                <h1 style={{ fontSize: "40px", color: "white" }}>Managed</h1>
                 <VTCard
                   tList={managedList}
                   update={update}
@@ -393,6 +398,7 @@ export default function VTList(props) {
             )}
             {props.renderPortfolio && (
               <Table.Cell>
+                <h1 style={{ fontSize: "40px", color: "white" }}>Portfolio</h1>
                 <VTCard
                   tList={portfolioList}
                   update={update}
@@ -413,6 +419,14 @@ export default function VTList(props) {
             )}
             {props.renderFollow && (
               <Table.Cell>
+                <h1
+                  style={{
+                    fontSize: "40px",
+                    color: "white",
+                  }}
+                >
+                  Available Vaults
+                </h1>
                 <VTCard
                   tList={followList}
                   update={update}
