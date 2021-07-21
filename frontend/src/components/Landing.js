@@ -161,8 +161,6 @@ export default function Landing(props) {
         <AboutItemContainer>
           <AboutItem>
             <ItemImg src={gamma} />
-            Optional is a social trading platform for options built atop of the
-            Gamma Protocol by Opyn.
             <ItemText>
               Optional is a social trading platform for options built atop of
               the Gamma Protocol by Opyn.
@@ -170,29 +168,20 @@ export default function Landing(props) {
           </AboutItem>
           <AboutItem>
             <AboutIconCard className="fas fa-user-tie fa-4x" />
-            Optional is a social trading platform for options built atop of the
-            Gamma Protocol by Opyn.
             <ItemText>
-              Optional is a social trading platform for options built atop of
-              the Gamma Protocol by Opyn.
+              Social Traders can take advantage of Optional's ability to offer Social Tokens to their followers!
             </ItemText>
           </AboutItem>
           <AboutItem>
             <AboutIconCard className="fas fa-users  fa-4x" />
-            Optional is a social trading platform for options built atop of the
-            Gamma Protocol by Opyn.
             <ItemText>
-              Optional is a social trading platform for options built atop of
-              the Gamma Protocol by Opyn.
+              Followers can mint Social Tokens of Social Traders they trust and follow to expose their assets to their trades!
             </ItemText>
           </AboutItem>
           <AboutItem>
-            <AboutIconCard className="fas fa-hand-holding-usd fa-4x" /> Optional
-            is a social trading platform for options built atop of the Gamma
-            Protocol by Opyn.
+            <AboutIconCard className="fas fa-hand-holding-usd fa-4x" />
             <ItemText>
-              Optional is a social trading platform for options built atop of
-              the Gamma Protocol by Opyn.
+              Social Traders can earn fees from deposits, withdrawals, and performance.
             </ItemText>
           </AboutItem>
         </AboutItemContainer>
