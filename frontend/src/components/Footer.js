@@ -97,8 +97,7 @@ export default function Footer() {
       </SocialContainer>
 
       <CopyRightText>
-        Copyright<span>&#169;</span>
-        Optional 2021
+        Frontend Built and Tailored by <a href="https://github.com/littlefish-tech">Yvonne</a> for Optional
       </CopyRightText>
     </FooterContainer>
   );
