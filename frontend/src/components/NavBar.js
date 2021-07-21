@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import MMConnect from "./MMconnection";
 import optionalProfile from "../images/optionalProfile.png";
 import cover from "../images/cover.png";
 import styled from "styled-components";
-import { Button, Icon } from "semantic-ui-react";
+import { Button, Icon, Modal } from "semantic-ui-react";
 
 const MainNav = styled.nav`
   height: 68px;
@@ -40,6 +40,8 @@ const NavLinkGroup = styled.ul`
 `;
 
 export default function NavBar(props) {
+  const [showAlertMsg, setShowAlertMsg] = useState(true);
+
   const NavLink = styled.li`
     font-family: Roboto Slab;
     font-style: normal;
@@ -66,10 +68,11 @@ export default function NavBar(props) {
       border-bottom: #9604a2 4px solid;
     }
   `;
+
   return (
     <MainNav>
       <NavLeft>
-        <TitleLogo src={cover} />
+        {/* <TitleLogo src={cover} /> */}
         <TitleImg src={optionalProfile} />
       </NavLeft>
       <NavRight>
@@ -112,6 +115,31 @@ export default function NavBar(props) {
           />
         </Button>
       </NavRight>
+      {props.visited && (props.renderPortfolio || props.renderManager) && (
+        <Modal
+          centered={false}
+          open={showAlertMsg}
+          onClose={() => setShowAlertMsg(false)}
+          onOpen={() => setShowAlertMsg(true)}
+        >
+          <Modal.Header>Thank you!</Modal.Header>
+          <Modal.Content>
+            <Modal.Description>
+              Your subscription has been confirmed
+            </Modal.Description>
+          </Modal.Content>
+          <Modal.Actions>
+            <Button
+              onClick={() => {
+                props.clickToVisit();
+                setShowAlertMsg(false);
+              }}
+            >
+              OK
+            </Button>
+          </Modal.Actions>
+        </Modal>
+      )}
     </MainNav>
   );
 }
