@@ -24,10 +24,8 @@ const TitleLogo = styled.img`
   margin-bottom: 8px;
 `;
 const TitleImg = styled.img`
-  height: 39.49px;
-  width: 147px;
-  margin-left: 24px;
-  margin-top: 20px;
+  width: 150px;
+  margin-left: 15px;
 `;
 
 const NavLinkGroup = styled.ul`
