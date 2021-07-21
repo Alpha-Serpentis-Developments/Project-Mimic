@@ -1,4 +1,3 @@
-import React from "react";
 import deposit from "../images/deposit.png";
 import StartTXBtn from "./StartTXBtn";
 import gamma from "../images/gamma.png";
@@ -8,7 +7,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 const LandingContainer = styled.div`
-  background-color: #0b0050;
+  background-image: linear-gradient(#8b1bef,#35e9ea5c);
 `;
 const LandingText = styled.div`
   font-family: Roboto Slab;
@@ -42,7 +41,7 @@ const AboutTitle = styled.div`
 
 const AboutContainer = styled.div`
   margin-top: 160px;
-  background-color: #070036;
+  background-color: #2800362e;
   height: 465px;
   display: flex;
   flex-direction: column;
@@ -169,13 +168,13 @@ export default function Landing(props) {
           <AboutItem>
             <AboutIconCard className="fas fa-user-tie fa-4x" />
             <ItemText>
-              Social Traders can take advantage of Optional's ability to offer Social Tokens to their followers!
+              Social Traders can take advantage of Optional's ability to offer Social Tokens to their followers.
             </ItemText>
           </AboutItem>
           <AboutItem>
             <AboutIconCard className="fas fa-users  fa-4x" />
             <ItemText>
-              Followers can mint Social Tokens of Social Traders they trust and follow to expose their assets to their trades!
+              Followers can mint Social Tokens of Social Traders they trust and follow to expose their assets to their trades.
             </ItemText>
           </AboutItem>
           <AboutItem>
