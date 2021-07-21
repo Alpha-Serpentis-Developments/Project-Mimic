@@ -25,7 +25,6 @@ const TitleLogo = styled.img`
 `;
 const TitleImg = styled.img`
   width: 150px;
-  margin-left: 15px;
 `;
 
 const NavLinkGroup = styled.ul`
