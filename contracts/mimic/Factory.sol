@@ -51,6 +51,10 @@ contract Factory is ReentrancyGuard {
         airswapExchange = _exchange;
         addressBook = _addressBook;
         admin = _admin;
+        
+        depositFee = _depositFee;
+        performanceFee = _performanceFee;
+        withdrawalFee = _withdrawalFee;
     }
 
     modifier onlyAdmin {
