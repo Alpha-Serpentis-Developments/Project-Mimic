@@ -133,17 +133,17 @@ export default function VaultTokenInfo(props) {
       });
   }
 
-  function deposit1(amt) {
-    startTX();
-    if (amt === 0) {
-      setSM("Error", "Form input Error", true, true);
-      setIconStatus("error");
-      return;
-    }
-    let amount = web3.utils.toWei(amt, dUnit);
-    let c = props.token.deposit(amount, props.acct);
-    sendTX(c, "Deposit");
-  }
+  // function deposit1(amt) {
+  //   startTX();
+  //   if (amt === 0) {
+  //     setSM("Error", "Form input Error", true, true);
+  //     setIconStatus("error");
+  //     return;
+  //   }
+  //   let amount = web3.utils.toWei(amt, dUnit);
+  //   let c = props.token.deposit(amount, props.acct);
+  //   sendTX(c, "Deposit");
+  // }
 
   // function deposit2(amt) {
   //   if (amt === 0) {
@@ -203,7 +203,7 @@ export default function VaultTokenInfo(props) {
 
   function deposit(amt) {
     startTX();
-    if (amt === 0 || typeof amt !== "number") {
+    if (amt === 0 || isNaN(amt)) {
       setSM("Error", "Form input Error", true, true);
       setIconStatus("error");
       return;
@@ -244,7 +244,7 @@ export default function VaultTokenInfo(props) {
 
   function initialize(amt) {
     startTX();
-    if (amt === 0 || typeof amt !== "number") {
+    if (amt === 0 || isNaN(amt)) {
       setSM("Error", "Form input Error", true, true);
       setIconStatus("error");
 
@@ -284,23 +284,23 @@ export default function VaultTokenInfo(props) {
   }
   //====================
 
-  function initialize1(amt) {
-    startTX();
-    if (amt === 0) {
-      setSM("Error", "Form input Error", true, true);
-      setIconStatus("error");
+  // function initialize1(amt) {
+  //   startTX();
+  //   if (amt === 0) {
+  //     setSM("Error", "Form input Error", true, true);
+  //     setIconStatus("error");
 
-      return;
-    }
-    let amount = web3.utils.toWei(amt, iUnit);
-    let i = props.token.initialize(amount, props.acct);
-    sendTX(i, "initialize");
-  }
+  //     return;
+  //   }
+  //   let amount = web3.utils.toWei(amt, iUnit);
+  //   let i = props.token.initialize(amount, props.acct);
+  //   sendTX(i, "initialize");
+  // }
 
   function withDraw(amt) {
     startTX();
 
-    if (amt === 0 || typeof amt !== "number") {
+    if (amt === 0 || isNaN(amt)) {
       setSM("Error", "Form input Error", true, true);
       setIconStatus("error");
       return;
