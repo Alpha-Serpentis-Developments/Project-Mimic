@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import { Button, Form, Input } from "semantic-ui-react";
 
 export default function WethWrap(props) {

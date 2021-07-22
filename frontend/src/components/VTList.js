@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { web3 } from "./Web3Handler";
 import { Factory } from "./Factory";
 import { VaultToken } from "./VaultToken";
-import TokenList from "./TokenList";
-import BigNumber from "bignumber.js";
 import { Otoken } from "./Otoken";
 
 import { Table } from "semantic-ui-react";
@@ -45,21 +43,21 @@ export default function VTList(props) {
     }, 10000);
   }
 
-  function getAllVTOld() {
-    let factoryObj = new Factory(web3);
+  // function getAllVTOld() {
+  //   let factoryObj = new Factory(web3);
 
-    let p = factoryObj.findAllVT();
-    let vTokenList = [];
-    p.then((result) => {
-      let events = result;
-      for (let i = 0; i < events.length; i++) {
-        let v = new VaultToken(web3, events[i].returnValues.vaultToken);
+  //   let p = factoryObj.findAllVT();
+  //   let vTokenList = [];
+  //   p.then((result) => {
+  //     let events = result;
+  //     for (let i = 0; i < events.length; i++) {
+  //       let v = new VaultToken(web3, events[i].returnValues.vaultToken);
 
-        vTokenList.push(v);
-      }
-      setVTList(vTokenList);
-    });
-  }
+  //       vTokenList.push(v);
+  //     }
+  //     setVTList(vTokenList);
+  //   });
+  // }
 
   function include(address, list) {
     for (let i = 0; i < list.length; i++) {
@@ -127,6 +125,7 @@ export default function VTList(props) {
     }
   }
 
+  /*
   function populateName1(i) {
     // v.getName().then((result) => {
     // });
@@ -142,6 +141,7 @@ export default function VTList(props) {
       });
     }
   }
+  */
 
   function populateName(i) {
     // v.getName().then((result) => {
@@ -210,23 +210,23 @@ export default function VTList(props) {
         });
     }
   }
+  
+  // function populateAssetName1(i) {
+  //   // v.getName().then((result) => {
+  //   // });
 
-  function populateAssetName1(i) {
-    // v.getName().then((result) => {
-    // });
-
-    let v = assetTokenList[i];
-    if (v.tName === "") {
-      v.getName(props.acctNum)
-        .then((result) => {
-          v.setName(result);
-        })
-        .catch((error) => {
-          v.setName("Non erc20 token");
-          v.ercStatus = false;
-        });
-    }
-  }
+  //   let v = assetTokenList[i];
+  //   if (v.tName === "") {
+  //     v.getName(props.acctNum)
+  //       .then((result) => {
+  //         v.setName(result);
+  //       })
+  //       .catch((error) => {
+  //         v.setName("Non erc20 token");
+  //         v.ercStatus = false;
+  //       });
+  //   }
+  // }
 
   // function populateBalance(i) {
   //   let v = vList[i];

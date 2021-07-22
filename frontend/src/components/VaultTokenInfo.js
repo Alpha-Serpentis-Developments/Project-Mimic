@@ -17,16 +17,6 @@ import {
 import { web3 } from "./Web3Handler";
 import WethWrap from "./WethWrap";
 
-const units1 = [
-  { key: 1, text: "Wei", value: "wei" },
-  { key: 2, text: "Token", value: "ether" },
-];
-
-const units = [
-  { key: 1, text: "Token", value: "ether" },
-  { key: 2, text: "Wei", value: "wei" },
-];
-
 export default function VaultTokenInfo(props) {
   console.log(props);
   const [depositAmt, setDeposit] = useState(0);
@@ -41,8 +31,8 @@ export default function VaultTokenInfo(props) {
   // const [pemiumUnit, setPemiumUnit] = useState("wei");
   // ==================== end ================
 
-  const [dUnit, setDUnit] = useState("ether");
-  const [iUnit, setIUnit] = useState("ether");
+  // const [dUnit, setDUnit] = useState("ether");
+  // const [iUnit, setIUnit] = useState("ether");
 
   const [oTokenAddress, setOTokenaddress] = useState("");
   const [writeCallAmt, setWriteCallAmt] = useState(0);
@@ -72,7 +62,7 @@ export default function VaultTokenInfo(props) {
 
   function ethInputAmt(event) {
     if (event.target.value > props.ethBal) {
-      setSM("Error", "Your don't have enough ETH", true, true);
+      setSM("Error", "Not enough ether", true, true);
       setIconStatus("error");
       return;
     }
@@ -134,17 +124,17 @@ export default function VaultTokenInfo(props) {
       });
   }
 
-  function deposit1(amt) {
-    startTX();
-    if (amt === 0) {
-      setSM("Error", "Form input Error", true, true);
-      setIconStatus("error");
-      return;
-    }
-    let amount = web3.utils.toWei(amt, dUnit);
-    let c = props.token.deposit(amount, props.acct);
-    sendTX(c, "Deposit");
-  }
+  // function deposit1(amt) {
+  //   startTX();
+  //   if (amt === 0) {
+  //     setSM("Error", "Form input Error", true, true);
+  //     setIconStatus("error");
+  //     return;
+  //   }
+  //   let amount = web3.utils.toWei(amt, dUnit);
+  //   let c = props.token.deposit(amount, props.acct);
+  //   sendTX(c, "Deposit");
+  // }
 
   // function deposit2(amt) {
   //   if (amt === 0) {
@@ -204,7 +194,7 @@ export default function VaultTokenInfo(props) {
 
   function deposit(amt) {
     startTX();
-    if (amt === 0 || typeof amt !== "number") {
+    if (amt === 0 || isNaN(amt)) {
       setSM("Error", "Form input Error", true, true);
       setIconStatus("error");
       return;
@@ -232,8 +222,8 @@ export default function VaultTokenInfo(props) {
           let i = props.token.deposit(amount, props.acct);
           sendTX(i, "deposit");
           setSM(
-            "Approval" + " TX Confirmed",
-            "" + " Confirmation Received",
+            "Approval TX Confirmed",
+            "Confirmation Received",
             true,
             false
           );
@@ -245,7 +235,7 @@ export default function VaultTokenInfo(props) {
 
   function initialize(amt) {
     startTX();
-    if (amt === 0 || typeof amt !== "number") {
+    if (amt === 0 || isNaN(amt)) {
       setSM("Error", "Form input Error", true, true);
       setIconStatus("error");
 
@@ -264,7 +254,7 @@ export default function VaultTokenInfo(props) {
           let i = error.message.indexOf(":");
           m = error.message.substring(0, i > 0 ? i : 40);
         }
-        setSM("" + " TX Error", m, true, true);
+        setSM(" TX Error", m, true, true);
         setTxSent(false);
         setIconStatus("error");
       })
@@ -273,8 +263,8 @@ export default function VaultTokenInfo(props) {
           let i = props.token.initialize(amount, props.acct);
           sendTX(i, "initialize");
           setSM(
-            "Approval" + " TX Confirmed",
-            "" + " Confirmation Received",
+            "Approval TX Confirmed",
+            " Confirmation Received",
             true,
             false
           );
@@ -285,23 +275,23 @@ export default function VaultTokenInfo(props) {
   }
   //====================
 
-  function initialize1(amt) {
-    startTX();
-    if (amt === 0) {
-      setSM("Error", "Form input Error", true, true);
-      setIconStatus("error");
+  // function initialize1(amt) {
+  //   startTX();
+  //   if (amt === 0) {
+  //     setSM("Error", "Form input Error", true, true);
+  //     setIconStatus("error");
 
-      return;
-    }
-    let amount = web3.utils.toWei(amt, iUnit);
-    let i = props.token.initialize(amount, props.acct);
-    sendTX(i, "initialize");
-  }
+  //     return;
+  //   }
+  //   let amount = web3.utils.toWei(amt, iUnit);
+  //   let i = props.token.initialize(amount, props.acct);
+  //   sendTX(i, "initialize");
+  // }
 
   function withDraw(amt) {
     startTX();
 
-    if (amt === 0 || typeof amt !== "number") {
+    if (amt === 0 || isNaN(amt)) {
       setSM("Error", "Form input Error", true, true);
       setIconStatus("error");
       return;
@@ -378,7 +368,7 @@ export default function VaultTokenInfo(props) {
     setTxSent(true);
   }
 
-  function disableAllInput() {}
+  // function disableAllInput() {}
   function resetForm() {
     setBtnDisabled(false);
     setIconStatus("loading");

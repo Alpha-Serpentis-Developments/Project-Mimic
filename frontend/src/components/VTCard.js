@@ -83,20 +83,20 @@ const ItemTextHeader = styled.div`
   margin-bottom: 15px;
   font-weight: 600;
 `;
-const TXBtn = styled.div`
-  width: 150px;
-  height: 40px;
-  background-color: #5e2df3;
-  margin: 10px 20px 10px 0px;
-  border-radius: 10px;
-  color: white;
-  font-weight: 700;
-  padding: 10px;
-  cursor: pointer;
-  &:hover {
-    opacity: 0.33;
-  }
-`;
+// const TXBtn = styled.div`
+//   width: 150px;
+//   height: 40px;
+//   background-color: #5e2df3;
+//   margin: 10px 20px 10px 0px;
+//   border-radius: 10px;
+//   color: white;
+//   font-weight: 700;
+//   padding: 10px;
+//   cursor: pointer;
+//   &:hover {
+//     opacity: 0.33;
+//   }
+// `;
 
 export default function VTCard(props) {
   const [open, setOpen] = useState(false);
@@ -119,7 +119,7 @@ export default function VTCard(props) {
         <VtContentcontainer>
           <LeftContent>
             <ManagedText>
-              managed by <a>@Amethyst</a>
+              managed by <a href="https://twitter.com/AlphaSerpentis_">@Amethyst</a>
             </ManagedText>
             <PercentContent>
               <ItemInfo>
