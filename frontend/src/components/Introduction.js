@@ -1,5 +1,4 @@
 import StartTXBtn from "./StartTXBtn";
-import profileImg from "../images/profile.png";
 
 import "../App.css";
 

@@ -375,7 +375,7 @@ export default function VTList(props) {
             </Table.Cell> */}
             {props.renderManager && (
               <Table.Cell>
-                <h1 style={{ fontSize: "40px", color: "white" }}>Managed</h1>
+                <h1 style={{ fontSize: "40px", color: "white" }}>Managing</h1>
                 <VTCard
                   tList={managedList}
                   update={update}
