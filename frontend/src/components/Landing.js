@@ -17,6 +17,7 @@ const LandingText = styled.div`
   line-height: 63px;
   text-align: center;
   padding-top: 41px;
+  padding-bottom:40px;
   color: white;
 `;
 const DepositImg = styled.img`
@@ -58,6 +59,7 @@ const AboutItemContainer = styled.div`
 const AboutItem = styled.div`
   display: flex;
   flex-direction: column;
+  width: 250px;
   margin-left: 20px;
   margin-right: 20px;
 `;
@@ -161,26 +163,25 @@ export default function Landing(props) {
           <AboutItem>
             <ItemImg src={gamma} />
             <ItemText>
-              Optional is a social trading platform for options built atop of
-              the Gamma Protocol by Opyn.
+              Powered by Opyn's Gamma Protocol
             </ItemText>
           </AboutItem>
           <AboutItem>
             <AboutIconCard className="fas fa-user-tie fa-4x" />
             <ItemText>
-              Social Traders can take advantage of Optional's ability to offer Social Tokens to their followers.
+              Enables Social Traders to utilize options to potentially enhance yield
             </ItemText>
           </AboutItem>
           <AboutItem>
             <AboutIconCard className="fas fa-users  fa-4x" />
             <ItemText>
-              Followers can mint Social Tokens of Social Traders they trust and follow to expose their assets to their trades.
+              Followers can expose their assets to the growth of their favorite Social Trader
             </ItemText>
           </AboutItem>
           <AboutItem>
             <AboutIconCard className="fas fa-hand-holding-usd fa-4x" />
             <ItemText>
-              Social Traders can earn fees from deposits, withdrawals, and performance.
+              Social Traders can earn fees from deposits, withdrawals, and performance
             </ItemText>
           </AboutItem>
         </AboutItemContainer>

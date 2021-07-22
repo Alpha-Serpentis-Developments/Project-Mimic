@@ -13,9 +13,7 @@ import {
   Divider,
 } from "semantic-ui-react";
 import DeployNewVaultToken from "./components/DeployNewVaultToken";
-import TopMenu from "./components/TopMenu";
 import NavBar from "./components/NavBar";
-import Introduction from "./components/Introduction";
 import Landing from "./components/Landing";
 import Footer from "./components/Footer";
 import { AddressBook } from "./components/AddressBook";
