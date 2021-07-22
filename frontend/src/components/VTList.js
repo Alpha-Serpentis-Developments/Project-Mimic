@@ -4,7 +4,7 @@ import { Factory } from "./Factory";
 import { VaultToken } from "./VaultToken";
 import { Otoken } from "./Otoken";
 
-import { Table } from "semantic-ui-react";
+import { Table, Divider, Button, Grid } from "semantic-ui-react";
 import { ERC20 } from "./Erc20";
 import VTCard from "./VTCard";
 
@@ -210,7 +210,7 @@ export default function VTList(props) {
         });
     }
   }
-  
+
   // function populateAssetName1(i) {
   //   // v.getName().then((result) => {
   //   // });
@@ -365,7 +365,11 @@ export default function VTList(props) {
       <Table
         textAlign="center"
         celled={true}
-        style={{ borderStyle: "none", backgroundColor: "#070036" }}
+        style={{
+          borderStyle: "none",
+          backgroundColor: "#070036",
+          backgroundImage: "linear-gradient(#8b1bef,#35e9ea5c)",
+        }}
       >
         <Table.Body>
           <Table.Row verticalAlign="top">
@@ -394,6 +398,53 @@ export default function VTList(props) {
                   showSpinner={vtList.length === 0}
                   ethBal={props.ethBal}
                 /> */}
+
+                <Grid centered padded>
+                  <Grid.Row />
+                  <Button
+                    icon="plus circle"
+                    size="huge"
+                    color="purple"
+                    onClick={props.openModal}
+                    disabled={!props.acctNum}
+                  >
+                    New Token
+                  </Button>
+                  <Grid.Row />
+                  <Grid.Row />
+                  <Grid.Row />
+                </Grid>
+
+                <div>
+                  <Divider hidden style={{ marginTop: "0px" }} />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+
+                  <Divider hidden style={{ marginBottom: "0px" }} />
+                </div>
               </Table.Cell>
             )}
             {props.renderPortfolio && (
@@ -415,6 +466,31 @@ export default function VTList(props) {
                   showSpinner={vtList.length === 0}
                   ethBal={props.ethBal}
                 /> */}
+
+                <div>
+                  <Divider hidden style={{ marginTop: "0px" }} />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden style={{ marginBottom: "0px" }} />
+                </div>
               </Table.Cell>
             )}
             {props.renderFollow && (
@@ -443,6 +519,30 @@ export default function VTList(props) {
                   showSpinner={vtList.length === 0}
                   ethBal={props.ethBal}
                 /> */}
+                <div>
+                  <Divider hidden style={{ marginTop: "0px" }} />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden />
+                  <Divider hidden style={{ marginBottom: "0px" }} />
+                </div>
               </Table.Cell>
             )}
           </Table.Row>

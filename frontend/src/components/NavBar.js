@@ -11,7 +11,11 @@ const MainNav = styled.nav`
   flex-direction: row;
   justify-content: space-between;
 `;
-const NavLeft = styled.div``;
+const NavLeft = styled.div`
+  // display: flex;
+  // flex-direction: row;
+  // justify-content: flex-start;
+`;
 const NavRight = styled.div`
   display: flex;
   flex-direction: row;
@@ -52,13 +56,13 @@ export default function NavBar(props) {
     cursor: pointer;
 
     &.navHomeLink {
-      border-bottom: #ff89fdba 4px solid;
+      border-bottom: ${props.homeNav} 4px solid;
     }
     &.navTradeLink {
-      border-bottom: #ff89fdba 4px solid;
+      border-bottom: ${props.tradeNav} 4px solid;
     }
     &.navMgrLink {
-      border-bottom: #ff89fdba 4px solid;
+      border-bottom: ${props.managerNav} 4px solid;
     }
     &:hover {
       border-bottom: #9489ffba 4px solid;
@@ -71,6 +75,7 @@ export default function NavBar(props) {
         {/* <TitleLogo src={cover} /> */}
         <TitleImg src={optionalProfile} />
       </NavLeft>
+
       <NavRight>
         <NavLinkGroup>
           <NavLink className="navHomeLink" onClick={props.clickHome}>
@@ -91,16 +96,19 @@ export default function NavBar(props) {
             height: "36px",
             marginTop: "auto",
             marginBottom: "auto",
-            backgroundColor: "#E905FD",
+            backgroundColor: "#8b1bef",
             color: "white",
+            border: "2px solid white",
             borderRadius: "10px",
             marginRight: "10px",
+            borderStyle: "groove",
+            // boxShadow: "5px 5px 5px black",
           }}
         >
           <Icon
             name="dot circle"
             color={props.mmColor}
-            style={{ backgroundColor: "#9604A2" }}
+            style={{ backgroundColor: "#8b1bef" }}
           />{" "}
           <MMConnect
             btnText={props.btnText}
@@ -121,7 +129,10 @@ export default function NavBar(props) {
           <Modal.Header>NOTICE</Modal.Header>
           <Modal.Content>
             <Modal.Description>
-              <b>Optional is an experimental product and may bear significant risks which are not limited to:</b>
+              <b>
+                Optional is an experimental product and may bear significant
+                risks which are not limited to:
+              </b>
               <br></br>
               <br></br>- Smart Contract Risks with Optional
               <br></br>- Smart Contract Risks with Opyn
@@ -130,7 +141,10 @@ export default function NavBar(props) {
               <br></br>- Social Traders that act against their followers
               <br></br>
               <br></br>
-              Optional nor Alpha Serpentis Developments does not endorse any of the vaults listed in the site. These are purely for informational purposes, are not an endorsement of investment, and users must perform their own due-diligence.
+              Optional nor Alpha Serpentis Developments does not endorse any of
+              the vaults listed in the site. These are purely for informational
+              purposes, are not an endorsement of investment, and users must
+              perform their own due-diligence.
             </Modal.Description>
           </Modal.Content>
           <Modal.Actions>

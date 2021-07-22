@@ -50,9 +50,9 @@ export default function App() {
   const [renderPortfolio, setRenderPortfolio] = useState<boolean>(false);
   const [openPlusModal, setOpenPlusModal] = useState<boolean>(false);
 
-  const [homeNav, setHomeNav] = useState("#0b0050");
-  const [managerNav, setManagerNav] = useState("#0b0050");
-  const [tradeNav, setTradeNav] = useState("#0b0050");
+  const [homeNav, setHomeNav] = useState("#8b1bef");
+  const [managerNav, setManagerNav] = useState("#8b1bef");
+  const [tradeNav, setTradeNav] = useState("#8b1bef");
   const [mmColor, setMMColor] = useState("grey");
   const [showSidebar, setShowSidebar] = useState(false);
   const [showMMInstallModal, setShowMMInstallModal] = useState(false);
@@ -157,13 +157,7 @@ export default function App() {
       const wAddress = `${fFive}...${lFive}`;
       setAcctNum(account);
       setBtnText(wAddress);
-      // const chain_Id = await web3.eth.getChainId();
-      // getChainID();
-      // const weiBal = await web3.eth.getBalance(account);
-      // console.log(weiBal);
-      // const ethBal = parseInt(weiBal) / 1000000000000000000;
-      // // setChainId(chain_Id);
-      // setEthBal(ethBal);
+
       getAccountDetail();
       localStorage.setItem("account", JSON.stringify(account));
     }
@@ -175,9 +169,9 @@ export default function App() {
     setRenderManager(false);
     setRenderPortfolio(false);
     setRenderFollow(false);
-    setHomeNav("#9604a2");
-    setManagerNav("#0b0050");
-    setTradeNav("#0b0050");
+    setHomeNav("#9489ffba");
+    setManagerNav("#8b1bef");
+    setTradeNav("#8b1bef");
   }
   function clickTrade(e: any) {
     e.preventDefault();
@@ -185,9 +179,9 @@ export default function App() {
     setRenderManager(false);
     setRenderPortfolio(true);
     setRenderFollow(true);
-    setHomeNav("#0b0050");
-    setManagerNav("#0b0050");
-    setTradeNav("#9604a2");
+    setHomeNav("#8b1bef");
+    setManagerNav("#8b1bef");
+    setTradeNav("#9489ffba");
   }
   function clickManager(e: any) {
     e.preventDefault();
@@ -195,9 +189,9 @@ export default function App() {
     setRenderManager(true);
     setRenderPortfolio(false);
     setRenderFollow(false);
-    setHomeNav("#0b0050");
-    setManagerNav("#9604a2");
-    setTradeNav("#0b0050");
+    setHomeNav("#8b1bef");
+    setManagerNav("#9489ffba");
+    setTradeNav("#8b1bef");
   }
 
   function openModal() {
@@ -294,24 +288,6 @@ export default function App() {
             clickToVisit={clickToVisit}
           />
           {renderHome && <Landing clickTrade={clickTrade} />}
-          {/* <TopMenu
-            btnText={btnText}
-            acctNum={acctNum}
-            chainId={chainId}
-            ethBal={ethBal}
-            connectMM={connectMM}
-            clickHome={clickHome}
-            clickTrade={clickTrade}
-            clickManager={clickManager}
-            renderHome={renderHome}
-            renderManager={renderManager}
-            renderFollow={renderFollow}
-            renderPortfolio={renderPortfolio}
-            homeNav={homeNav}
-            tradeNav={tradeNav}
-            managerNav={managerNav}
-            mmColor={mmColor}
-          /> */}
 
           {!addr && (
             <div
@@ -343,9 +319,16 @@ export default function App() {
                 renderFollow={renderFollow}
                 renderPortfolio={renderPortfolio}
                 ethBal={ethBal}
+                openModal={openModal}
               />
-              {renderManager && (
-                <Grid centered padded>
+              {/* {renderManager && (
+                <Grid
+                  centered
+                  padded
+                  style={{
+                    backgroundImage: "linear-gradient(#493CB3,#1A5387)",
+                  }}
+                >
                   <Grid.Row />
                   <Button
                     icon="plus circle"
@@ -360,7 +343,7 @@ export default function App() {
                   <Grid.Row />
                   <Grid.Row />
                 </Grid>
-              )}
+              )} */}
             </div>
           )}
           <MMInstallModal
@@ -374,11 +357,23 @@ export default function App() {
             acctNum={acctNum}
           />
         </div>
-        {!renderHome && (
-          <>
+        {/* {!renderHome && (
+          <div style={{ backgroundImage: "linear-gradient(#493CB3,#1A5387)" }}>
+            <Divider hidden style={{ marginTop: "0px" }} />
             <Divider hidden />
-          </>
-        )}
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden style={{ marginBottom: "0px" }} />
+          </div>
+        )} */}
         <Footer />
       </Sidebar.Pusher>
       {/* </Sidebar.Pushable> */}

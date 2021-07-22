@@ -18,21 +18,9 @@ import { web3 } from "./Web3Handler";
 import WethWrap from "./WethWrap";
 
 export default function VaultTokenInfo(props) {
-  console.log(props);
   const [depositAmt, setDeposit] = useState(0);
   const [withdrawAmt, setWithdrawAmt] = useState(0);
   const [initializeAmt, setInitializeAmt] = useState(0);
-  // ================= before set unit=========== start
-  // const [dUnit, setDUnit] = useState("wei");
-  // const [wUnit, setWUnit] = useState("wei");
-  // const [iUnit, setIUnit] = useState("wei");
-  // const [writeCallUnit, setWiteCallIUnit] = useState("wei");
-  // const [sellCallUnit, setSellCallIUnit] = useState("wei");
-  // const [pemiumUnit, setPemiumUnit] = useState("wei");
-  // ==================== end ================
-
-  // const [dUnit, setDUnit] = useState("ether");
-  // const [iUnit, setIUnit] = useState("ether");
 
   const [oTokenAddress, setOTokenaddress] = useState("");
   const [writeCallAmt, setWriteCallAmt] = useState(0);
@@ -221,12 +209,7 @@ export default function VaultTokenInfo(props) {
         if (confirmationNumber === 1) {
           let i = props.token.deposit(amount, props.acct);
           sendTX(i, "deposit");
-          setSM(
-            "Approval TX Confirmed",
-            "Confirmation Received",
-            true,
-            false
-          );
+          setSM("Approval TX Confirmed", "Confirmation Received", true, false);
 
           setIconStatus("confirmed");
         }
@@ -262,12 +245,7 @@ export default function VaultTokenInfo(props) {
         if (confirmationNumber === 1) {
           let i = props.token.initialize(amount, props.acct);
           sendTX(i, "initialize");
-          setSM(
-            "Approval TX Confirmed",
-            " Confirmation Received",
-            true,
-            false
-          );
+          setSM("Approval TX Confirmed", " Confirmation Received", true, false);
 
           setIconStatus("confirmed");
         }
