@@ -3,12 +3,9 @@ pragma solidity =0.8.4;
 
 import {VaultToken} from "./VaultToken.sol";
 import {Clones} from "../oz/proxy/Clones.sol";
-import {IERC20} from "../oz/token/ERC20/IERC20.sol";
-import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "../oz/security/ReentrancyGuard.sol";
 
 contract Factory is ReentrancyGuard {
-    using SafeERC20 for IERC20;
 
     error Unauthorized();
     error Invalid();
