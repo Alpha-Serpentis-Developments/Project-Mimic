@@ -11,7 +11,11 @@ const MainNav = styled.nav`
   flex-direction: row;
   justify-content: space-between;
 `;
-const NavLeft = styled.div``;
+const NavLeft = styled.div`
+  // display: flex;
+  // flex-direction: row;
+  // justify-content: flex-start;
+`;
 const NavRight = styled.div`
   display: flex;
   flex-direction: row;
@@ -71,6 +75,7 @@ export default function NavBar(props) {
         {/* <TitleLogo src={cover} /> */}
         <TitleImg src={optionalProfile} />
       </NavLeft>
+
       <NavRight>
         <NavLinkGroup>
           <NavLink className="navHomeLink" onClick={props.clickHome}>
@@ -91,16 +96,19 @@ export default function NavBar(props) {
             height: "36px",
             marginTop: "auto",
             marginBottom: "auto",
-            backgroundColor: "#E905FD",
+            backgroundColor: "#8b1bef",
             color: "white",
+            border: "2px solid white",
             borderRadius: "10px",
             marginRight: "10px",
+            borderStyle: "groove",
+            // boxShadow: "5px 5px 5px black",
           }}
         >
           <Icon
             name="dot circle"
             color={props.mmColor}
-            style={{ backgroundColor: "#9604A2" }}
+            style={{ backgroundColor: "#8b1bef" }}
           />{" "}
           <MMConnect
             btnText={props.btnText}

@@ -4,7 +4,7 @@ import { Factory } from "./Factory";
 import { VaultToken } from "./VaultToken";
 import { Otoken } from "./Otoken";
 
-import { Table, Divider } from "semantic-ui-react";
+import { Table, Divider, Button, Grid } from "semantic-ui-react";
 import { ERC20 } from "./Erc20";
 import VTCard from "./VTCard";
 
@@ -210,7 +210,7 @@ export default function VTList(props) {
         });
     }
   }
-  
+
   // function populateAssetName1(i) {
   //   // v.getName().then((result) => {
   //   // });
@@ -398,6 +398,23 @@ export default function VTList(props) {
                   showSpinner={vtList.length === 0}
                   ethBal={props.ethBal}
                 /> */}
+
+                <Grid centered padded>
+                  <Grid.Row />
+                  <Button
+                    icon="plus circle"
+                    size="huge"
+                    color="purple"
+                    onClick={props.openModal}
+                    disabled={!props.acctNum}
+                  >
+                    New Token
+                  </Button>
+                  <Grid.Row />
+                  <Grid.Row />
+                  <Grid.Row />
+                </Grid>
+
                 <div>
                   <Divider hidden style={{ marginTop: "0px" }} />
                   <Divider hidden />

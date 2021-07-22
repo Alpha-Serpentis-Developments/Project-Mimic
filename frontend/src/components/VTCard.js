@@ -10,7 +10,7 @@ const VTAddress = styled.span`
 `;
 const VTCardContainer = styled.div`
   background-color: #af84e7;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
@@ -25,6 +25,7 @@ const VTCardContainer = styled.div`
   &:hover {
     background-color: #8a02b2;
     color: white;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 white;
     .tAddr {
       color: white;
     }
@@ -119,7 +120,8 @@ export default function VTCard(props) {
         <VtContentcontainer>
           <LeftContent>
             <ManagedText>
-              managed by <a href="https://twitter.com/AlphaSerpentis_">@Amethyst</a>
+              managed by{" "}
+              <a href="https://twitter.com/AlphaSerpentis_">@Amethyst</a>
             </ManagedText>
             <PercentContent>
               <ItemInfo>

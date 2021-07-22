@@ -319,8 +319,9 @@ export default function App() {
                 renderFollow={renderFollow}
                 renderPortfolio={renderPortfolio}
                 ethBal={ethBal}
+                openModal={openModal}
               />
-              {renderManager && (
+              {/* {renderManager && (
                 <Grid
                   centered
                   padded
@@ -342,7 +343,7 @@ export default function App() {
                   <Grid.Row />
                   <Grid.Row />
                 </Grid>
-              )}
+              )} */}
             </div>
           )}
           <MMInstallModal
