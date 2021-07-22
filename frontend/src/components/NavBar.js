@@ -52,13 +52,13 @@ export default function NavBar(props) {
     cursor: pointer;
 
     &.navHomeLink {
-      border-bottom: #ff89fdba 4px solid;
+      border-bottom: ${props.homeNav} 4px solid;
     }
     &.navTradeLink {
-      border-bottom: #ff89fdba 4px solid;
+      border-bottom: ${props.tradeNav} 4px solid;
     }
     &.navMgrLink {
-      border-bottom: #ff89fdba 4px solid;
+      border-bottom: ${props.managerNav} 4px solid;
     }
     &:hover {
       border-bottom: #9489ffba 4px solid;

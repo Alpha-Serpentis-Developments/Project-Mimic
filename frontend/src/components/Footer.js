@@ -14,8 +14,8 @@ const FooterContainer = styled.div`
   left: 0;
   bottom: 0;
   width: 100%;
-  height: 250px;
-  background-color: #0b0050;
+  height: 200px;
+  background-color: #355070;
 `;
 const SocialStyle = styled.div`
   transition: transform 0.5s;
@@ -97,7 +97,8 @@ export default function Footer() {
       </SocialContainer>
 
       <CopyRightText>
-        Frontend Built and Tailored by <a href="https://github.com/littlefish-tech">Yvonne</a> for Optional
+        Frontend Built and Tailored by{" "}
+        <a href="https://github.com/littlefish-tech">Yvonne</a> for Optional
       </CopyRightText>
     </FooterContainer>
   );
