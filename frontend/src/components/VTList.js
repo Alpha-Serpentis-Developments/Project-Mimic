@@ -367,8 +367,7 @@ export default function VTList(props) {
         celled={true}
         style={{
           borderStyle: "none",
-          backgroundColor: "#070036",
-          backgroundImage: "linear-gradient(#8b1bef,#35e9ea5c)",
+          backgroundImage: "linear-gradient(#8b1bef,#20759D)",
         }}
       >
         <Table.Body>
