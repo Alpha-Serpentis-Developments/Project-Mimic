@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { web3 } from "./Web3Handler";
+import { ERC20 } from "./Erc20";
 import { Modal, Button, Icon } from "semantic-ui-react";
 import VaultTokenInfo from "./VaultTokenInfo";
 import styled from "styled-components";
@@ -6,30 +8,30 @@ import styled from "styled-components";
 const VTAddress = styled.span`
   margin-left: 20px;
   font-size: 10px;
-  color: #333333;
+  color: white;
 `;
 const VTCardContainer = styled.div`
-  background-color: #af84e7;
+  // background-color: #af84e7;
   margin-bottom: 30px;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
   width: 600px;
-  border: 1px solid #d9d9d9;
+  border: 2px solid #000000;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-  cursor: pointer;
   display: inline-block;
   margin-left: auto;
   margin-right: auto;
+  color: white;
 
-  &:hover {
-    background-color: #8a02b2;
-    color: white;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 white;
-    .tAddr {
-      color: white;
-    }
-  }
+  // &:hover {
+  //   background-color: #8a02b2;
+  //   color: white;
+  //   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 white;
+  //   .tAddr {
+  //     color: white;
+  //   }
+  // }
 `;
 const VTNameContainer = styled.div`
   margin: 10px 20px 0px 20px;
@@ -39,8 +41,8 @@ const VTNameContainer = styled.div`
   justify-content: space-between;
 `;
 const VTName = styled.div`
-  font-family: "Quantico", sans-serif;
-  text-shadow: white 1px 0 3px;
+  // font-family: "Quantico", sans-serif;
+  // text-shadow: white 1px 0 3px;
   font-size: 20px;
   font-weight: 800;
 `;
@@ -110,6 +112,27 @@ export default function VTCard(props) {
     setOpen(true);
   }
 
+  function calculateLastRound(token) {
+    
+  }
+
+  function calculateNAV(t) {
+    // let sum;
+    // let vaultToken = t;
+    // let assetToken = await t.assetObject;
+
+    // await web3.eth.getStorageAt(vaultToken.address, 8).then((result) => {
+    //   sum = new web3.utils.BN(result);
+    // });
+    // await assetToken.getBalance(vaultToken.address).then((result) => {
+    //   sum.add(new web3.utils.BN(result));
+    // });
+
+    // return sum;
+
+    return "$" + 1000.00;
+  }
+
   function oneCard(item) {
     return (
       <VTCardContainer>
@@ -126,11 +149,11 @@ export default function VTCard(props) {
             <PercentContent>
               <ItemInfo>
                 <ItemTextHeader>Last Round</ItemTextHeader>
-                <ItemText>+30%</ItemText>
+                <ItemText>{calculateLastRound(item)}</ItemText>
               </ItemInfo>
               <ItemInfo>
                 <ItemTextHeader>NAV</ItemTextHeader>
-                <ItemText>$1000.00</ItemText>
+                <ItemText>{calculateNAV(item)}</ItemText>
               </ItemInfo>
             </PercentContent>
           </LeftContent>
