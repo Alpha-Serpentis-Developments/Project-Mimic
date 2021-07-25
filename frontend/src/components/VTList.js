@@ -137,11 +137,9 @@ export default function VTList(props) {
           "0x0000000000000000000000000000000000000000000000000000000000000000"
         ) {
           let oAddr = `0x${result.slice(-40)}`;
-          console.log(result);
           v.setOT(oAddr);
           if (v.oTokenAddr !== "") {
             let o = new Otoken(web3, v.oTokenAddr);
-            console.log(o.name());
             v.oTokenObj = o;
             o.getName().then((result) => {
               o.setName(result);
@@ -149,6 +147,11 @@ export default function VTList(props) {
           }
         }
       });
+    }
+    if (v.collateralAmount !== -1 && v.vaultBalance !== -1) {
+      let r = (parseInt(v.collateralAmount) + parseInt(v.vaultBalance)) / 1e18;
+      r = r.toFixed(5);
+      v.setNAV(r);
     }
   }
   function populateAssetName(i) {
@@ -272,9 +275,7 @@ export default function VTList(props) {
   useEffect(() => {
     populate();
   }, [update]);
-  console.log(managedList);
-  console.log(portfolioList);
-  console.log(followList);
+
   return (
     <div>
       <Switch>

@@ -3,7 +3,6 @@ import VTCard from "../components/VTCard";
 import { Table, Divider, Button, Grid } from "semantic-ui-react";
 
 export default function Managed(props) {
-  console.log(props);
   return (
     <Table
       textAlign="center"

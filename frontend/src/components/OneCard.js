@@ -101,22 +101,38 @@ const ItemTextHeader = styled.div`
 //     opacity: 0.33;
 //   }
 // `;
-
-export default function VTCard(props) {
+export default function OneCard(props) {
+  const [navAmt, setNavAmt] = useState("");
   const [open, setOpen] = useState(false);
   const [clickedItem, setClickedItem] = useState();
-
   function showTokenInfo(e, i) {
     setClickedItem(i.value);
     setOpen(true);
   }
+  useEffect(() => {
+    calculateNAV(props.item);
+  }, [navAmt]);
+  function calculateLastRound(token) {}
 
-  function oneCard(item) {
-    return (
+  function calculateNAV(t) {
+    t.getNAV(web3, t.address).then((result) => {
+      t.setNAV(result);
+      let sum = web3.utils
+        .toBN(t.nav)
+        .add(web3.utils.toBN(t.vaultBalance))
+        .toString();
+
+      sum = sum / 1e18;
+      setNavAmt(sum);
+    });
+  }
+
+  return (
+    <>
       <VTCardContainer>
         <VTNameContainer>
-          <VTName>{item.name()}</VTName>
-          <VTAddress className="tAddr">{item.address}</VTAddress>
+          <VTName>{props.item.name()}</VTName>
+          <VTAddress className="tAddr">{props.item.address}</VTAddress>
         </VTNameContainer>
         <VtContentcontainer>
           <LeftContent>
@@ -127,21 +143,19 @@ export default function VTCard(props) {
             <PercentContent>
               <ItemInfo>
                 <ItemTextHeader>Last Round</ItemTextHeader>
-                <ItemText>2</ItemText>
+                <ItemText>{calculateLastRound(props.item)}</ItemText>
               </ItemInfo>
               <ItemInfo>
                 <ItemTextHeader>NAV</ItemTextHeader>
-                <ItemText>
-                  {item.nav === -1 ? <div>Calculating...</div> : item.nav}
-                </ItemText>
+                <ItemText>{navAmt}</ItemText>
               </ItemInfo>
             </PercentContent>
           </LeftContent>
           <RightContent>
             <Button
               onClick={showTokenInfo}
-              value={item}
-              disabled={!item.status}
+              value={props.item}
+              disabled={!props.item.status}
               style={{
                 marginRight: "20px",
                 marginTop: "30px",
@@ -155,24 +169,6 @@ export default function VTCard(props) {
           </RightContent>
         </VtContentcontainer>
       </VTCardContainer>
-    );
-  }
-
-  return (
-    <div>
-      {props.showSpinner && (
-        <Icon name="spinner" loading size="large" inverted />
-      )}
-      <div>
-        {props.tList.map((item, i) => {
-          return (
-            <div>
-              {oneCard(item)}
-              {/* <Table.Cell value={item}>{onetoken(item)}</Table.Cell> */}
-            </div>
-          );
-        })}
-      </div>
       <div>
         {" "}
         <Modal
@@ -182,8 +178,8 @@ export default function VTCard(props) {
           size="small"
         >
           {/* <Modal.Header>
-          <ERCTokenInfo token={clickedItem} acct={props.acct} />
-        </Modal.Header> */}
+       <ERCTokenInfo token={clickedItem} acct={props.acct} />
+     </Modal.Header> */}
           <Modal.Content>
             <VaultTokenInfo
               token={clickedItem}
@@ -194,6 +190,6 @@ export default function VTCard(props) {
           </Modal.Content>
         </Modal>
       </div>
-    </div>
+    </>
   );
 }

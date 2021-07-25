@@ -15,11 +15,7 @@ const FooterContainer = styled.div`
   bottom: 0;
   width: 100%;
   height: 200px;
-<<<<<<< HEAD
-  background-color: #35e9ea5c;
-=======
-  background-color: #20759D;
->>>>>>> upstream/frontend-v0.2
+  background-color: #20759d;
 `;
 const SocialStyle = styled.div`
   transition: transform 0.5s;
