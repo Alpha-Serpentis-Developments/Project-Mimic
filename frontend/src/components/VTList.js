@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+
 import { web3 } from "./Web3Handler";
 import { Factory } from "./Factory";
 import { VaultToken } from "./VaultToken";
@@ -7,6 +9,9 @@ import { Otoken } from "./Otoken";
 import { Table, Divider, Button, Grid } from "semantic-ui-react";
 import { ERC20 } from "./Erc20";
 import VTCard from "./VTCard";
+import Trade from "../pages/Trade";
+import Landing from "../components/Landing";
+import Managed from "../pages/Managed";
 
 export default function VTList(props) {
   const [vtList, setVTList] = useState([]);
@@ -42,22 +47,6 @@ export default function VTList(props) {
       getAllVT();
     }, 10000);
   }
-
-  // function getAllVTOld() {
-  //   let factoryObj = new Factory(web3);
-
-  //   let p = factoryObj.findAllVT();
-  //   let vTokenList = [];
-  //   p.then((result) => {
-  //     let events = result;
-  //     for (let i = 0; i < events.length; i++) {
-  //       let v = new VaultToken(web3, events[i].returnValues.vaultToken);
-
-  //       vTokenList.push(v);
-  //     }
-  //     setVTList(vTokenList);
-  //   });
-  // }
 
   function include(address, list) {
     for (let i = 0; i < list.length; i++) {
@@ -101,10 +90,6 @@ export default function VTList(props) {
         for (i = 0; i < assetTokenList.length; i++) {
           if (assetTokenList[i].address === result) {
             found = true;
-            // console.log("found object" + assetTokenList[i]);
-            // let n = [...vtList];
-            // n[k].assetObject = assetTokenList[i];
-            // setVTList(n);
             vtList[k].assetObject = assetTokenList[i];
           }
         }
@@ -124,24 +109,6 @@ export default function VTList(props) {
       });
     }
   }
-
-  /*
-  function populateName1(i) {
-    // v.getName().then((result) => {
-    // });
-    let v = vtList[i];
-    if (v.tName === "") {
-      let o = [];
-
-      v.getName(props.acctNum).then((result) => {
-        v.setName(result);
-        o = [...vtList];
-        o[i] = v;
-        setVTList(o);
-      });
-    }
-  }
-  */
 
   function populateName(i) {
     // v.getName().then((result) => {
@@ -211,31 +178,6 @@ export default function VTList(props) {
     }
   }
 
-  // function populateAssetName1(i) {
-  //   // v.getName().then((result) => {
-  //   // });
-
-  //   let v = assetTokenList[i];
-  //   if (v.tName === "") {
-  //     v.getName(props.acctNum)
-  //       .then((result) => {
-  //         v.setName(result);
-  //       })
-  //       .catch((error) => {
-  //         v.setName("Non erc20 token");
-  //         v.ercStatus = false;
-  //       });
-  //   }
-  // }
-
-  // function populateBalance(i) {
-  //   let v = vList[i];
-  //   if (v.balance(props.acctNum) !== 0) {
-  //     portfolioList.push(v);
-  //     setPortfolioList(portfolioList);
-  //   }
-  // }
-
   function populate() {
     // if (vtList.length === 0) {
     setTimeout(() => {
@@ -283,24 +225,6 @@ export default function VTList(props) {
         if (result.length > 0) {
           let ts = result[result.length - 1].returnValues.closesAfter;
           vtList[i].expireTime = ts;
-          // let date = new Date(ts * 1000);
-          // var hours = date.getHours();
-          // // Minutes part from the timestamp
-          // var minutes = "0" + date.getMinutes();
-          // // Seconds part from the timestamp
-          // var seconds = "0" + date.getSeconds();
-
-          // // Will display time in 10:30:23 format
-          // var formattedTime =
-          //   date +
-          //   " " +
-          //   hours +
-          //   ":" +
-          //   minutes.substr(-2) +
-          //   ":" +
-          //   seconds.substr(-2);
-
-          // console.log(formattedTime);
         }
       });
     }
@@ -316,17 +240,6 @@ export default function VTList(props) {
       assetTokenList[i].updateTotalSupply().then((result) => {
         assetTokenList[i].setTotalSupply(result);
       });
-
-      // console.log(assetTokenList);
-      // populateManager(i);
-      // populateAsset(i);
-      // vtList[i].getBalance(props.acctNum).then((result) => {
-      //   console.log(result);
-      //   vtList[i].setBalance(result);
-      // });
-      // vtList[i].updateTotalSupply().then((result) => {
-      //   vtList[i].setTotalSupply(result);
-      // });
     }
 
     for (let i = 0; i < vtList.length; i++) {
@@ -347,7 +260,6 @@ export default function VTList(props) {
         !(include(v.address, portfolioList) || include(v.address, managedList))
       ) {
         nList.push(v);
-        // setFollowList(followList);
       }
     }
     setFollowList(nList);
@@ -360,194 +272,39 @@ export default function VTList(props) {
   useEffect(() => {
     populate();
   }, [update]);
+  console.log(managedList);
+  console.log(portfolioList);
+  console.log(followList);
   return (
     <div>
-      <Table
-        textAlign="center"
-        celled={true}
-        style={{
-          borderStyle: "none",
-          backgroundColor: "#070036",
-          backgroundImage: "linear-gradient(#8b1bef,#35e9ea5c)",
-        }}
-      >
-        <Table.Body>
-          <Table.Row verticalAlign="top">
-            {/* <Table.Cell>
-              {" "}
-              <TokenList tList={vtList} update={update} title="Token List" />
-            </Table.Cell> */}
-            {props.renderManager && (
-              <Table.Cell>
-                <h1 style={{ fontSize: "40px", color: "white" }}>Managing</h1>
-                <VTCard
-                  tList={managedList}
-                  update={update}
-                  title="Managed Token"
-                  acct={props.acctNum}
-                  mpAddress={props.mpAddress}
-                  showSpinner={vtList.length === 0}
-                  ethBal={props.ethBal}
-                />
-                {/* <TokenList
-                  tList={managedList}
-                  update={update}
-                  title="Managed Token"
-                  acct={props.acctNum}
-                  mpAddress={props.mpAddress}
-                  showSpinner={vtList.length === 0}
-                  ethBal={props.ethBal}
-                /> */}
-
-                <Grid centered padded>
-                  <Grid.Row />
-                  <Button
-                    icon="plus circle"
-                    size="huge"
-                    color="purple"
-                    onClick={props.openModal}
-                    disabled={!props.acctNum}
-                  >
-                    New Token
-                  </Button>
-                  <Grid.Row />
-                  <Grid.Row />
-                  <Grid.Row />
-                </Grid>
-
-                <div>
-                  <Divider hidden style={{ marginTop: "0px" }} />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-
-                  <Divider hidden style={{ marginBottom: "0px" }} />
-                </div>
-              </Table.Cell>
-            )}
-            {props.renderPortfolio && (
-              <Table.Cell>
-                <h1 style={{ fontSize: "40px", color: "white" }}>Portfolio</h1>
-                <VTCard
-                  tList={portfolioList}
-                  update={update}
-                  title="Portfolio"
-                  acct={props.acctNum}
-                  showSpinner={vtList.length === 0}
-                  ethBal={props.ethBal}
-                />
-                {/* <TokenList
-                  tList={portfolioList}
-                  update={update}
-                  title="Portfolio"
-                  acct={props.acctNum}
-                  showSpinner={vtList.length === 0}
-                  ethBal={props.ethBal}
-                /> */}
-
-                <div>
-                  <Divider hidden style={{ marginTop: "0px" }} />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden style={{ marginBottom: "0px" }} />
-                </div>
-              </Table.Cell>
-            )}
-            {props.renderFollow && (
-              <Table.Cell>
-                <h1
-                  style={{
-                    fontSize: "40px",
-                    color: "white",
-                  }}
-                >
-                  Available Vaults
-                </h1>
-                <VTCard
-                  tList={followList}
-                  update={update}
-                  title="Follow List"
-                  acct={props.acctNum}
-                  showSpinner={vtList.length === 0}
-                  ethBal={props.ethBal}
-                />
-                {/* <TokenList
-                  tList={followList}
-                  update={update}
-                  title="Follow List"
-                  acct={props.acctNum}
-                  showSpinner={vtList.length === 0}
-                  ethBal={props.ethBal}
-                /> */}
-                <div>
-                  <Divider hidden style={{ marginTop: "0px" }} />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden />
-                  <Divider hidden style={{ marginBottom: "0px" }} />
-                </div>
-              </Table.Cell>
-            )}
-          </Table.Row>
-        </Table.Body>
-      </Table>
+      <Switch>
+        <Route exact path="/" component={Landing} />
+        {/* <Route exact path="/detail/:id" component={Detail} /> */}
+        <Route exact path="/trade">
+          <Trade
+            pList={portfolioList}
+            fList={followList}
+            update={update}
+            title="Portfolio"
+            acct={props.acctNum}
+            showSpinner={vtList.length === 0}
+            ethBal={props.ethBal}
+            vtList={vtList}
+          />{" "}
+        </Route>
+        <Route exact path="/managed">
+          <Managed
+            mList={managedList}
+            update={update}
+            title="Managed Token"
+            acct={props.acctNum}
+            mpAddress={props.mpAddress}
+            showSpinner={vtList.length === 0}
+            ethBal={props.ethBal}
+            vtList={vtList}
+          />
+        </Route>
+      </Switch>
     </div>
   );
 }
