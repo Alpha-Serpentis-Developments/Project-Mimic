@@ -43,6 +43,7 @@ const NavLinkGroup = styled.ul`
 `;
 
 export default function NavBar(props) {
+  console.log(props);
   const [showAlertMsg, setShowAlertMsg] = useState(true);
 
   const NavLink = styled.li`
@@ -83,13 +84,25 @@ export default function NavBar(props) {
         <NavLinkGroup>
           {" "}
           <Link to="/">
-            <NavLink className="navHomeLink">Home</NavLink>
+            <NavLink className="navHomeLink" onClick={() => props.clickHome()}>
+              Home
+            </NavLink>
           </Link>
           <Link to="/trade">
-            <NavLink className="navTradeLink">Trade</NavLink>
+            <NavLink
+              className="navTradeLink"
+              onClick={() => props.clickTrade()}
+            >
+              Trade
+            </NavLink>
           </Link>
           <Link to="/managed">
-            <NavLink className="navMgrLink">Manager</NavLink>
+            <NavLink
+              className="navMgrLink"
+              onClick={() => props.clickManager()}
+            >
+              Manager
+            </NavLink>
           </Link>
         </NavLinkGroup>
 

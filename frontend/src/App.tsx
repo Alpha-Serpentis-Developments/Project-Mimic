@@ -166,7 +166,6 @@ export default function App() {
   }
 
   function clickHome(e: any) {
-    e.preventDefault();
     setRenderHome(true);
     setRenderManager(false);
     setRenderPortfolio(false);
@@ -176,7 +175,6 @@ export default function App() {
     setTradeNav("#8b1bef");
   }
   function clickTrade(e: any) {
-    e.preventDefault();
     setRenderHome(false);
     setRenderManager(false);
     setRenderPortfolio(true);
@@ -186,7 +184,6 @@ export default function App() {
     setTradeNav("#9489ffba");
   }
   function clickManager(e: any) {
-    e.preventDefault();
     setRenderHome(false);
     setRenderManager(true);
     setRenderPortfolio(false);
@@ -290,7 +287,6 @@ export default function App() {
               visited={visited}
               clickToVisit={clickToVisit}
             />
-            {/* {renderHome && <Landing clickTrade={clickTrade} />} */}
 
             {!addr && (
               <div
@@ -305,13 +301,8 @@ export default function App() {
                   <Icon name="exclamation triangle" color="red" />
                   Please install MetaMask to continue
                 </Message>
-                {/* <a href="https://metamask.io/" style={{ fontWeight: "bold" }}>
-                {" "}
-                MetaMask
-              </a>{" "} */}
               </div>
             )}
-            {/* {renderHome && <Introduction clickTrade={clickTrade} />} */}
 
             {addr && (
               <div>
@@ -324,29 +315,6 @@ export default function App() {
                   ethBal={ethBal}
                   openModal={openModal}
                 />
-                {/* {renderManager && (
-                <Grid
-                  centered
-                  padded
-                  style={{
-                    backgroundImage: "linear-gradient(#493CB3,#1A5387)",
-                  }}
-                >
-                  <Grid.Row />
-                  <Button
-                    icon="plus circle"
-                    size="huge"
-                    color="purple"
-                    onClick={openModal}
-                    disabled={!acctNum}
-                  >
-                    New Token
-                  </Button>
-                  <Grid.Row />
-                  <Grid.Row />
-                  <Grid.Row />
-                </Grid>
-              )} */}
               </div>
             )}
             <MMInstallModal
