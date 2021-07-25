@@ -7,7 +7,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 const LandingContainer = styled.div`
-  background-image: linear-gradient(#8b1bef,#35e9ea5c);
+  background-image: linear-gradient(#8b1bef,#20759D);
 `;
 const LandingText = styled.div`
   font-family: Roboto Slab;
