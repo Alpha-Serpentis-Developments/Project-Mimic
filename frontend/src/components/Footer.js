@@ -15,7 +15,7 @@ const FooterContainer = styled.div`
   bottom: 0;
   width: 100%;
   height: 200px;
-  background-color: #20759D;
+  background-color: #20759d;
 `;
 const SocialStyle = styled.div`
   transition: transform 0.5s;

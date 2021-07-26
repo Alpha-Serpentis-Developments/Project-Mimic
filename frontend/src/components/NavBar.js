@@ -1,8 +1,11 @@
 import { useState } from "react";
 import MMConnect from "./MMconnection";
+import { Link } from "react-router-dom";
+
 import optionalProfile from "../images/optionalProfile.png";
 import styled from "styled-components";
 import { Button, Icon, Modal } from "semantic-ui-react";
+import "../App.css";
 
 const MainNav = styled.nav`
   height: 68px;
@@ -40,6 +43,7 @@ const NavLinkGroup = styled.ul`
 `;
 
 export default function NavBar(props) {
+  console.log(props);
   const [showAlertMsg, setShowAlertMsg] = useState(true);
 
   const NavLink = styled.li`
@@ -70,7 +74,7 @@ export default function NavBar(props) {
   `;
 
   return (
-    <MainNav>
+    <MainNav className="topMenu">
       <NavLeft>
         {/* <TitleLogo src={cover} /> */}
         <TitleImg src={optionalProfile} />
@@ -78,16 +82,30 @@ export default function NavBar(props) {
 
       <NavRight>
         <NavLinkGroup>
-          <NavLink className="navHomeLink" onClick={props.clickHome}>
-            Home
-          </NavLink>
-          <NavLink className="navTradeLink" onClick={props.clickTrade}>
-            Trade
-          </NavLink>
-          <NavLink className="navMgrLink" onClick={props.clickManager}>
-            Manager
-          </NavLink>
+          {" "}
+          <Link to="/">
+            <NavLink className="navHomeLink" onClick={() => props.clickHome()}>
+              Home
+            </NavLink>
+          </Link>
+          <Link to="/trade">
+            <NavLink
+              className="navTradeLink"
+              onClick={() => props.clickTrade()}
+            >
+              Trade
+            </NavLink>
+          </Link>
+          <Link to="/managed">
+            <NavLink
+              className="navMgrLink"
+              onClick={() => props.clickManager()}
+            >
+              Manager
+            </NavLink>
+          </Link>
         </NavLinkGroup>
+
         <Button
           //   color="grey"
           icon

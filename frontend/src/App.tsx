@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+
 import "semantic-ui-css/semantic.min.css";
 
 import { web3 } from "./components/Web3Handler";
@@ -164,7 +166,6 @@ export default function App() {
   }
 
   function clickHome(e: any) {
-    e.preventDefault();
     setRenderHome(true);
     setRenderManager(false);
     setRenderPortfolio(false);
@@ -174,7 +175,6 @@ export default function App() {
     setTradeNav("#8b1bef");
   }
   function clickTrade(e: any) {
-    e.preventDefault();
     setRenderHome(false);
     setRenderManager(false);
     setRenderPortfolio(true);
@@ -184,7 +184,6 @@ export default function App() {
     setTradeNav("#9489ffba");
   }
   function clickManager(e: any) {
-    e.preventDefault();
     setRenderHome(false);
     setRenderManager(true);
     setRenderPortfolio(false);
@@ -210,154 +209,126 @@ export default function App() {
   }
 
   return (
-    <div>
-      {reload && <AppReload chainId={chainId} reload={reload} />}
-      {/* <Sidebar.Pushable> */}
-      <Sidebar
-        as={Menu}
-        animation="overlay"
-        icon="labeled"
-        inverted
-        onHide={() => setShowSidebar(false)}
-        vertical
-        visible={showSidebar}
-        width="thin"
-        color="purple"
-      >
-        <Menu.Item
-          name="home"
-          position="right"
-          // active={menuActive === "home"}
-          active={renderHome}
-          // onClick={clickMenu}
-          onClick={clickHome}
+    <Router>
+      <div>
+        {reload && <AppReload chainId={chainId} reload={reload} />}
+        {/* <Sidebar.Pushable> */}
+        <Sidebar
+          as={Menu}
+          animation="overlay"
+          icon="labeled"
+          inverted
+          onHide={() => setShowSidebar(false)}
+          vertical
+          visible={showSidebar}
+          width="thin"
+          color="purple"
         >
-          <div style={{ color: "white", fontSize: "25px" }}>Home</div>
-        </Menu.Item>
-        <Menu.Item
-          name="trade"
-          position="right"
-          // active={menuActive === "trade"}
-          active={renderFollow}
-          // onClick={clickMenu}
-          onClick={clickTrade}
-        >
-          <div style={{ color: "white", fontSize: "25px" }}>Trade</div>
-        </Menu.Item>
-        <Menu.Item
-          name="manager"
-          position="right"
-          // active={menuActive === "manager"}
-          active={renderManager}
-          onClick={clickManager}
-        >
-          <div style={{ color: "white", fontSize: "25px" }}>Manager</div>
-        </Menu.Item>
-      </Sidebar>
+          <Menu.Item
+            name="home"
+            position="right"
+            // active={menuActive === "home"}
+            active={renderHome}
+            // onClick={clickMenu}
+            onClick={clickHome}
+          >
+            <div style={{ color: "white", fontSize: "25px" }}>Home</div>
+          </Menu.Item>
+          <Menu.Item
+            name="trade"
+            position="right"
+            // active={menuActive === "trade"}
+            active={renderFollow}
+            // onClick={clickMenu}
+            onClick={clickTrade}
+          >
+            <div style={{ color: "white", fontSize: "25px" }}>Trade</div>
+          </Menu.Item>
+          <Menu.Item
+            name="manager"
+            position="right"
+            // active={menuActive === "manager"}
+            active={renderManager}
+            onClick={clickManager}
+          >
+            <div style={{ color: "white", fontSize: "25px" }}>Manager</div>
+          </Menu.Item>
+        </Sidebar>
 
-      <Sidebar.Pusher dimmed={showSidebar}>
-        <div
-          className="content"
-          // style={{
-          //   backgroundImage: "linear-gradient(#eddbf4, #f54aefad)",
-          // }}
-        >
-          <TopSidebar
-            showSidebar={showSidebar}
-            clickShowSidebar={clickShowSidebar}
-            clickHideSidebar={clickHideSidebar}
-          />
-          <NavBar
-            btnText={btnText}
-            acctNum={acctNum}
-            chainId={chainId}
-            ethBal={ethBal}
-            connectMM={connectMM}
-            clickHome={clickHome}
-            clickTrade={clickTrade}
-            clickManager={clickManager}
-            renderHome={renderHome}
-            renderManager={renderManager}
-            renderFollow={renderFollow}
-            renderPortfolio={renderPortfolio}
-            homeNav={homeNav}
-            tradeNav={tradeNav}
-            managerNav={managerNav}
-            mmColor={mmColor}
-            visited={visited}
-            clickToVisit={clickToVisit}
-          />
-          {renderHome && <Landing clickTrade={clickTrade} />}
+        <Sidebar.Pusher dimmed={showSidebar}>
+          <div
+            className="content"
+            // style={{
+            //   backgroundImage: "linear-gradient(#eddbf4, #f54aefad)",
+            // }}
+          >
+            <TopSidebar
+              showSidebar={showSidebar}
+              clickShowSidebar={clickShowSidebar}
+              clickHideSidebar={clickHideSidebar}
+            />
+            <NavBar
+              btnText={btnText}
+              acctNum={acctNum}
+              chainId={chainId}
+              ethBal={ethBal}
+              connectMM={connectMM}
+              clickHome={clickHome}
+              clickTrade={clickTrade}
+              clickManager={clickManager}
+              renderHome={renderHome}
+              renderManager={renderManager}
+              renderFollow={renderFollow}
+              renderPortfolio={renderPortfolio}
+              homeNav={homeNav}
+              tradeNav={tradeNav}
+              managerNav={managerNav}
+              mmColor={mmColor}
+              visited={visited}
+              clickToVisit={clickToVisit}
+            />
 
-          {!addr && (
-            <div
-              style={{
-                textAlign: "center",
-                fontSize: "20px",
-                marginTop: "20px",
-                color: "red",
-              }}
-            >
-              <Message color="purple" compact>
-                <Icon name="exclamation triangle" color="red" />
-                Please install MetaMask to continue
-              </Message>
-              {/* <a href="https://metamask.io/" style={{ fontWeight: "bold" }}>
-                {" "}
-                MetaMask
-              </a>{" "} */}
-            </div>
-          )}
-          {/* {renderHome && <Introduction clickTrade={clickTrade} />} */}
+            {!addr && (
+              <div
+                style={{
+                  textAlign: "center",
+                  fontSize: "20px",
+                  marginTop: "20px",
+                  color: "red",
+                }}
+              >
+                <Message color="purple" compact>
+                  <Icon name="exclamation triangle" color="red" />
+                  Please install MetaMask to continue
+                </Message>
+              </div>
+            )}
 
-          {addr && (
-            <div>
-              <VTList
-                acctNum={acctNum}
-                mpAddress={mpAddress}
-                renderManager={renderManager}
-                renderFollow={renderFollow}
-                renderPortfolio={renderPortfolio}
-                ethBal={ethBal}
-                openModal={openModal}
-              />
-              {/* {renderManager && (
-                <Grid
-                  centered
-                  padded
-                  style={{
-                    backgroundImage: "linear-gradient(#493CB3,#1A5387)",
-                  }}
-                >
-                  <Grid.Row />
-                  <Button
-                    icon="plus circle"
-                    size="huge"
-                    color="purple"
-                    onClick={openModal}
-                    disabled={!acctNum}
-                  >
-                    New Token
-                  </Button>
-                  <Grid.Row />
-                  <Grid.Row />
-                  <Grid.Row />
-                </Grid>
-              )} */}
-            </div>
-          )}
-          <MMInstallModal
-            showMMInstallModal={showMMInstallModal}
-            closeMMInstallModal={closeMMInstallModal}
-          />
-          <ChainAlert showChainAlert={showChainAlert} />
-          <DeployNewVaultToken
-            openPlusModal={openPlusModal}
-            onClose={() => setOpenPlusModal(false)}
-            acctNum={acctNum}
-          />
-        </div>
-        {/* {!renderHome && (
+            {addr && (
+              <div>
+                <VTList
+                  acctNum={acctNum}
+                  mpAddress={mpAddress}
+                  renderManager={renderManager}
+                  renderFollow={renderFollow}
+                  renderPortfolio={renderPortfolio}
+                  ethBal={ethBal}
+                  openModal={openModal}
+                />
+              </div>
+            )}
+            <MMInstallModal
+              showMMInstallModal={showMMInstallModal}
+              closeMMInstallModal={closeMMInstallModal}
+            />
+            <ChainAlert showChainAlert={showChainAlert} />
+            <DeployNewVaultToken
+              openPlusModal={openPlusModal}
+              onClose={() => setOpenPlusModal(false)}
+              acctNum={acctNum}
+            />
+          </div>
+          {/* {!renderHome && (
           <div style={{ backgroundImage: "linear-gradient(#493CB3,#1A5387)" }}>
             <Divider hidden style={{ marginTop: "0px" }} />
             <Divider hidden />
@@ -374,9 +345,10 @@ export default function App() {
             <Divider hidden style={{ marginBottom: "0px" }} />
           </div>
         )} */}
-        <Footer />
-      </Sidebar.Pusher>
-      {/* </Sidebar.Pushable> */}
-    </div>
+          <Footer />
+        </Sidebar.Pusher>
+        {/* </Sidebar.Pushable> */}
+      </div>
+    </Router>
   );
 }

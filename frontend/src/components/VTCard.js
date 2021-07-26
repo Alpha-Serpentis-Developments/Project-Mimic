@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { web3 } from "./Web3Handler";
 import { ERC20 } from "./Erc20";
 import { Modal, Button, Icon } from "semantic-ui-react";
 import VaultTokenInfo from "./VaultTokenInfo";
+import { VaultToken } from "./VaultToken";
 import styled from "styled-components";
 
 const VTAddress = styled.span`
@@ -106,31 +107,8 @@ export default function VTCard(props) {
   const [clickedItem, setClickedItem] = useState();
 
   function showTokenInfo(e, i) {
-    console.log(e);
-    console.log(i);
     setClickedItem(i.value);
     setOpen(true);
-  }
-
-  function calculateLastRound(token) {
-    
-  }
-
-  function calculateNAV(t) {
-    // let sum;
-    // let vaultToken = t;
-    // let assetToken = await t.assetObject;
-
-    // await web3.eth.getStorageAt(vaultToken.address, 8).then((result) => {
-    //   sum = new web3.utils.BN(result);
-    // });
-    // await assetToken.getBalance(vaultToken.address).then((result) => {
-    //   sum.add(new web3.utils.BN(result));
-    // });
-
-    // return sum;
-
-    return "$" + 1000.00;
   }
 
   function oneCard(item) {
@@ -149,11 +127,13 @@ export default function VTCard(props) {
             <PercentContent>
               <ItemInfo>
                 <ItemTextHeader>Last Round</ItemTextHeader>
-                <ItemText>{calculateLastRound(item)}</ItemText>
+                <ItemText>2</ItemText>
               </ItemInfo>
               <ItemInfo>
                 <ItemTextHeader>NAV</ItemTextHeader>
-                <ItemText>{calculateNAV(item)}</ItemText>
+                <ItemText>
+                  {item.nav === -1 ? <div>Calculating...</div> : item.nav}
+                </ItemText>
               </ItemInfo>
             </PercentContent>
           </LeftContent>
