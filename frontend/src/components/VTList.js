@@ -151,7 +151,7 @@ export default function VTList(props) {
     if (v.collateralAmount !== -1 && v.vaultBalance !== -1) {
       let r = (parseInt(v.collateralAmount) + parseInt(v.vaultBalance)) / 1e18;
       r = r.toFixed(5);
-      v.setNAV(r);
+      v.setNAV(r + " " + v.assetObject.symbol());
     }
   }
   function populateAssetName(i) {

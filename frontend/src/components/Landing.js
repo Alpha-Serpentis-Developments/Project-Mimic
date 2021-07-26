@@ -3,6 +3,7 @@ import StartTXBtn from "./StartTXBtn";
 import gamma from "../images/gamma.png";
 import styled from "styled-components";
 import Slider from "react-slick";
+import { Link } from "react-router-dom";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
@@ -156,7 +157,9 @@ export default function Landing(props) {
     <LandingContainer>
       <LandingText>Decentralized Social Trading for Options</LandingText>
       <DepositImg src={deposit} />
-      <StartTXBtn clickTrade={props.clickTrade} />
+      <Link to="/trade">
+        <StartTXBtn clickTrade={props.clickTrade} />
+      </Link>
       <AboutContainer>
         <AboutTitle>About Us</AboutTitle>
         <AboutItemContainer>
