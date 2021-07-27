@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { Table, Divider, Button, Grid } from "semantic-ui-react";
+import VaultTokenInfo from "./VaultTokenInfo";
 
 const DesContainer = styled.div`
   height: 800px;
@@ -24,6 +25,12 @@ export default function TokenDes(props) {
         The Strategy consist of a weekly call-write on $WETH calls with strike
         selection being based on +20% spot at te moment
       </VaultDescript>
+      <VaultTokenInfo
+        token={props.token}
+        acct={props.acct}
+        mpAddress={props.mpAddress}
+        ethBal={props.ethBal}
+      />
     </DesContainer>
   );
 }

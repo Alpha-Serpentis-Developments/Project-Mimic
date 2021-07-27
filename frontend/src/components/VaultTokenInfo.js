@@ -18,6 +18,7 @@ import { web3 } from "./Web3Handler";
 import WethWrap from "./WethWrap";
 
 export default function VaultTokenInfo(props) {
+  console.log(props);
   const [depositAmt, setDeposit] = useState(0);
   const [withdrawAmt, setWithdrawAmt] = useState(0);
   const [initializeAmt, setInitializeAmt] = useState(0);
@@ -470,7 +471,7 @@ export default function VaultTokenInfo(props) {
             </Header>
 
             <Header size="huge" color="blue">
-              {props.token.name()}
+              {props.token.tName}
               {props.token.oTokenObj && props.token.oTokenObj.tName !== "" && (
                 <Popup
                   content={props.token.oTokenObj.name()}
@@ -527,7 +528,7 @@ export default function VaultTokenInfo(props) {
                   </Form.Field>
                   <div style={{ marginTop: "13px" }}>
                     {" "}
-                    {props.token.symbol()}
+                    {props.token.tSymbol}
                   </div>
                   {/* <Menu compact size="tiny">
                     <Dropdown
@@ -558,7 +559,7 @@ export default function VaultTokenInfo(props) {
               asset{" "}
             </Header>
             <Header size="huge" color="orange">
-              {props.token.assetObject.name()}
+              {props.token.assetObject.tnName}
               {/* {props.token.assetObject.symbol()} */}
             </Header>
 
@@ -614,7 +615,7 @@ export default function VaultTokenInfo(props) {
                       />
                     </Form.Field>
                     <div style={{ paddingTop: "13px" }}>
-                      {props.token.assetObject.symbol()}
+                      {props.token.assetObject.tSymbol}
                     </div>
 
                     {/* <Menu compact size="tiny">
