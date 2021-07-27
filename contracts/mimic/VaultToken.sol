@@ -284,11 +284,12 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
             revert Invalid();
 
         // (Reserve) safety check
-        if(assetAmount > currentReserves && _withdrawalWindowCheck(false) && oToken != address(0))
-            revert NotEnoughFunds_ReserveViolation();
-
-        if(_withdrawalWindowCheck(false) && oToken != address(0))
-            currentReserves -= assetAmount;
+        if(_withdrawalWindowCheck(false) && oToken != address(0)) {
+            if(assetAmount > currentReserves)
+                revert NotEnoughFunds_ReserveViolation();
+            else
+                currentReserves -= assetAmount;
+        }
 
         IERC20(asset).safeTransfer(msg.sender, assetAmount); // Vault Token Amount to Burn * Balance of Vault for Asset  / Total Vault Token Supply
         _burn(address(msg.sender), _amount);
