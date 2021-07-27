@@ -43,7 +43,6 @@ const NavLinkGroup = styled.ul`
 `;
 
 export default function NavBar(props) {
-  console.log(props);
   const [showAlertMsg, setShowAlertMsg] = useState(true);
 
   const NavLink = styled.li`

@@ -25,6 +25,7 @@ import { nwConfig, currentChain, setChain } from "./components/NetworkConfig";
 import AppReload from "./components/AppReload";
 import ChainAlert from "./components/ChainAlert";
 import "./App.css";
+import IpfsRouter from "ipfs-react-router";
 
 declare global {
   interface Window {
@@ -209,7 +210,8 @@ export default function App() {
   }
 
   return (
-    <Router>
+    // <Router>
+    <IpfsRouter>
       <div>
         {reload && <AppReload chainId={chainId} reload={reload} />}
         {/* <Sidebar.Pushable> */}
@@ -349,6 +351,8 @@ export default function App() {
         </Sidebar.Pusher>
         {/* </Sidebar.Pushable> */}
       </div>
-    </Router>
+    </IpfsRouter>
+
+    // </Router>
   );
 }
