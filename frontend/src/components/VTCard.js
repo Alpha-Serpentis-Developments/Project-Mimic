@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import { web3 } from "./Web3Handler";
 import { ERC20 } from "./Erc20";
 import { Modal, Button, Icon } from "semantic-ui-react";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { Link } from "react-router-dom";
 import VaultTokenInfo from "./VaultTokenInfo";
 import { VaultToken } from "./VaultToken";
+import TokenDes from "./TokenDes";
 import styled from "styled-components";
 
 const VTAddress = styled.span`
@@ -103,15 +106,15 @@ const ItemTextHeader = styled.div`
 // `;
 
 export default function VTCard(props) {
-  const [open, setOpen] = useState(false);
-  const [clickedItem, setClickedItem] = useState();
+  // const [open, setOpen] = useState(false);
+  // const [clickedItem, setClickedItem] = useState();
 
-  function showTokenInfo(e, i) {
-    setClickedItem(i.value);
-    setOpen(true);
-  }
+  // function showTokenInfo(e, i) {
+  //   setClickedItem(i.value);
+  // }
 
   function oneCard(item) {
+    let path = `/detail/${item.address}`;
     return (
       <VTCardContainer>
         <VTNameContainer>
@@ -138,20 +141,22 @@ export default function VTCard(props) {
             </PercentContent>
           </LeftContent>
           <RightContent>
-            <Button
-              onClick={showTokenInfo}
-              value={item}
-              disabled={!item.status}
-              style={{
-                marginRight: "20px",
-                marginTop: "30px",
-                borderRadius: "30px",
-                padding: "10px 30px",
-                backgroundColor: "#7950EE",
-              }}
-            >
-              Trade
-            </Button>
+            <Link to={path}>
+              <Button
+                onClick={props.showTokenInfo}
+                value={item}
+                disabled={!item.status}
+                style={{
+                  marginRight: "20px",
+                  marginTop: "30px",
+                  borderRadius: "30px",
+                  padding: "10px 30px",
+                  backgroundColor: "#7950EE",
+                }}
+              >
+                Trade
+              </Button>
+            </Link>
           </RightContent>
         </VtContentcontainer>
       </VTCardContainer>
@@ -173,7 +178,8 @@ export default function VTCard(props) {
           );
         })}
       </div>
-      <div>
+
+      {/* <div>
         {" "}
         <Modal
           open={open}
@@ -181,9 +187,6 @@ export default function VTCard(props) {
           closeIcon
           size="small"
         >
-          {/* <Modal.Header>
-          <ERCTokenInfo token={clickedItem} acct={props.acct} />
-        </Modal.Header> */}
           <Modal.Content>
             <VaultTokenInfo
               token={clickedItem}
@@ -193,7 +196,7 @@ export default function VTCard(props) {
             />
           </Modal.Content>
         </Modal>
-      </div>
+      </div> */}
     </div>
   );
 }

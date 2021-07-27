@@ -25,6 +25,7 @@ export default function Managed(props) {
               mpAddress={props.mpAddress}
               showSpinner={props.vtList.length === 0}
               ethBal={props.ethBal}
+              showTokenInfo={props.showTokenInfo}
             />
 
             <Grid centered padded>

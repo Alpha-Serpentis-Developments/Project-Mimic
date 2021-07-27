@@ -6,20 +6,45 @@ import { Factory } from "./Factory";
 import { VaultToken } from "./VaultToken";
 import { Otoken } from "./Otoken";
 
-import { Table, Divider, Button, Grid } from "semantic-ui-react";
 import { ERC20 } from "./Erc20";
 import VTCard from "./VTCard";
 import Trade from "../pages/Trade";
 import Landing from "../components/Landing";
 import Managed from "../pages/Managed";
+import TokenDes from "./TokenDes";
+import IpfsRouter from "ipfs-react-router";
 
 export default function VTList(props) {
+  let cVT = JSON.parse(localStorage.getItem("cVT") || "{}");
+
   const [vtList, setVTList] = useState([]);
   const [update, setUpdate] = useState(0);
   const [managedList, setManagedList] = useState([]);
   const [portfolioList, setPortfolioList] = useState([]);
   const [followList, setFollowList] = useState([]);
   const [assetTokenList, setAssetTokenList] = useState([]);
+
+  const [clickedItem, setClickedItem] = useState(cVT);
+
+  async function showTokenInfo(e, i) {
+    await setClickedItem(i.value);
+
+    let T = i.value;
+    function getCircularReplacer() {
+      const seen = new WeakSet();
+      return (key, value) => {
+        if (typeof value === "object" && value !== null) {
+          if (seen.has(value)) {
+            return;
+          }
+          seen.add(value);
+        }
+        return value;
+      };
+    }
+
+    localStorage.setItem("cVT", JSON.stringify(T, getCircularReplacer()));
+  }
 
   function getAllVT() {
     let factoryObj = new Factory(web3);
@@ -151,7 +176,11 @@ export default function VTList(props) {
     if (v.collateralAmount !== -1 && v.vaultBalance !== -1) {
       let r = (parseInt(v.collateralAmount) + parseInt(v.vaultBalance)) / 1e18;
       r = r.toFixed(5);
+<<<<<<< HEAD
+      v.setNAV(r);
+=======
       v.setNAV(r + " " + v.assetObject.symbol());
+>>>>>>> upstream/frontend-v0.2
     }
   }
   function populateAssetName(i) {
@@ -268,6 +297,10 @@ export default function VTList(props) {
     setFollowList(nList);
   }
 
+  // function showTokenInfo(e, i) {
+  //   setClickedItem(i.value);
+  // }
+
   useEffect(() => {
     getAllVT();
     populate();
@@ -291,6 +324,7 @@ export default function VTList(props) {
             showSpinner={vtList.length === 0}
             ethBal={props.ethBal}
             vtList={vtList}
+            showTokenInfo={showTokenInfo}
           />{" "}
         </Route>
         <Route exact path="/managed">
@@ -303,6 +337,16 @@ export default function VTList(props) {
             showSpinner={vtList.length === 0}
             ethBal={props.ethBal}
             vtList={vtList}
+            showTokenInfo={showTokenInfo}
+          />
+        </Route>
+
+        <Route exact path="/detail/:address">
+          <TokenDes
+            token={clickedItem}
+            acct={props.acctNum}
+            mpAddress={props.mpAddress}
+            ethBal={props.ethBal}
           />
         </Route>
       </Switch>
