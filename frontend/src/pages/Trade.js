@@ -49,10 +49,7 @@ export default function Trade(props) {
               acct={props.acct}
               showSpinner={props.vtList.length === 0}
               ethBal={props.ethBal}
-<<<<<<< HEAD
               showTokenInfo={props.showTokenInfo}
-=======
->>>>>>> upstream/frontend-v0.2
             />
             {/* <TokenList
                   tList={followList}
@@ -74,38 +71,3 @@ export default function Trade(props) {
     </Table>
   );
 }
-<<<<<<< HEAD
-=======
-
-// <VTCard
-//                   tList={managedList}
-//                   update={update}
-//                   title="Managed Token"
-//                   acct={props.acctNum}
-//                   mpAddress={props.mpAddress}
-//                   showSpinner={vtList.length === 0}
-//                   ethBal={props.ethBal}
-//                 />
-
-{
-  /* <VTCard
-tList={portfolioList}
-update={update}
-title="Portfolio"
-acct={props.acctNum}
-showSpinner={vtList.length === 0}
-ethBal={props.ethBal}
-/> */
-}
-
-{
-  /* <VTCard
-tList={followList}
-update={update}
-title="Follow List"
-acct={props.acctNum}
-showSpinner={vtList.length === 0}
-ethBal={props.ethBal}
-/> */
-}
->>>>>>> upstream/frontend-v0.2
