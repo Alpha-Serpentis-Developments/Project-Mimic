@@ -16,9 +16,52 @@ import {
 } from "semantic-ui-react";
 import { web3 } from "./Web3Handler";
 import WethWrap from "./WethWrap";
+import Withdraw from "./Withdraw";
+import Deposit from "./Deposit";
+import styled from "styled-components";
 
+const DWIndicator = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: 80%;
+  height: 60px;
+
+  margin-left: auto;
+  margin-right: auto;
+`;
+const DIndicator = styled.div`
+  padding-top: 17px;
+  border-radius: 0px 20px 0 0;
+  background-color: #146ca4;
+  width: 50%;
+  text-align: center;
+  cursor: pointer;
+  &:hover {
+    background-color: purple;
+  }
+`;
+const WIndicator = styled.div`
+  padding-top: 17px;
+  cursor: pointer;
+  border-radius: 20px 0px 0 0;
+  background-color: #146ca4;
+  width: 50%;
+  text-align: center;
+  &:hover {
+    background-color: purple;
+  }
+`;
+
+const DWForm = styled.div`
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 0 0 20px 20px;
+  border-top: 2px solid black;
+  background-color: #146ca4;
+  padding-bottom: 50px;
+`;
 export default function VaultTokenInfo(props) {
-  console.log(props);
   const [depositAmt, setDeposit] = useState(0);
   const [withdrawAmt, setWithdrawAmt] = useState(0);
   const [initializeAmt, setInitializeAmt] = useState(0);
@@ -48,6 +91,8 @@ export default function VaultTokenInfo(props) {
   const [eToWethAmt, setEToWethAmt] = useState(0);
   const [showConvertForm, setShowConvertForm] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [showD, setShowD] = useState(false);
+  const [showW, setShowW] = useState(true);
 
   function ethInputAmt(event) {
     if (event.target.value > props.ethBal) {
@@ -113,57 +158,8 @@ export default function VaultTokenInfo(props) {
       });
   }
 
-  // function deposit1(amt) {
-  //   startTX();
-  //   if (amt === 0) {
-  //     setSM("Error", "Form input Error", true, true);
-  //     setIconStatus("error");
-  //     return;
-  //   }
-  //   let amount = web3.utils.toWei(amt, dUnit);
-  //   let c = props.token.deposit(amount, props.acct);
-  //   sendTX(c, "Deposit");
-  // }
-
-  // function deposit2(amt) {
-  //   if (amt === 0) {
-  //     setSM("Error", "Form input Error", true, true);
-  //     setIconStatus("error");
-  //     return;
-  //   }
-  //   let amount = web3.utils.toWei(amt, dUnit);
-  //   props.token
-  //     .deposit(amount, props.acct)
-  //     .on("receipt", function (receipt) {
-  //       console.log(receipt);
-  //       setSM("TX Receipt Received", receipt, true, false);
-  //     })
-  //     .on("transactionHash", function (hash) {
-  //       setTxHash(hash);
-  //       setSM("TX Hash Received", hash, true, false);
-  //     })
-  //     .on("error", function (error, receipt) {
-  //       let i = error.message.indexOf(":");
-  //       let m = error.message.substring(0, i > 0 ? i : 40);
-  //       setSM("Deposit TX Error", m, true, true);
-  //       setTxSent(false);
-  //       setIconStatus("error");
-  //     })
-  //     .on("confirmation", function (confirmationNumber, receipt) {
-  //       setSM(
-  //         "Deposit TX Confirmed",
-  //         confirmationNumber + " Confirmation Received",
-  //         true,
-  //         false
-  //       );
-  //       setIconStatus("confirmed");
-  //     });
-  // }
-  ///=================
-
   function overAmount(a, b, c) {
     c = c * 1e18;
-    console.log(a, b, c);
     if (a > b + c) {
       setSM("Error", "You don't have enough balance", true, true);
       setIconStatus("error");
@@ -182,6 +178,7 @@ export default function VaultTokenInfo(props) {
   }
 
   function deposit(amt) {
+    console.log(props);
     startTX();
     if (amt === 0 || isNaN(amt)) {
       setSM("Error", "Form input Error", true, true);
@@ -252,20 +249,6 @@ export default function VaultTokenInfo(props) {
         }
       });
   }
-  //====================
-
-  // function initialize1(amt) {
-  //   startTX();
-  //   if (amt === 0) {
-  //     setSM("Error", "Form input Error", true, true);
-  //     setIconStatus("error");
-
-  //     return;
-  //   }
-  //   let amount = web3.utils.toWei(amt, iUnit);
-  //   let i = props.token.initialize(amount, props.acct);
-  //   sendTX(i, "initialize");
-  // }
 
   function withDraw(amt) {
     startTX();
@@ -363,29 +346,31 @@ export default function VaultTokenInfo(props) {
 
   function convertForm() {
     return (
-      <Accordion>
-        <Accordion.Title
-          active={activeIndex === 0}
-          index={0}
-          onClick={handleConvert}
-        >
-          <Icon name="dropdown" />
-          ETH <Icon name="long arrow alternate right" /> WETH Wrapper
-        </Accordion.Title>
-        {/* {showConvertModal && ( */}
-        <Accordion.Content active={activeIndex === 0}>
-          <p>
-            <WethWrap
-              acct={props.acct}
-              ethInputAmt={ethInputAmt}
-              ethToWeth={() => ethToWeth(eToWethAmt)}
-              eToWethAmt={eToWethAmt}
-            />
-            {/* )} */}
-          </p>
-          <Divider section />
-        </Accordion.Content>
-      </Accordion>
+      <div>
+        <Accordion>
+          <Accordion.Title
+            active={activeIndex === 0}
+            index={0}
+            onClick={handleConvert}
+          >
+            <Icon name="dropdown" />
+            ETH <Icon name="long arrow alternate right" /> WETH Wrapper
+          </Accordion.Title>
+          {/* {showConvertModal && ( */}
+          <Accordion.Content active={activeIndex === 0}>
+            <p>
+              <WethWrap
+                acct={props.acct}
+                ethInputAmt={ethInputAmt}
+                ethToWeth={() => ethToWeth(eToWethAmt)}
+                eToWethAmt={eToWethAmt}
+              />
+              {/* )} */}
+            </p>
+            <Divider section />
+          </Accordion.Content>
+        </Accordion>
+      </div>
     );
   }
 
@@ -416,7 +401,7 @@ export default function VaultTokenInfo(props) {
             />
           </Form.Field>
           <div style={{ marginTop: "35px", paddingLeft: "0px" }}>
-            {props.token.assetObject.symbol()}
+            {props.token.assetObject.tSymbol}
           </div>
           {/* <label>select</label>
             <Menu compact size="tiny">
@@ -461,206 +446,7 @@ export default function VaultTokenInfo(props) {
       </Form>
     );
   }
-  function showTokenPair() {
-    return (
-      <Segment basic>
-        <Grid stackable columns={2}>
-          <Grid.Column>
-            <Header color="grey" size="medium">
-              vault{" "}
-            </Header>
 
-            <Header size="huge" color="blue">
-              {props.token.tName}
-              {props.token.oTokenObj && props.token.oTokenObj.tName !== "" && (
-                <Popup
-                  content={props.token.oTokenObj.name()}
-                  trigger={
-                    <Label color="blue">
-                      <Icon name="star" />
-                      show oToken
-                    </Label>
-                  }
-                />
-              )}
-            </Header>
-
-            <Header size="medium">
-              My Balance: {props.token.myBalance / 1e18}
-            </Header>
-
-            {/* <Header>{props.token.symbol()}</Header> */}
-
-            <Header size="medium">
-              Total Supply: {props.token.totalSupply / 1e18}
-            </Header>
-            {/* {props.token.oTokenObj && props.token.oTokenObj.tName !== "" && (
-              <Header>oToken: {props.token.oTokenObj.name()}</Header>
-            )} */}
-            <Divider hidden />
-            {props.token.totalSupply > 0 && !managerClick && (
-              <Form>
-                <Form.Group>
-                  <Popup
-                    pinned
-                    trigger={
-                      <Icon
-                        name="info circle"
-                        color="blue"
-                        size="large"
-                        style={{ marginTop: "auto", marginBottom: "auto" }}
-                      />
-                    }
-                  >
-                    <Popup.Header>Withdraw</Popup.Header>
-                    <Popup.Content>
-                      When withdrawing, you will burn away your vault tokens to
-                      redeem the underlying asset token. Withdrawing from the
-                      vault can only be done if the vault's withdrawal window
-                      has opened up after the manager has settled the vault.
-                    </Popup.Content>
-                  </Popup>
-                  <Form.Field>
-                    <input
-                      value={withdrawAmt}
-                      onChange={(e) => setWithdrawAmt(e.target.value)}
-                    />
-                  </Form.Field>
-                  <div style={{ marginTop: "13px" }}>
-                    {" "}
-                    {props.token.tSymbol}
-                  </div>
-                  {/* <Menu compact size="tiny">
-                    <Dropdown
-                      defaultValue="ether"
-                      options={units}
-                      item
-                      onChange={updatewUnit}
-                    />
-                  </Menu> */}
-                </Form.Group>
-
-                <Button
-                  onClick={() => withDraw(withdrawAmt)}
-                  color="blue"
-                  icon
-                  size="large"
-                  labelPosition="right"
-                  disabled={btnDisabled}
-                >
-                  Withdraw
-                  <Icon name="arrow right" />
-                </Button>
-              </Form>
-            )}
-          </Grid.Column>
-          <Grid.Column textAlign="right">
-            <Header color="grey" size="medium">
-              asset{" "}
-            </Header>
-            <Header size="huge" color="orange">
-              {props.token.assetObject.tnName}
-              {/* {props.token.assetObject.symbol()} */}
-            </Header>
-
-            <Header size="medium">
-              My Balance: {props.token.assetObject.myBalance / 1e18}
-            </Header>
-
-            <Header size="medium">
-              Vault Balance: {props.token.vaultBalance / 1e18}
-            </Header>
-
-            <Divider hidden />
-            {props.token.totalSupply > 0 && !managerClick && (
-              <Form>
-                <div style={{ float: "right" }}>
-                  <Form.Group>
-                    <Popup
-                      pinned
-                      trigger={
-                        <Icon
-                          name="info circle"
-                          color="orange"
-                          size="large"
-                          style={{ marginTop: "auto", marginBottom: "auto" }}
-                        />
-                      }
-                    >
-                      <Popup.Header>Deposit</Popup.Header>
-                      <Popup.Content>
-                        When depositing, you will deposit the vault's asset
-                        token in redemption for vault tokens to represent your
-                        fair share of the vault. Depositing is open anytime
-                        whether the withdrawal window is closed or not.
-                      </Popup.Content>
-                    </Popup>
-                    <Form.Field>
-                      <input
-                        value={depositAmt}
-                        onChange={(e) => {
-                          console.log(typeof e.target.value);
-                          if (e.target.value > 0) {
-                            let a = web3.utils.toWei(e.target.value, "ether");
-                            overAmount(
-                              a,
-                              props.token.assetObject.myBalance,
-                              props.ethBal
-                            );
-                            setDeposit(e.target.value);
-                          } else {
-                            setDeposit(e.target.value);
-                          }
-                        }}
-                      />
-                    </Form.Field>
-                    <div style={{ paddingTop: "13px" }}>
-                      {props.token.assetObject.tSymbol}
-                    </div>
-
-                    {/* <Menu compact size="tiny">
-                    <Dropdown
-                      defaultValue="ether"
-                      options={units}
-                      item
-                      onChange={updatedUnit}
-                    />
-                  </Menu> */}
-                  </Form.Group>
-                </div>
-                {/* {showDepositErrormsg && <ErrorMessage />}
-                {showDepositSuccessmsg && <SuccessMessage />} */}
-
-                <Button
-                  onClick={() => {
-                    deposit(depositAmt);
-                  }}
-                  color="orange"
-                  icon
-                  size="large"
-                  labelPosition="left"
-                  disabled={
-                    props.token.totalSupply === 0 ||
-                    props.token.assetObject.myBalance === 0 ||
-                    btnDisabled
-                  }
-                >
-                  Deposit
-                  <Icon name="arrow left" />
-                </Button>
-              </Form>
-            )}
-            {/* <Header>Total Supply: {props.token.assetObject.totalSupply}</Header> */}
-          </Grid.Column>
-          {/* <Header>{props.token.symbol()}</Header> */}
-        </Grid>
-        <Divider vertical>
-          {/* <Icon name="sync" size="huge" color="teal" /> */}
-          And
-        </Divider>
-      </Segment>
-    );
-  }
   // vault tokens / (asset tokens + collateral amount)
   //props.token.assetObject
   function showRatio() {
@@ -791,7 +577,7 @@ export default function VaultTokenInfo(props) {
             />
           </Form.Field>
           <div style={{ paddingTop: "35px" }}>
-            {props.token.assetObject.symbol()}
+            {props.token.assetObject.tSymbol}
           </div>
           {/* <Form.Field>
             <label>select</label>
@@ -895,6 +681,63 @@ export default function VaultTokenInfo(props) {
       </div>
     );
   }
+  function updateWDAmt(e) {
+    setWithdrawAmt(e.target.value);
+  }
+
+  function updateDAmt(e) {
+    if (e.target.value > 0) {
+      let a = web3.utils.toWei(e.target.value, "ether");
+      overAmount(a, props.token.assetObject.myBalance, props.ethBal);
+      setDeposit(e.target.value);
+    } else {
+      setDeposit(e.target.value);
+    }
+  }
+  function clickShowD() {
+    console.log("click d");
+    setShowD(true);
+    setShowW(false);
+  }
+  function clickShowW() {
+    console.log("click w");
+    setShowD(false);
+    setShowW(true);
+  }
+  function showTokenPair() {
+    return (
+      <>
+        <DWIndicator>
+          <WIndicator onClick={() => clickShowW()}> Widthdraw </WIndicator>
+          <DIndicator onClick={() => clickShowD()}>Deposit</DIndicator>
+        </DWIndicator>
+        {!showD ? (
+          <DWForm>
+            <Withdraw
+              token={props.token}
+              withDraw={withDraw}
+              withdrawAmt={withdrawAmt}
+              updateWDAmt={updateWDAmt}
+              managerClick={managerClick}
+              btnDisabled={btnDisabled}
+            />
+          </DWForm>
+        ) : (
+          <DWForm>
+            <Deposit
+              token={props.token}
+              deposit={deposit}
+              depositAmt={depositAmt}
+              updateDAmt={updateDAmt}
+              managerClick={managerClick}
+              btnDisabled={btnDisabled}
+            />
+          </DWForm>
+        )}
+      </>
+    );
+  }
+
   return (
     <div>
       {showStatus && (
@@ -916,13 +759,216 @@ export default function VaultTokenInfo(props) {
         </Grid>
       )}
       {/* {showConvertForm && convertForm()} */}
-      {convertForm()}
+      <Divider hidden />
+      {props.token.vaultBalance > 0 && showRatio()}
+      <Divider hidden />
       {showTokenPair()}
 
-      {props.token.vaultBalance > 0 && showRatio()}
       {props.token.totalSupply === 0 && showInitialize()}
 
       {props.token.manageToken && managerMenu()}
+      <Divider hidden />
+      {convertForm()}
     </div>
   );
 }
+
+//=====================================================
+
+// function showTokenPair1() {
+//   return (
+//     <Segment basic>
+//       <Grid stackable columns={2}>
+//         <Grid.Column>
+//           <Header color="grey" size="medium">
+//             vault{" "}
+//           </Header>
+
+//           <Header size="huge" color="blue">
+//             {props.token.tName}
+//             {props.token.oTokenObj && props.token.oTokenObj.tName !== "" && (
+//               <Popup
+//                 content={props.token.oTokenObj.name()}
+//                 trigger={
+//                   <Label color="blue">
+//                     <Icon name="star" />
+//                     show oToken
+//                   </Label>
+//                 }
+//               />
+//             )}
+//           </Header>
+
+//           <Header size="medium">
+//             My Balance: {props.token.myBalance / 1e18}
+//           </Header>
+
+//           {/* <Header>{props.token.symbol()}</Header> */}
+
+//           <Header size="medium">
+//             Total Supply: {props.token.totalSupply / 1e18}
+//           </Header>
+//           {/* {props.token.oTokenObj && props.token.oTokenObj.tName !== "" && (
+//             <Header>oToken: {props.token.oTokenObj.name()}</Header>
+//           )} */}
+//           <Divider hidden />
+//           {props.token.totalSupply > 0 && !managerClick && (
+//             <Form>
+//               <Form.Group>
+//                 <Popup
+//                   pinned
+//                   trigger={
+//                     <Icon
+//                       name="info circle"
+//                       color="blue"
+//                       size="large"
+//                       style={{ marginTop: "auto", marginBottom: "auto" }}
+//                     />
+//                   }
+//                 >
+//                   <Popup.Header>Withdraw</Popup.Header>
+//                   <Popup.Content>
+//                     When withdrawing, you will burn away your vault tokens to
+//                     redeem the underlying asset token. Withdrawing from the
+//                     vault can only be done if the vault's withdrawal window has
+//                     opened up after the manager has settled the vault.
+//                   </Popup.Content>
+//                 </Popup>
+//                 <Form.Field>
+//                   <input
+//                     value={withdrawAmt}
+//                     onChange={(e) => setWithdrawAmt(e.target.value)}
+//                   />
+//                 </Form.Field>
+//                 <div style={{ marginTop: "13px" }}> {props.token.tSymbol}</div>
+//                 {/* <Menu compact size="tiny">
+//                   <Dropdown
+//                     defaultValue="ether"
+//                     options={units}
+//                     item
+//                     onChange={updatewUnit}
+//                   />
+//                 </Menu> */}
+//               </Form.Group>
+
+//               <Button
+//                 onClick={() => withDraw(withdrawAmt)}
+//                 color="blue"
+//                 icon
+//                 size="large"
+//                 labelPosition="right"
+//                 disabled={btnDisabled}
+//               >
+//                 Withdraw
+//                 <Icon name="arrow right" />
+//               </Button>
+//             </Form>
+//           )}
+//         </Grid.Column>
+//         <Grid.Column textAlign="right">
+//           <Header color="grey" size="medium">
+//             asset{" "}
+//           </Header>
+//           <Header size="huge" color="orange">
+//             {props.token.assetObject.tnName}
+//             {/* {props.token.assetObject.symbol()} */}
+//           </Header>
+
+//           <Header size="medium">
+//             My Balance: {props.token.assetObject.myBalance / 1e18}
+//           </Header>
+
+//           <Header size="medium">
+//             Vault Balance: {props.token.vaultBalance / 1e18}
+//           </Header>
+
+//           <Divider hidden />
+//           {props.token.totalSupply > 0 && !managerClick && (
+//             <Form>
+//               <div style={{ float: "right" }}>
+//                 <Form.Group>
+//                   <Popup
+//                     pinned
+//                     trigger={
+//                       <Icon
+//                         name="info circle"
+//                         color="orange"
+//                         size="large"
+//                         style={{ marginTop: "auto", marginBottom: "auto" }}
+//                       />
+//                     }
+//                   >
+//                     <Popup.Header>Deposit</Popup.Header>
+//                     <Popup.Content>
+//                       When depositing, you will deposit the vault's asset token
+//                       in redemption for vault tokens to represent your fair
+//                       share of the vault. Depositing is open anytime whether the
+//                       withdrawal window is closed or not.
+//                     </Popup.Content>
+//                   </Popup>
+//                   <Form.Field>
+//                     <input
+//                       value={depositAmt}
+//                       onChange={(e) => {
+//                         console.log(typeof e.target.value);
+//                         if (e.target.value > 0) {
+//                           let a = web3.utils.toWei(e.target.value, "ether");
+//                           overAmount(
+//                             a,
+//                             props.token.assetObject.myBalance,
+//                             props.ethBal
+//                           );
+//                           setDeposit(e.target.value);
+//                         } else {
+//                           setDeposit(e.target.value);
+//                         }
+//                       }}
+//                     />
+//                   </Form.Field>
+//                   <div style={{ paddingTop: "13px" }}>
+//                     {props.token.assetObject.tSymbol}
+//                   </div>
+
+//                   {/* <Menu compact size="tiny">
+//                   <Dropdown
+//                     defaultValue="ether"
+//                     options={units}
+//                     item
+//                     onChange={updatedUnit}
+//                   />
+//                 </Menu> */}
+//                 </Form.Group>
+//               </div>
+//               {/* {showDepositErrormsg && <ErrorMessage />}
+//               {showDepositSuccessmsg && <SuccessMessage />} */}
+
+//               <Button
+//                 onClick={() => {
+//                   deposit(depositAmt);
+//                 }}
+//                 color="orange"
+//                 icon
+//                 size="large"
+//                 labelPosition="left"
+//                 disabled={
+//                   props.token.totalSupply === 0 ||
+//                   props.token.assetObject.myBalance === 0 ||
+//                   btnDisabled
+//                 }
+//               >
+//                 Deposit
+//                 <Icon name="arrow left" />
+//               </Button>
+//             </Form>
+//           )}
+//           {/* <Header>Total Supply: {props.token.assetObject.totalSupply}</Header> */}
+//         </Grid.Column>
+//         {/* <Header>{props.token.symbol()}</Header> */}
+//       </Grid>
+//       <Divider vertical>
+//         {/* <Icon name="sync" size="huge" color="teal" /> */}
+//         And
+//       </Divider>
+//     </Segment>
+//   );
+// }
