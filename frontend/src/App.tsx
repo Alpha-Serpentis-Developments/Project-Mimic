@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { HashRouter as Router, Route, Switch } from "react-router-dom";
 
 import "semantic-ui-css/semantic.min.css";
 
@@ -211,8 +211,8 @@ export default function App() {
 
   return (
     // <Router>
-    <IpfsRouter>
-      <div>
+    <div>
+      <Router>
         {reload && <AppReload chainId={chainId} reload={reload} />}
         {/* <Sidebar.Pushable> */}
         <Sidebar
@@ -290,12 +290,29 @@ export default function App() {
               clickToVisit={clickToVisit}
             />
 
+            {!addr && renderHome && (
+              <div
+                style={{
+                  textAlign: "center",
+                  fontSize: "20px",
+                  backgroundColor: "#8b1bef",
+                  color: "red",
+                }}
+              >
+                <Message color="purple" compact>
+                  <Icon name="exclamation triangle" color="red" />
+                  Please install MetaMask to continue
+                </Message>
+                <Landing />
+              </div>
+            )}
+
             {!addr && (
               <div
                 style={{
                   textAlign: "center",
                   fontSize: "20px",
-                  marginTop: "20px",
+                  backgroundColor: "#8b1bef",
                   color: "red",
                 }}
               >
@@ -350,8 +367,8 @@ export default function App() {
           <Footer />
         </Sidebar.Pusher>
         {/* </Sidebar.Pushable> */}
-      </div>
-    </IpfsRouter>
+      </Router>
+    </div>
 
     // </Router>
   );
