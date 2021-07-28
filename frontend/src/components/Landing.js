@@ -6,6 +6,7 @@ import Slider from "react-slick";
 import { Link } from "react-router-dom";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import StartManagingBtn from "./StartManagingBtn";
 
 const LandingContainer = styled.div`
   background-image: linear-gradient(#8b1bef,#20759D);
@@ -159,6 +160,9 @@ export default function Landing(props) {
       <DepositImg src={deposit} />
       <Link to="/trade">
         <StartTXBtn clickTrade={props.clickTrade} />
+      </Link>
+      <Link to="/managed">
+        <StartManagingBtn clickManager={props.clickManager} />
       </Link>
       <AboutContainer>
         <AboutTitle>About Us</AboutTitle>
