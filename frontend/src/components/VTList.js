@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { HashRouter as Route, Switch } from "react-router-dom";
 
 import { web3 } from "./Web3Handler";
 import { Factory } from "./Factory";
@@ -176,11 +176,7 @@ export default function VTList(props) {
     if (v.collateralAmount !== -1 && v.vaultBalance !== -1) {
       let r = (parseInt(v.collateralAmount) + parseInt(v.vaultBalance)) / 1e18;
       r = r.toFixed(5);
-<<<<<<< HEAD
-      v.setNAV(r);
-=======
       v.setNAV(r + " " + v.assetObject.symbol());
->>>>>>> upstream/frontend-v0.2
     }
   }
   function populateAssetName(i) {
@@ -312,7 +308,9 @@ export default function VTList(props) {
   return (
     <div>
       <Switch>
-        <Route exact path="/" component={Landing} />
+        <Route exact path="/">
+          <Landing />
+        </Route>
         {/* <Route exact path="/detail/:id" component={Detail} /> */}
         <Route exact path="/trade">
           <Trade
@@ -325,7 +323,7 @@ export default function VTList(props) {
             ethBal={props.ethBal}
             vtList={vtList}
             showTokenInfo={showTokenInfo}
-          />{" "}
+          />
         </Route>
         <Route exact path="/managed">
           <Managed
