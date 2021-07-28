@@ -52,6 +52,27 @@ const WIndicator = styled.div`
   }
 `;
 
+// const InitializeBtn = styled.div`
+//   padding-top: 17px;
+//   cursor: pointer;
+//   border-radius: 20px 20px 0 0;
+//   background-color: #146ca4;
+//   width: 50%;
+//   text-align: center;
+//   &:hover {
+//     background-color: purple;
+//   }
+// `;
+
+const InitializeForm = styled.div`
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 20px 20px 20px 20px;
+  background-color: #146ca4;
+  padding-bottom: 50px;
+`;
+
 const DWForm = styled.div`
   width: 80%;
   margin-left: auto;
@@ -60,6 +81,50 @@ const DWForm = styled.div`
   border-top: 2px solid black;
   background-color: #146ca4;
   padding-bottom: 50px;
+`;
+
+const ManagerTXBtns = styled.div`
+  width: 80%;
+  display: flex;
+  flex-direction: row;
+`;
+const WriteBtn = styled.div`
+  padding-top: 17px;
+  cursor: pointer;
+  border-radius: 20px 0px 0 0;
+  background-color: #146ca4;
+  width: 50%;
+  text-align: center;
+  &:hover {
+    background-color: purple;
+  }
+`;
+const SellCallBtn = styled.div`
+  padding-top: 17px;
+  cursor: pointer;
+  border-radius: 0px 0px 0 0;
+  background-color: #146ca4;
+  width: 50%;
+  text-align: center;
+  &:hover {
+    background-color: purple;
+  }
+`;
+const SettleVaultBtn = styled.div`
+  padding-top: 17px;
+  cursor: pointer;
+  border-radius: 0px 20px 0 0;
+  background-color: #146ca4;
+  width: 50%;
+  text-align: center;
+  &:hover {
+    background-color: purple;
+  }
+`;
+const ConfirmCancelBtns = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
 `;
 export default function VaultTokenInfo(props) {
   const [depositAmt, setDeposit] = useState(0);
@@ -376,13 +441,22 @@ export default function VaultTokenInfo(props) {
 
   function writeCallRender() {
     return (
-      <Form>
-        <Divider hidden />
+      <DWForm>
+        <Form>
+          <Divider hidden />
 
-        <Form.Group>
-          <Form.Field>
-            <label>Write Call Amount</label>
+          <Form.Group
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              marginTop: "30px",
+              marginBottom: "50px",
+              justifyContent: "center",
+            }}
+          >
+            <div style={{ marginTop: "10px" }}>Amount</div>
             <input
+              style={{ width: " 60%", marginLeft: "15px", marginRight: "15px" }}
               value={writeCallAmt}
               // onChange={(e) => setWriteCallAmt(e.target.value)}
               onChange={(e) => {
@@ -399,11 +473,10 @@ export default function VaultTokenInfo(props) {
                 }
               }}
             />
-          </Form.Field>
-          <div style={{ marginTop: "35px", paddingLeft: "0px" }}>
-            {props.token.assetObject.tSymbol}
-          </div>
-          {/* <label>select</label>
+            <div style={{ marginTop: "10px" }}>
+              {props.token.assetObject.tSymbol}
+            </div>
+            {/* <label>select</label>
             <Menu compact size="tiny">
               <Dropdown
                 defaultValue="ether"
@@ -412,38 +485,50 @@ export default function VaultTokenInfo(props) {
                 onChange={updateWriteCallUnit}
               />
             </Menu> */}
-        </Form.Group>
+          </Form.Group>
 
-        <Form.Field>
-          <label>oToken Address</label>
-          <input
-            value={oTokenAddress}
-            onChange={(e) => setOTokenaddress(e.target.value)}
-          />
-        </Form.Field>
-        <Form.Field>
-          <label>Margin Pool Address</label>
-          <input placeholder={props.mpAddress} value={props.mpAddress} />
-        </Form.Field>
-
-        <Button color="teal" onClick={confirmWriteCall} disabled={btnDisabled}>
-          Confirm
-        </Button>
-        <Button
-          onClick={() => {
-            setShowWriteCall(false);
-            setSM("", "", false, false);
-            setTxHash("");
-            setTxSent(false);
-            setSellColor("teal");
-            setSettleColor("teal");
-            setManagerClick(false);
-          }}
-          disabled={btnDisabled}
-        >
-          Cancel
-        </Button>
-      </Form>
+          <Form.Field
+            style={{ width: "90%", marginRight: "auto", marginLeft: "auto" }}
+          >
+            <label>oToken Address</label>
+            <input
+              value={oTokenAddress}
+              onChange={(e) => setOTokenaddress(e.target.value)}
+            />
+          </Form.Field>
+          <Form.Field
+            style={{ width: "90%", marginRight: "auto", marginLeft: "auto" }}
+          >
+            <label>Margin Pool Address</label>
+            <input placeholder={props.mpAddress} value={props.mpAddress} />
+          </Form.Field>
+          <ConfirmCancelBtns>
+            <Button
+              style={{ width: "40%" }}
+              color="teal"
+              onClick={confirmWriteCall}
+              disabled={btnDisabled}
+            >
+              Confirm
+            </Button>
+            <Button
+              style={{ width: "40%" }}
+              onClick={() => {
+                setShowWriteCall(false);
+                setSM("", "", false, false);
+                setTxHash("");
+                setTxSent(false);
+                setSellColor("teal");
+                setSettleColor("teal");
+                setManagerClick(false);
+              }}
+              disabled={btnDisabled}
+            >
+              Cancel
+            </Button>
+          </ConfirmCancelBtns>
+        </Form>
+      </DWForm>
     );
   }
 
@@ -481,11 +566,21 @@ export default function VaultTokenInfo(props) {
       <div>
         <Divider />
         <Divider hidden />
-        <Grid textAlign="center">
-          <Form>
-            <Form.Group>
-              <Form.Field>
+        <InitializeForm>
+          <Grid textAlign="center">
+            <Form>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  width: "100%",
+                  marginLeft: "auto",
+                  marginRight: "right",
+                }}
+              >
+                {" "}
                 <input
+                  style={{ marginRight: "10px", marginTop: "20px" }}
                   value={initializeAmt}
                   // onChange={(e) => setInitializeAmt(e.target.value)}
                   onChange={(e) => {
@@ -502,11 +597,10 @@ export default function VaultTokenInfo(props) {
                     }
                   }}
                 />
-              </Form.Field>
-              <div style={{ marginTop: "10px", marginRight: "20px" }}>
-                {props.token.assetObject.symbol()}
-              </div>
-              {/* <Menu compact size="tiny">
+                <div style={{ marginTop: "30px", marginRight: "20px" }}>
+                  {props.token.assetObject.symbol()}
+                </div>
+                {/* <Menu compact size="tiny">
                 <Dropdown
                   // defaultValue="wei"
                   defaultValue="ether"
@@ -515,35 +609,43 @@ export default function VaultTokenInfo(props) {
                   onChange={updateIUnit}
                 />
               </Menu> */}
-
+              </div>
               <Button
+                style={{ marginTop: "30px", width: "100%" }}
                 onClick={() => initialize(initializeAmt)}
                 color="teal"
                 disabled={btnDisabled}
               >
                 Initialize
               </Button>
-            </Form.Group>
-          </Form>
-        </Grid>
+            </Form>
+          </Grid>
+        </InitializeForm>
       </div>
     );
   }
 
   function renderSellCall() {
     return (
-      <Form>
-        <Divider hidden />
-        <Form.Group>
-          <Form.Field>
-            <label>Amount</label>
+      <DWForm>
+        <Form>
+          <Divider hidden />
+          <Form.Group
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+            }}
+          >
+            {/* <label>Amount</label> */}
             <input
+              style={{ width: "60%", marginRight: "10px" }}
               value={sellCallAmt}
               onChange={(e) => setSellCallAmt(e.target.value)}
             />
-          </Form.Field>
-          <div style={{ paddingTop: "35px" }}>oToken</div>
-          {/* <Form.Field>
+
+            <div style={{ marginTop: "10px" }}>oToken</div>
+            {/* <Form.Field>
             <label>select</label>
             <Menu compact size="tiny">
               <Dropdown
@@ -554,11 +656,17 @@ export default function VaultTokenInfo(props) {
               />
             </Menu>
           </Form.Field> */}
-        </Form.Group>
-        <Form.Group>
-          <Form.Field>
-            <label>Premium Amount</label>
+          </Form.Group>
+          <Form.Group
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+            }}
+          >
+            {/* <label>Premium Amount</label> */}
             <input
+              style={{ width: "60%", marginRight: "10px" }}
               value={premiumAmount}
               // onChange={(e) => setPemiumAmount(e.target.value)}
               onChange={(e) => {
@@ -575,11 +683,11 @@ export default function VaultTokenInfo(props) {
                 }
               }}
             />
-          </Form.Field>
-          <div style={{ paddingTop: "35px" }}>
-            {props.token.assetObject.tSymbol}
-          </div>
-          {/* <Form.Field>
+
+            <div style={{ marginTop: "10px" }}>
+              {props.token.assetObject.tSymbol}
+            </div>
+            {/* <Form.Field>
             <label>select</label>
             <Menu compact size="tiny">
               <Dropdown
@@ -590,92 +698,89 @@ export default function VaultTokenInfo(props) {
               />
             </Menu>
           </Form.Field> */}
-        </Form.Group>
-        <Form.Field>
-          <label>Other party address</label>
-          <input
-            placeholder="Other party address"
-            onChange={(e) => setOtherPartyAddress(e.target.value)}
-          />
-        </Form.Field>
-        <Button color="teal" onClick={confirmSellCall} disabled={btnDisabled}>
-          Confirm
-        </Button>
-        <Button
-          onClick={() => {
-            setShowSellCall(false);
-            setWriteColor("teal");
-            setSettleColor("teal");
-            setManagerClick(false);
-          }}
-          disabled={btnDisabled}
-        >
-          Cancel
-        </Button>
-      </Form>
+          </Form.Group>
+          <Form.Field
+            style={{ width: "90%", marginRight: "auto", marginLeft: "auto" }}
+          >
+            <label>Other party address</label>
+            <input
+              placeholder="Other party address"
+              onChange={(e) => setOtherPartyAddress(e.target.value)}
+            />
+          </Form.Field>
+          <ConfirmCancelBtns>
+            {" "}
+            <Button
+              style={{ width: "40%" }}
+              color="teal"
+              onClick={confirmSellCall}
+              disabled={btnDisabled}
+            >
+              Confirm
+            </Button>
+            <Button
+              style={{ width: "40%" }}
+              onClick={() => {
+                setShowSellCall(false);
+                setWriteColor("teal");
+                setSettleColor("teal");
+                setManagerClick(false);
+              }}
+              disabled={btnDisabled}
+            >
+              Cancel
+            </Button>
+          </ConfirmCancelBtns>
+        </Form>
+      </DWForm>
     );
   }
 
   function managerMenu() {
     return (
       <div>
-        <Divider />
         <Divider hidden />
-        <Divider hidden />
-        <Grid centered>
-          <Header>Manage</Header>
-        </Grid>
-        <Grid centered columns={3} textAlign="center" relaxed>
-          <Grid.Row>
-            <Grid.Column stretched>
-              <Button
-                labelPosition="right"
-                icon
-                color={writeColor}
-                onClick={() => {
-                  setShowWriteCall(true);
-                  setWriteColor("teal");
-                  setShowSellCall(false);
-                  setSellColor("grey");
-                  setSettleColor("grey");
-                  setManagerClick(true);
-                }}
-                disabled={btnDisabled}
-              >
-                Write Call
-                <Icon name="triangle down" />
-              </Button>
-            </Grid.Column>
-            <Grid.Column stretched>
-              <Button
-                color={sellColor}
-                labelPosition="right"
-                icon
-                onClick={() => {
-                  setShowSellCall(true);
-                  setShowWriteCall(false);
-                  setSellColor("teal");
-                  setWriteColor("grey");
-                  setSettleColor("grey");
-                  setManagerClick(true);
-                }}
-                disabled={btnDisabled}
-              >
-                Sell Call
-                <Icon name="triangle down" />
-              </Button>
-            </Grid.Column>
-            <Grid.Column stretched>
-              <Button
-                color={settleColor}
-                onClick={settleVault}
-                disabled={btnDisabled}
-              >
-                Settle Vault
-              </Button>
-            </Grid.Column>
-          </Grid.Row>
-        </Grid>
+        <DWIndicator>
+          <WriteBtn
+            labelPosition="right"
+            color={writeColor}
+            onClick={() => {
+              setShowWriteCall(true);
+              setWriteColor("teal");
+              setShowSellCall(false);
+              setSellColor("grey");
+              setSettleColor("grey");
+              setManagerClick(true);
+            }}
+            disabled={btnDisabled}
+          >
+            Write Call
+          </WriteBtn>
+
+          <SellCallBtn
+            color={sellColor}
+            labelPosition="right"
+            onClick={() => {
+              setShowSellCall(true);
+              setShowWriteCall(false);
+              setSellColor("teal");
+              setWriteColor("grey");
+              setSettleColor("grey");
+              setManagerClick(true);
+            }}
+            disabled={btnDisabled}
+          >
+            Sell Call
+          </SellCallBtn>
+
+          <SettleVaultBtn
+            color={settleColor}
+            onClick={settleVault}
+            disabled={btnDisabled}
+          >
+            Settle Vault
+          </SettleVaultBtn>
+        </DWIndicator>
         {showWriteCall && writeCallRender()}
         {showSellCall && renderSellCall()}
       </div>
