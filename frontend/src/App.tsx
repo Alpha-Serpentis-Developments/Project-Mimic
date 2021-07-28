@@ -309,17 +309,17 @@ export default function App() {
 
             {!addr && (
               <div
-              style={{
-                textAlign: "center",
-                fontSize: "20px",
-                backgroundColor: "#8b1bef",
-                color: "red",
-              }}
-            >
-              <Message color="purple" compact>
-                <Icon name="exclamation triangle" color="red" />
-                Please install MetaMask to continue
-              </Message>
+                style={{
+                  textAlign: "center",
+                  fontSize: "20px",
+                  backgroundColor: "#8b1bef",
+                  color: "red",
+                }}
+              >
+                <Message color="purple" compact>
+                  <Icon name="exclamation triangle" color="red" />
+                  Please install MetaMask to continue
+                </Message>
               </div>
             )}
 
