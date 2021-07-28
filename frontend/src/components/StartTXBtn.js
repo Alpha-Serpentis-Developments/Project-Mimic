@@ -3,7 +3,7 @@ import "../App.css";
 export default function StartTXBtn(props) {
   return (
     <button
-      className="StartTXBtn"
+      className="StartButtons"
       style={{ verticalAlign: "middle" }}
       onClick={props.clickTrade}
     >
