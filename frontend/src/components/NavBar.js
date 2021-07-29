@@ -13,6 +13,9 @@ const MainNav = styled.nav`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  @media (max-width: 700px) {
+    display: none;
+  }
 `;
 const NavLeft = styled.div`
   // display: flex;
@@ -74,7 +77,7 @@ export default function NavBar(props) {
   `;
 
   return (
-    <MainNav className="topMenu">
+    <MainNav>
       <NavLeft>
         {/* <TitleLogo src={cover} /> */}
         <TitleImg src={optionalProfile} />
