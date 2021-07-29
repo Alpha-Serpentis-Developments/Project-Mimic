@@ -43,7 +43,8 @@ export default function VTList(props) {
       };
     }
 
-    localStorage.setItem("cVT", JSON.stringify(T, getCircularReplacer()));
+    await localStorage.setItem("cVT", "");
+    await localStorage.setItem("cVT", JSON.stringify(T, getCircularReplacer()));
   }
 
   function getAllVT() {
