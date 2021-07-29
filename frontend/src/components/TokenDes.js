@@ -43,7 +43,7 @@ export default function TokenDes(props) {
           <VaultDescript>
             {" "}
             The Strategy consist of a weekly call-write on $WETH calls with
-            strike selection being based on +20% spot at te moment
+            strike selection being based on +20% spot at the moment.
           </VaultDescript>
         </LeftDes>
         <DWContainer>

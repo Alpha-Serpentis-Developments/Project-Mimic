@@ -44,7 +44,7 @@ const WIndicator = styled.div`
   padding-top: 17px;
   cursor: pointer;
   border-radius: 20px 0px 0 0;
-  background-color: #146ca4;
+  background-color: #9aa9ff63;
   width: 50%;
   text-align: center;
   &:hover {
@@ -79,7 +79,7 @@ const DWForm = styled.div`
   margin-right: auto;
   border-radius: 0 0 20px 20px;
   border-top: 2px solid black;
-  background-color: #146ca4;
+  background-color: #9aa9ff63;
   padding-bottom: 50px;
 `;
 
@@ -545,7 +545,7 @@ export default function VaultTokenInfo(props) {
       <Grid textAlign="center" stackable>
         <Grid.Column>
           <Header size="large" color="blue">
-            1 WETH ={" "}
+            1 {props.token.assetObject.tSymbol} ={" "}
             {Number(props.token.totalSupply) /
               (Number(props.token.vaultBalance) +
                 Number(props.token.collateralAmount))}{" "}
@@ -814,7 +814,7 @@ export default function VaultTokenInfo(props) {
     return (
       <>
         <DWIndicator>
-          <WIndicator onClick={() => clickShowW()}> Widthdraw </WIndicator>
+          <WIndicator onClick={() => clickShowW()}>Withdraw</WIndicator>
           <DIndicator onClick={() => clickShowD()}>Deposit</DIndicator>
         </DWIndicator>
         {!showD ? (
