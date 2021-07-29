@@ -1,6 +1,5 @@
-import React from "react";
 import styled from "styled-components";
-import { Table, Divider, Button, Grid } from "semantic-ui-react";
+import { Divider } from "semantic-ui-react";
 import VaultTokenInfo from "./VaultTokenInfo";
 
 const DesContainer = styled.div`

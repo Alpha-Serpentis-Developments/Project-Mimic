@@ -9,7 +9,7 @@ import "slick-carousel/slick/slick-theme.css";
 import StartManagingBtn from "./StartManagingBtn";
 
 const LandingContainer = styled.div`
-  background-image: linear-gradient(#8b1bef,#20759D);
+  background-image: linear-gradient(#8b1bef, #20759d);
 `;
 const LandingText = styled.div`
   font-family: Roboto Slab;
@@ -19,7 +19,7 @@ const LandingText = styled.div`
   line-height: 63px;
   text-align: center;
   padding-top: 41px;
-  padding-bottom:40px;
+  padding-bottom: 40px;
   color: white;
 `;
 const DepositImg = styled.img`
@@ -158,37 +158,46 @@ export default function Landing(props) {
     <LandingContainer>
       <LandingText>Decentralized Social Trading for Options</LandingText>
       <DepositImg src={deposit} />
+      {/* <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-around",
+        }}
+      > */}
       <Link to="/trade">
         <StartTXBtn clickTrade={props.clickTrade} />
       </Link>
       <Link to="/managed">
         <StartManagingBtn clickManager={props.clickManager} />
       </Link>
+      {/* </div> */}
       <AboutContainer>
         <AboutTitle>About Us</AboutTitle>
         <AboutItemContainer>
           <AboutItem>
             <ItemImg src={gamma} />
-            <ItemText>
-              Powered by Opyn's Gamma Protocol
-            </ItemText>
+            <ItemText>Powered by Opyn's Gamma Protocol</ItemText>
           </AboutItem>
           <AboutItem>
             <AboutIconCard className="fas fa-user-tie fa-4x" />
             <ItemText>
-              Enables Social Traders to utilize options to potentially enhance yield
+              Enables Social Traders to utilize options to potentially enhance
+              yield
             </ItemText>
           </AboutItem>
           <AboutItem>
             <AboutIconCard className="fas fa-users  fa-4x" />
             <ItemText>
-              Followers can expose their assets to the growth of their favorite Social Trader
+              Followers can expose their assets to the growth of their favorite
+              Social Trader
             </ItemText>
           </AboutItem>
           <AboutItem>
             <AboutIconCard className="fas fa-hand-holding-usd fa-4x" />
             <ItemText>
-              Social Traders can earn fees from deposits, withdrawals, and performance
+              Social Traders can earn fees from deposits, withdrawals, and
+              performance
             </ItemText>
           </AboutItem>
         </AboutItemContainer>

@@ -1,19 +1,4 @@
-import { useState } from "react";
-import StatusMessage from "./StatusMessage";
-import { nwConfig, currentChain } from "./NetworkConfig";
-
-import {
-  Header,
-  Button,
-  Grid,
-  Divider,
-  Icon,
-  Segment,
-  Form,
-  Popup,
-  Label,
-  Accordion,
-} from "semantic-ui-react";
+import { Button, Icon, Form, Popup } from "semantic-ui-react";
 
 export default function Withdraw(props) {
   return (
