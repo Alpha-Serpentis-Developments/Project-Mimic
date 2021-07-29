@@ -1,10 +1,6 @@
-import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Table, Divider, Button, Grid } from "semantic-ui-react";
+import { Divider } from "semantic-ui-react";
 import VaultTokenInfo from "./VaultTokenInfo";
-import { web3 } from "./Web3Handler";
-import { VaultToken } from "./VaultToken";
-import { ERC20 } from "./Erc20";
 
 const DesContainer = styled.div`
   display: flex;

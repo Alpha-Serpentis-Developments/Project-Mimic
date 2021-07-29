@@ -7,12 +7,10 @@ import { VaultToken } from "./VaultToken";
 import { Otoken } from "./Otoken";
 
 import { ERC20 } from "./Erc20";
-import VTCard from "./VTCard";
 import Trade from "../pages/Trade";
 import Landing from "../components/Landing";
 import Managed from "../pages/Managed";
 import TokenDes from "./TokenDes";
-import IpfsRouter from "ipfs-react-router";
 
 export default function VTList(props) {
   let cVT = JSON.parse(localStorage.getItem("cVT") || "{}");
@@ -337,6 +335,7 @@ export default function VTList(props) {
             ethBal={props.ethBal}
             vtList={vtList}
             showTokenInfo={showTokenInfo}
+            openModal={props.openModal}
           />
         </Route>
 

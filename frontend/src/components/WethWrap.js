@@ -2,7 +2,7 @@ import { Button, Form, Input } from "semantic-ui-react";
 
 export default function WethWrap(props) {
   return (
-    <Form>
+    <Form style={{ width: "90%", marginRight: "auto", marginLeft: "auto" }}>
       <Form.Group>
         <Form.Field inline>
           {/* <div>{nwConfig[currentChain].wethContractAddr}</div> */}
