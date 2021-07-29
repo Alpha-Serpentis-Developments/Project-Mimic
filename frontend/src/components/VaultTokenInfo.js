@@ -32,7 +32,7 @@ const DWIndicator = styled.div`
 const DIndicator = styled.div`
   padding-top: 17px;
   border-radius: 0px 20px 0 0;
-  background-color: #146ca4;
+  background-color: #9aa9ff63;
   width: 50%;
   text-align: center;
   cursor: pointer;
