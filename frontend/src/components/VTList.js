@@ -328,7 +328,7 @@ export default function VTList(props) {
           <Managed
             mList={managedList}
             update={update}
-            title="Managed Token"
+            title="Managed Vaults"
             acct={props.acctNum}
             mpAddress={props.mpAddress}
             showSpinner={vtList.length === 0}
@@ -339,7 +339,7 @@ export default function VTList(props) {
           />
         </Route>
 
-        <Route exact path="/detail/:address">
+        <Route exact path="/vault/:address">
           <TokenDes
             token={clickedItem}
             acct={props.acctNum}

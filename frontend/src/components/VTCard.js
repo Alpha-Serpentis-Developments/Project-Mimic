@@ -114,7 +114,7 @@ export default function VTCard(props) {
   // }
 
   function oneCard(item) {
-    let path = `/detail/${item.address}`;
+    let path = `/vault/${item.address}`;
     return (
       <VTCardContainer>
         <VTNameContainer>
