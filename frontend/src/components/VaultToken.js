@@ -19,6 +19,7 @@ export class VaultToken extends ERC20 {
     this.oTokenAddr = "";
     this.oTokenObj = null;
     this.nav = -1;
+    this.yield = -1;
   }
   // return the manager address
 
@@ -161,6 +162,10 @@ export class VaultToken extends ERC20 {
 
   setNAV(amt) {
     this.nav = amt;
+  }
+
+  setYield(amt) {
+    this.yield = amt;
   }
 
   findAllSellCalls() {

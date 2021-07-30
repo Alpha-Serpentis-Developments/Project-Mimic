@@ -130,7 +130,7 @@ export default function VTCard(props) {
             <PercentContent>
               <ItemInfo>
                 <ItemTextHeader>Last Round</ItemTextHeader>
-                <ItemText>(TBA)</ItemText>
+                <ItemText>{item.yield === -1 ? <div>Calculating...</div> : item.yield}</ItemText>
               </ItemInfo>
               <ItemInfo>
                 <ItemTextHeader>NAV</ItemTextHeader>
