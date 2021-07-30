@@ -190,11 +190,12 @@ export default function VTList(props) {
       });
     }
     if (v.collateralAmount !== -1 && v.vaultBalance !== -1) {
-      console.log(lastSellCall);
       let r = (parseInt(v.collateralAmount) + parseInt(v.vaultBalance)) / 1e18;
+      let y = (lastSellCall.returnValues.premiumReceived/1e18) / (normalizeValues(lastSellCall.returnValues.amountSold, 8, 18)/10**18) * 100;
       r = r.toFixed(5);
+      y = y.toFixed(3);
       v.setNAV(r + " " + v.assetObject.symbol());
-      v.setYield(normalizeValues(lastSellCall.returnValues.amountSold, 8, 18));
+      v.setYield(y + "%");
     }
   }
   function populateAssetName(i) {
