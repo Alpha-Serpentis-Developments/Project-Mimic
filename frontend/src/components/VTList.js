@@ -138,20 +138,17 @@ export default function VTList(props) {
       });
     }
   }
-
   function normalizeValues(val, origDecimals, newDecimals) {
     let decimalDiff = origDecimals - newDecimals;
-    let valBN = new web3.utils.BN(val);
 
-    if(decimalDiff > 0) {
-      return valBN.div(new web3.utils.BN(10**(decimalDiff)));
-    } else if(decimalDiff < 0) {
-      return valBN.mul(new web3.utils.BN(10**(-decimalDiff)));
+    if (decimalDiff > 0) {
+      return val / 10 ** decimalDiff;
+    } else if (decimalDiff < 0) {
+      return val * 10 ** -decimalDiff;
     } else {
       return val;
     }
   }
-
   function populateName(i) {
     // v.getName().then((result) => {
     // });
@@ -191,6 +188,7 @@ export default function VTList(props) {
       });
     }
     if (v.collateralAmount !== -1 && v.vaultBalance !== -1) {
+      console.log(lastSellCall);
       let r = (parseInt(v.collateralAmount) + parseInt(v.vaultBalance)) / 1e18;
       r = r.toFixed(5);
       v.setNAV(r + " " + v.assetObject.symbol());
