@@ -38,6 +38,7 @@ const DIndicator = styled.div`
   cursor: pointer;
   border-top: 1px solid black;
   border-right: 1px solid black;
+  border-bottom: 1px solid black;
   font-size: 20px;
   font-weight: 700;
   &:hover {
@@ -56,6 +57,7 @@ const WIndicator = styled.div`
   border-top: 1px solid black;
   border-right: 1px solid black;
   border-left: 1px solid black;
+  border-bottom: 1px solid black;
   font-size: 20px;
   font-weight: 700;
   &:hover {
@@ -75,7 +77,16 @@ const WIndicator = styled.div`
 //     background-color: purple;
 //   }
 // `;
+const MagmrCallsIndicator = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: 80%;
+  height: 60px;
 
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 20px;
+`;
 const InitializeForm = styled.div`
   width: 80%;
   margin-left: auto;
@@ -94,6 +105,16 @@ const DWForm = styled.div`
   background-color: #9aa9ff63;
   padding-bottom: 50px;
 `;
+const MgmrCallForm = styled.div`
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 20px;
+  // border-radius: 0 0 20px 20px;
+  border: 1px solid black;
+  background-color: #9aa9ff63;
+  padding-bottom: 50px;
+`;
 
 const ManagerTXBtns = styled.div`
   width: 80%;
@@ -103,10 +124,14 @@ const ManagerTXBtns = styled.div`
 const WriteBtn = styled.div`
   padding-top: 17px;
   cursor: pointer;
-  border-radius: 20px 0px 0 0;
+  border-radius: 20px 0px 0 20px;
   background-color: #146ca4;
   width: 50%;
   text-align: center;
+  border-top: 1px solid black;
+  border-left: 1px solid black;
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
   &:hover {
     background-color: purple;
   }
@@ -115,6 +140,9 @@ const SellCallBtn = styled.div`
   padding-top: 17px;
   cursor: pointer;
   border-radius: 0px 0px 0 0;
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
   background-color: #146ca4;
   width: 50%;
   text-align: center;
@@ -125,8 +153,12 @@ const SellCallBtn = styled.div`
 const SettleVaultBtn = styled.div`
   padding-top: 17px;
   cursor: pointer;
-  border-radius: 0px 20px 0 0;
+  border-radius: 0px 20px 20px 0;
+
   background-color: #146ca4;
+  border-top: 1px solid black;
+  border-right: 1px solid black;
+  border-bottom: 1px solid black;
   width: 50%;
   text-align: center;
   &:hover {
@@ -166,7 +198,6 @@ export default function VaultTokenInfo(props) {
 
   //=======texting for eth to weth
   const [eToWethAmt, setEToWethAmt] = useState(0);
-  const [showConvertForm, setShowConvertForm] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [showD, setShowD] = useState(false);
   const [showW, setShowW] = useState(true);
@@ -249,7 +280,6 @@ export default function VaultTokenInfo(props) {
         true
       );
       setIconStatus("error");
-      setShowConvertForm(true);
       return;
     }
   }
@@ -442,6 +472,7 @@ export default function VaultTokenInfo(props) {
                 ethInputAmt={ethInputAmt}
                 ethToWeth={() => ethToWeth(eToWethAmt)}
                 eToWethAmt={eToWethAmt}
+                ethBal={props.ethBal}
               />
               {/* )} */}
             </p>
@@ -453,7 +484,7 @@ export default function VaultTokenInfo(props) {
 
   function writeCallRender() {
     return (
-      <DWForm>
+      <MgmrCallForm>
         <Form>
           <Divider hidden />
 
@@ -488,15 +519,6 @@ export default function VaultTokenInfo(props) {
             <div style={{ marginTop: "10px" }}>
               {props.token.assetObject.tSymbol}
             </div>
-            {/* <label>select</label>
-            <Menu compact size="tiny">
-              <Dropdown
-                defaultValue="ether"
-                options={units}
-                item
-                onChange={updateWriteCallUnit}
-              />
-            </Menu> */}
           </Form.Group>
 
           <Form.Field
@@ -540,7 +562,7 @@ export default function VaultTokenInfo(props) {
             </Button>
           </ConfirmCancelBtns>
         </Form>
-      </DWForm>
+      </MgmrCallForm>
     );
   }
 
@@ -625,15 +647,6 @@ export default function VaultTokenInfo(props) {
                 <div style={{ marginTop: "30px", marginRight: "20px" }}>
                   {props.token.assetObject.tSymbol}
                 </div>
-                {/* <Menu compact size="tiny">
-                <Dropdown
-                  // defaultValue="wei"
-                  defaultValue="ether"
-                  options={units}
-                  item
-                  onChange={updateIUnit}
-                />
-              </Menu> */}
               </div>
               <Button
                 style={{ marginTop: "30px", width: "100%" }}
@@ -652,7 +665,7 @@ export default function VaultTokenInfo(props) {
 
   function renderSellCall() {
     return (
-      <DWForm>
+      <MgmrCallForm>
         <Form>
           <Divider hidden />
           <Form.Group
@@ -670,17 +683,6 @@ export default function VaultTokenInfo(props) {
             />
 
             <div style={{ marginTop: "10px" }}>oToken</div>
-            {/* <Form.Field>
-            <label>select</label>
-            <Menu compact size="tiny">
-              <Dropdown
-                defaultValue="ether"
-                options={units}
-                item
-                onChange={updateSellCallUnit}
-              />
-            </Menu>
-          </Form.Field> */}
           </Form.Group>
           <Form.Group
             style={{
@@ -712,17 +714,6 @@ export default function VaultTokenInfo(props) {
             <div style={{ marginTop: "10px" }}>
               {props.token.assetObject.tSymbol}
             </div>
-            {/* <Form.Field>
-            <label>select</label>
-            <Menu compact size="tiny">
-              <Dropdown
-                defaultValue="ether"
-                options={units}
-                item
-                onChange={updatePremiumUnit}
-              />
-            </Menu>
-          </Form.Field> */}
           </Form.Group>
           <Form.Field
             style={{ width: "90%", marginRight: "auto", marginLeft: "auto" }}
@@ -757,7 +748,7 @@ export default function VaultTokenInfo(props) {
             </Button>
           </ConfirmCancelBtns>
         </Form>
-      </DWForm>
+      </MgmrCallForm>
     );
   }
 
@@ -765,7 +756,7 @@ export default function VaultTokenInfo(props) {
     return (
       <div>
         <Divider hidden />
-        <DWIndicator>
+        <MagmrCallsIndicator>
           <WriteBtn
             labelPosition="right"
             color={writeColor}
@@ -805,7 +796,7 @@ export default function VaultTokenInfo(props) {
           >
             Settle Vault
           </SettleVaultBtn>
-        </DWIndicator>
+        </MagmrCallsIndicator>
         {showWriteCall && writeCallRender()}
         {showSellCall && renderSellCall()}
       </div>
@@ -897,7 +888,7 @@ export default function VaultTokenInfo(props) {
 
       {props.token.manageToken && managerMenu()}
       <Divider hidden />
-      {convertForm()}
+      {props.token.assetObject.tSymbol === "WETH" && convertForm()}
     </div>
   );
 }

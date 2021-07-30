@@ -1,4 +1,4 @@
-import { Button, Icon, Form, Popup } from "semantic-ui-react";
+import { Button, Form } from "semantic-ui-react";
 
 export default function Withdraw(props) {
   return (
@@ -49,14 +49,6 @@ export default function Withdraw(props) {
             />
 
             <div style={{ marginTop: "13px" }}> {props.token.tSymbol}</div>
-            {/* <Menu compact size="tiny">
-                  <Dropdown
-                    defaultValue="ether"
-                    options={units}
-                    item
-                    onChange={updatewUnit}
-                  />
-                </Menu> */}
           </div>
           <Button
             style={{
@@ -78,6 +70,8 @@ export default function Withdraw(props) {
               textAlign: "center",
               fontSize: "12px",
               fontFamily: "'Gill Sans', sans-serif",
+              marginLeft: "15px",
+              marginRight: "15px",
             }}
           >
             {" "}

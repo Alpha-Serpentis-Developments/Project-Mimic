@@ -29,7 +29,7 @@ export default function Deposit(props) {
               justifyContent: "center",
             }}
           >
-            <Popup
+            {/* <Popup
               pinned
               trigger={
                 <Icon
@@ -47,14 +47,14 @@ export default function Deposit(props) {
                 vault. Depositing is open anytime whether the withdrawal window
                 is closed or not.
               </Popup.Content>
-            </Popup>
+            </Popup> */}
 
             <input
               style={{
                 width: "70%",
                 marginLeft: "10px",
                 marginRight: "10px",
-                backgroundColor: "grey",
+                backgroundColor: "#dedede",
               }}
               value={props.depositAmt}
               onChange={props.updateDAmt}
@@ -71,11 +71,11 @@ export default function Deposit(props) {
               display: "block",
               marginLeft: "auto",
               marginRight: "auto",
+              backgroundColor: "#9de0ad",
             }}
             onClick={() => {
               props.deposit(props.depositAmt);
             }}
-            color="orange"
             size="large"
             // labelPosition="left"
             disabled={
@@ -86,6 +86,22 @@ export default function Deposit(props) {
           >
             Deposit
           </Button>
+          <div
+            style={{
+              marginTop: "10px",
+              textAlign: "center",
+              fontSize: "12px",
+              fontFamily: "'Gill Sans', sans-serif",
+              marginLeft: "15px",
+              marginRight: "15px",
+            }}
+          >
+            {" "}
+            When depositing, you will deposit the vault's asset token in
+            redemption for vault tokens to represent your fair share of the
+            vault. Depositing is open anytime whether the withdrawal window is
+            closed or not.
+          </div>
         </Form>
       )}
     </div>
