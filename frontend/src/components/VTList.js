@@ -141,17 +141,10 @@ export default function VTList(props) {
   function normalizeValues(val, origDecimals, newDecimals) {
     let decimalDiff = origDecimals - newDecimals;
 
-<<<<<<< HEAD
     if (decimalDiff > 0) {
       return val / 10 ** decimalDiff;
     } else if (decimalDiff < 0) {
       return val * 10 ** -decimalDiff;
-=======
-    if(decimalDiff > 0) {
-      return val / 10**(decimalDiff);
-    } else if(decimalDiff < 0) {
-      return val * 10**(-decimalDiff);
->>>>>>> upstream/frontend-v0.2
     } else {
       return val;
     }
