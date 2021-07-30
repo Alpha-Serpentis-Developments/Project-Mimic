@@ -159,15 +159,14 @@ export class VaultToken extends ERC20 {
     this.oTokenAddr = a;
   }
 
-  // getNAV(w, address) {
-  //   return w.eth.getStorageAt(address, 8);
-  // }
-
-  // setNAV(a) {
-  //   this.nav = a;
-  // }
-
   setNAV(amt) {
     this.nav = amt;
+  }
+
+  findAllSellCalls() {
+    return this.vt.getPastEvents("CallsSold", {
+      fromBlock: 0,
+      toBlock: "latest",
+    });
   }
 }

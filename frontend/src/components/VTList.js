@@ -23,6 +23,7 @@ export default function VTList(props) {
   const [assetTokenList, setAssetTokenList] = useState([]);
 
   const [clickedItem, setClickedItem] = useState(cVT);
+  const [lastSellCall, setLastSellCall] = useState();
 
   async function showTokenInfo(e, i) {
     await setClickedItem(i.value);
@@ -61,6 +62,10 @@ export default function VTList(props) {
           foundNewToken = true;
           let v = new VaultToken(web3, events[i].returnValues.vaultToken);
           vTokenList.push(v);
+          let allSellCalls = v.findAllSellCalls();
+          allSellCalls.then((result) => {
+            setLastSellCall(result[result.length - 1]);
+          });
         }
       }
       if (foundNewToken) {
