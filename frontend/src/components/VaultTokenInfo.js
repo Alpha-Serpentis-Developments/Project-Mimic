@@ -36,8 +36,13 @@ const DIndicator = styled.div`
   width: 50%;
   text-align: center;
   cursor: pointer;
+  border-top: 1px solid black;
+  border-right: 1px solid black;
+  font-size: 20px;
+  font-weight: 700;
   &:hover {
-    background-color: purple;
+    background-color: #663a82;
+    color: white;
   }
 `;
 const WIndicator = styled.div`
@@ -47,8 +52,15 @@ const WIndicator = styled.div`
   background-color: #9aa9ff63;
   width: 50%;
   text-align: center;
+  border-right: 1px solid black;
+  border-top: 1px solid black;
+  border-right: 1px solid black;
+  border-left: 1px solid black;
+  font-size: 20px;
+  font-weight: 700;
   &:hover {
-    background-color: purple;
+    background-color: #663a82;
+    color: white;
   }
 `;
 
@@ -78,7 +90,7 @@ const DWForm = styled.div`
   margin-left: auto;
   margin-right: auto;
   border-radius: 0 0 20px 20px;
-  border-top: 2px solid black;
+  border: 1px solid black;
   background-color: #9aa9ff63;
   padding-bottom: 50px;
 `;
@@ -544,7 +556,19 @@ export default function VaultTokenInfo(props) {
     return (
       <Grid textAlign="center" stackable>
         <Grid.Column>
-          <Header size="large" color="blue">
+          <Header
+            size="large"
+            style={{
+              padding: "3px 10px",
+              border: "1px solid black",
+              width: "80%",
+              borderRadius: "5px",
+              marginRight: "auto",
+              marginLeft: "auto",
+              fontFamily: "system-ui;",
+              color: "white",
+            }}
+          >
             1 {props.token.assetObject.tSymbol} ={" "}
             {Number(props.token.totalSupply) /
               (Number(props.token.vaultBalance) +
@@ -866,7 +890,6 @@ export default function VaultTokenInfo(props) {
       )}
       {/* {showConvertForm && convertForm()} */}
       <Divider hidden />
-      {props.token.vaultBalance > 0 && showRatio()}
       <Divider hidden />
       {props.token.totalSupply !== 0 && showTokenPair()}
 
@@ -878,3 +901,5 @@ export default function VaultTokenInfo(props) {
     </div>
   );
 }
+
+// {props.token.vaultBalance > 0 && showRatio()}

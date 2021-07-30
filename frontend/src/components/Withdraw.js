@@ -14,7 +14,7 @@ export default function Withdraw(props) {
               justifyContent: "center",
             }}
           >
-            <Popup
+            {/* <Popup
               pinned
               trigger={
                 <Icon
@@ -35,14 +35,14 @@ export default function Withdraw(props) {
                 be done if the vault's withdrawal window has opened up after the
                 manager has settled the vault.
               </Popup.Content>
-            </Popup>
+            </Popup> */}
 
             <input
               style={{
                 width: "70%",
                 marginLeft: "10px",
                 marginRight: "10px",
-                backgroundColor: "grey",
+                backgroundColor: "#dedede",
               }}
               value={props.withdrawAmt}
               onChange={props.updateWDAmt}
@@ -72,6 +72,20 @@ export default function Withdraw(props) {
           >
             Withdraw
           </Button>
+          <div
+            style={{
+              marginTop: "10px",
+              textAlign: "center",
+              fontSize: "12px",
+              fontFamily: "'Gill Sans', sans-serif",
+            }}
+          >
+            {" "}
+            When withdrawing, you will burn away your vault tokens to redeem the
+            underlying asset token. Withdrawing from the vault can only be done
+            if the vault's withdrawal window has opened up after the manager has
+            settled the vault.
+          </div>
         </Form>
       )}
     </div>

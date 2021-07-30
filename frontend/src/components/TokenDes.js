@@ -5,18 +5,18 @@ import VaultTokenInfo from "./VaultTokenInfo";
 const DesContainer = styled.div`
   display: flex;
   flex-direction: row;
-  height: 800px;
+  margin-left: 3%;
 `;
 
 const LeftDes = styled.div`
-  width: 60%;
+  width: 50%;
   display: flex;
   flex-direction: column;
   margin-left: auto;
   margin-right: auto;
 `;
 const TokenName = styled.div`
-  margin-top: 30px;
+  margin-top: 50px;
   font-size: 40px;
 `;
 
@@ -25,6 +25,7 @@ const VaultDescript = styled.div`
 `;
 
 const DWContainer = styled.div`
+  margin-right: 3%;
   width: 35%;
 `;
 
