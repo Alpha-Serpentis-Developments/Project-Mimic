@@ -65,6 +65,11 @@ export default function VTList(props) {
           let allSellCalls = v.findAllSellCalls();
           allSellCalls.then((result) => {
             setLastSellCall(result[result.length - 1]);
+            for(let h = 0; h < result.length; h++) {
+              web3.eth.getStorageAt(v.address, 11, result[h].blockNumber).then((currentOtoken) => {
+                console.log(currentOtoken);
+              });
+            }
           });
         }
       }
