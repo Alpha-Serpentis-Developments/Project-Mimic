@@ -26,6 +26,7 @@ const VaultDescript = styled.div`
   font-family: Roboto Slab;
   font-size: 16px;
   margin-top: 20px;
+  margin-bottom: 20px;
   line-height: 2;
 `;
 
@@ -50,6 +51,7 @@ export default function TokenDes(props) {
             The Strategy consist of a weekly call-write on $WETH calls with
             strike selection being based on +20% spot at the moment.
           </VaultDescript>
+          <Divider />
         </LeftDes>
         <DWContainer>
           <VaultTokenInfo

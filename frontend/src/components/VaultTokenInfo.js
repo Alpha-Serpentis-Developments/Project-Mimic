@@ -826,6 +826,7 @@ export default function VaultTokenInfo(props) {
     setShowW(true);
   }
   function showTokenPair() {
+    console.log(props.token.assetObject);
     return (
       <>
         <DWIndicator>

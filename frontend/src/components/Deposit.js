@@ -1,18 +1,7 @@
-import { useState } from "react";
-import StatusMessage from "./StatusMessage";
-import { nwConfig, currentChain } from "./NetworkConfig";
-
 import {
-  Header,
   Button,
-  Grid,
-  Divider,
-  Icon,
-  Segment,
   Form,
-  Popup,
-  Label,
-  Accordion,
+  Divider
 } from "semantic-ui-react";
 
 export default function Deposit(props) {
@@ -25,8 +14,8 @@ export default function Deposit(props) {
               display: "flex",
               flexDirection: "row",
               marginTop: "30px",
-              marginBottom: "50px",
-              justifyContent: "center",
+              marginBottom: "40px",
+              justifyContent: "left",
             }}
           >
             {/* <Popup
@@ -51,10 +40,9 @@ export default function Deposit(props) {
 
             <input
               style={{
-                width: "70%",
-                marginLeft: "10px",
+                width: "60%",
+                marginLeft: "10%",
                 marginRight: "10px",
-                backgroundColor: "#dedede",
               }}
               value={props.depositAmt}
               onChange={props.updateDAmt}
@@ -81,14 +69,30 @@ export default function Deposit(props) {
             disabled={
               props.token.totalSupply === 0 ||
               props.token.assetObject.myBalance === 0 ||
-              props.btnDisabled
+              props.btnDisabled ||
+              props.depositAmt === 0
             }
           >
             Deposit
           </Button>
+          <Divider />
+          <div 
+            style={{
+              marginTop: "25px",
+              marginBottom: "25px",
+              textAlign: "center",
+              fontSize: "18px",
+              fontFamily: "'Lato', sans-serif",
+              marginLeft: "15px",
+              marginRight: "15px",
+            }}
+          >
+            WETH Balance: {props.token.assetObject.myBalance/props.token.assetObject.decimals}
+          </div>
+          <Divider />
           <div
             style={{
-              marginTop: "10px",
+              marginTop: "25px",
               textAlign: "center",
               fontSize: "12px",
               fontFamily: "'Gill Sans', sans-serif",
