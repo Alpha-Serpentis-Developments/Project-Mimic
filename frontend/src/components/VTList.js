@@ -138,19 +138,17 @@ export default function VTList(props) {
       });
     }
   }
-
   function normalizeValues(val, origDecimals, newDecimals) {
     let decimalDiff = origDecimals - newDecimals;
 
-    if(decimalDiff > 0) {
-      return val / 10**(decimalDiff);
-    } else if(decimalDiff < 0) {
-      return val * 10**(-decimalDiff);
+    if (decimalDiff > 0) {
+      return val / 10 ** decimalDiff;
+    } else if (decimalDiff < 0) {
+      return val * 10 ** -decimalDiff;
     } else {
       return val;
     }
   }
-
   function populateName(i) {
     // v.getName().then((result) => {
     // });

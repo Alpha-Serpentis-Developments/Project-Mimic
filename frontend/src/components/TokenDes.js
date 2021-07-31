@@ -16,12 +16,17 @@ const LeftDes = styled.div`
   margin-right: auto;
 `;
 const TokenName = styled.div`
+  font-family: Roboto Slab;
   margin-top: 50px;
+  margin-bottom: 20px;
   font-size: 40px;
 `;
 
 const VaultDescript = styled.div`
+  font-family: Roboto Slab;
   font-size: 16px;
+  margin-top: 20px;
+  line-height: 2;
 `;
 
 const DWContainer = styled.div`
@@ -42,7 +47,6 @@ export default function TokenDes(props) {
           <TokenName>{props.token.tName}</TokenName>
           <Divider />
           <VaultDescript>
-            {" "}
             The Strategy consist of a weekly call-write on $WETH calls with
             strike selection being based on +20% spot at the moment.
           </VaultDescript>
