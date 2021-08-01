@@ -1,21 +1,91 @@
 import styled from "styled-components";
+import { currentChain, nwConfig } from "./NetworkConfig";
 
+const CoveredCallDetail = styled.div`
+  font-family: Roboto Slab;
+  border: 4px solid #0286c3;
+  padding: 10px 15px;
+  border-radius: 8px;
+`;
+
+const SectionTitle = styled.div`
+  margin-top: 20px;
+  font-size: 30px;
+  margin-bottom: 35px;
+`;
+
+const HRLine = styled.div`
+  height: 8px;
+  background-color: #d8b863;
+  border-radius: 30px;
+`;
+
+const IndividualSC = styled.div`
+  margin-top: 20px;
+  margin-bottom: 20px;
+  cursor: pointer;
+`;
+const SCLink = styled.a`
+  text-decoration: none;
+  color: black;
+  :hover& {
+    color: black;
+  }
+`;
+const OTokenName = styled.div`
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 10px;
+`;
+
+const NoCoverCall = styled.div`
+  font-size: 25px;
+  font-weight: 700;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  color: #e6696e;
+`;
 export default function CoveredCallsList(props) {
-  console.log(props);
+  function makeEtherscanLink(h) {
+    return nwConfig[currentChain].prefix + "tx/" + h;
+  }
   function OneSellCall(el) {
     return (
       <div>
-        {/* <div>{props.token.oTokenObj.tName}</div> */}
-        <div>{el.returnValues.amountSold}</div>
-        <div>{el.returnValues.premiumReceived}</div>
-        <div>{el.returnValues.premiumReceived}</div>
+        <div>+ {el.returnValues.premiumReceived / 1e18} WETH</div>
+        <div>{el.returnValues.amountSold / 1e18} oTokens Sold</div>
       </div>
     );
   }
 
-  return props.sellCallList.map((t) => {
-    // console.log(t);
-    // OneSellCall(t);
-    return OneSellCall(t);
-  });
+  return (
+    <CoveredCallDetail>
+      <SectionTitle>Traded Covered Calls</SectionTitle>
+      <HRLine />
+      {props.sellCallList.length > 0 ? (
+        <div>
+          {props.sellCallList.map((t, i) => {
+            // console.log(t);
+            // OneSellCall(t);
+            // let l = `https://etherscan.io/tx/${props.sellCallList[i].transactionHash}`;
+            return (
+              <IndividualSC>
+                <SCLink
+                  href={makeEtherscanLink(
+                    props.sellCallList[i].transactionHash
+                  )}
+                  target="_blank"
+                >
+                  <OTokenName>{props.token.oTokenNames[i]}</OTokenName>
+                  <div>{OneSellCall(t)}</div>
+                </SCLink>
+              </IndividualSC>
+            );
+          })}
+        </div>
+      ) : (
+        <NoCoverCall>NO DATA AVAILABLE TO SHOW</NoCoverCall>
+      )}
+    </CoveredCallDetail>
+  );
 }

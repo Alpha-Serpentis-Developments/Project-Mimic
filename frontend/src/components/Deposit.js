@@ -1,10 +1,9 @@
-import {
-  Button,
-  Form,
-  Divider
-} from "semantic-ui-react";
+import { Button, Form, Divider } from "semantic-ui-react";
 
 export default function Deposit(props) {
+  let wBalance = parseFloat(
+    props.token.assetObject.myBalance / `1e${props.token.assetObject.tDecimals}`
+  ).toFixed(6);
   return (
     <div>
       {props.token.totalSupply > 0 && !props.managerClick && (
@@ -75,7 +74,7 @@ export default function Deposit(props) {
             Deposit
           </Button>
           <Divider />
-          <div 
+          <div
             style={{
               marginTop: "25px",
               marginBottom: "25px",
@@ -86,7 +85,7 @@ export default function Deposit(props) {
               marginRight: "15px",
             }}
           >
-            WETH Balance: {props.token.assetObject.myBalance/props.token.assetObject.decimals}
+            WETH Balance: {wBalance}
           </div>
           <Divider />
           <div

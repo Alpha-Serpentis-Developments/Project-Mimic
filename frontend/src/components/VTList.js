@@ -14,6 +14,7 @@ import TokenDes from "./TokenDes";
 
 export default function VTList(props) {
   let cVT = JSON.parse(localStorage.getItem("cVT") || "{}");
+  // let cVTAddr = JSON.parse(localStorage.getItem("cVTAddr") || "false");
 
   const [vtList, setVTList] = useState([]);
   const [update, setUpdate] = useState(0);
@@ -25,9 +26,12 @@ export default function VTList(props) {
   const [clickedItem, setClickedItem] = useState(cVT);
   const [sellCallList, setSellCallList] = useState([]);
   const [lastSellCall, setLastSellCall] = useState();
+  // const [currentTokenAddr, setCurrentTokenAddr] = useState(cVTAddr);
 
   async function showTokenInfo(e, i) {
+    console.log(i.value);
     await setClickedItem(i.value);
+    //  await setCurrentTokenAddr(i.value.address);
 
     let T = i.value;
     function getCircularReplacer() {
@@ -45,6 +49,7 @@ export default function VTList(props) {
 
     await localStorage.setItem("cVT", "");
     await localStorage.setItem("cVT", JSON.stringify(T, getCircularReplacer()));
+    // await localStorage.setItem("cVTAddr", JSON.stringify(i.value.address));
   }
 
   function getAllVT() {
@@ -67,14 +72,21 @@ export default function VTList(props) {
           allSellCalls.then((result) => {
             setSellCallList(result);
             setLastSellCall(result[result.length - 1]);
-            for(let h = 0; h < result.length; h++) {
-              web3.eth.getStorageAt(v.address, 11, result[h].blockNumber).then((currentOtoken) => {
-                /// console.log(currentOtoken);
-              });
+            let oArr = [];
+            for (let h = 0; h < result.length; h++) {
+              web3.eth
+                .getStorageAt(v.address, 11, result[h].blockNumber)
+                .then((result) => {
+                  let oAddr = `0x${result.slice(-40)}`;
+
+                  let o = new Otoken(web3, oAddr);
+                  o.getName().then((result) => {
+                    o.setName(result);
+                    oArr.push(result);
+                    v.setAllOtokenName(oArr);
+                  });
+                });
             }
-          });
-          v.getOT(web3, v.address).then((result) => {
-            console.log(result);
           });
         }
       }
@@ -173,6 +185,13 @@ export default function VTList(props) {
         v.setSymbol(result);
       });
     }
+    if (v.tDecimals === -1) {
+      console.log("at decimals");
+      v.getDecimals(props.acctNum).then((result) => {
+        console.log(result);
+        v.setDecimals(result);
+      });
+    }
     if (v.collateralAmount === -1) {
       v.getCA(web3, v.address).then((result) => {
         let da = web3.utils.toBN(result).toString();
@@ -240,6 +259,16 @@ export default function VTList(props) {
         })
         .catch((error) => {
           v.setSymbol("Non erc20 token");
+          v.ercStatus = false;
+        });
+    }
+    if (v.tDecimals === -1) {
+      v.getDecimals(props.acctNum)
+        .then((result) => {
+          v.setDecimals(result);
+        })
+        .catch((error) => {
+          v.setDecimals("Non erc20 token");
           v.ercStatus = false;
         });
     }
@@ -381,6 +410,7 @@ export default function VTList(props) {
 
         <Route exact path="/vault/:address">
           <TokenDes
+            //  currentTokenAddr={currentTokenAddr}
             token={clickedItem}
             acct={props.acctNum}
             mpAddress={props.mpAddress}
