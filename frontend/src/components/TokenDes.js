@@ -27,6 +27,7 @@ const VaultDescript = styled.div`
   font-family: Roboto Slab;
   font-size: 16px;
   margin-top: 20px;
+  margin-bottom: 20px;
   line-height: 2;
 `;
 

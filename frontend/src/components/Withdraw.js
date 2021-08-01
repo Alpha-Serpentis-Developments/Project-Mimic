@@ -1,4 +1,4 @@
-import { Button, Form } from "semantic-ui-react";
+import { Button, Divider, Form } from "semantic-ui-react";
 
 export default function Withdraw(props) {
   return (
@@ -10,8 +10,8 @@ export default function Withdraw(props) {
               display: "flex",
               flexDirection: "row",
               marginTop: "30px",
-              marginBottom: "50px",
-              justifyContent: "center",
+              marginBottom: "40px",
+              justifyContent: "left",
             }}
           >
             {/* <Popup
@@ -39,10 +39,9 @@ export default function Withdraw(props) {
 
             <input
               style={{
-                width: "70%",
-                marginLeft: "10px",
-                marginRight: "10px",
-                backgroundColor: "#dedede",
+                width: "60%",
+                marginLeft: "10%",
+                marginRight: "10px"
               }}
               value={props.withdrawAmt}
               onChange={props.updateWDAmt}
@@ -58,15 +57,34 @@ export default function Withdraw(props) {
               marginRight: "auto",
             }}
             onClick={() => props.withDraw(props.withdrawAmt)}
-            color="blue"
+            color={(props.expireTime !== -1 && props.expireTime < Date.now() / 1000) ? "blue" : "red"}
             size="large"
-            disabled={props.btnDisabled}
+            disabled={
+              props.withdrawAmt === 0 ||
+              props.btnDisabled ||
+              !(props.expireTime !== -1 && props.expireTime < Date.now() / 1000)
+            }
           >
             Withdraw
           </Button>
+          <Divider />
           <div
             style={{
-              marginTop: "10px",
+              marginTop: "25px",
+              marginBottom: "25px",
+              textAlign: "center",
+              fontSize: "18px",
+              fontFamily: "'Lato', sans-serif",
+              marginLeft: "15px",
+              marginRight: "15px",
+            }}
+          >
+            Vault Balance: {props.token.myBalance/1e18 + " " + props.token.tSymbol} 
+          </div>
+          <Divider />
+          <div
+            style={{
+              marginTop: "25px",
               textAlign: "center",
               fontSize: "12px",
               fontFamily: "'Gill Sans', sans-serif",
@@ -74,7 +92,6 @@ export default function Withdraw(props) {
               marginRight: "15px",
             }}
           >
-            {" "}
             When withdrawing, you will burn away your vault tokens to redeem the
             underlying asset token. Withdrawing from the vault can only be done
             if the vault's withdrawal window has opened up after the manager has
