@@ -124,13 +124,13 @@ export default function VTCard(props) {
       <VTCardContainer>
         <VTNameContainer>
           <VTName>{item.name()}</VTName>
-          <VTAddress className="tAddr"><a href={makeEtherscanLink(item.address)}>{item.address}</a></VTAddress>
+          <VTAddress className="tAddr"><a href={makeEtherscanLink(item.address)} rel="noreferrer noopener" target="_blank">{item.address}</a></VTAddress>
         </VTNameContainer>
         <VtContentcontainer>
           <LeftContent>
             <ManagedText>
               managed by{" "}
-              <a href="https://twitter.com/AlphaSerpentis_">@Amethyst</a>
+              <a href="https://twitter.com/AlphaSerpentis_" rel="noreferrer noopener" target="_blank">@Amethyst</a>
             </ManagedText>
             <PercentContent>
               <ItemInfo>
