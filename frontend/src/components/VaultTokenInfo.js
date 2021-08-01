@@ -858,7 +858,6 @@ export default function VaultTokenInfo(props) {
       </>
     );
   }
-
   return (
     <div>
       {showStatus && (

@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { Divider } from "semantic-ui-react";
 import VaultTokenInfo from "./VaultTokenInfo";
+import CoveredCallsList from "./CoveredCallsList";
 
 const DesContainer = styled.div`
   display: flex;
@@ -50,6 +51,10 @@ export default function TokenDes(props) {
             The Strategy consist of a weekly call-write on $WETH calls with
             strike selection being based on +20% spot at the moment.
           </VaultDescript>
+          <CoveredCallsList
+            sellCallList={props.sellCallList}
+            token={props.token}
+          />
         </LeftDes>
         <DWContainer>
           <VaultTokenInfo

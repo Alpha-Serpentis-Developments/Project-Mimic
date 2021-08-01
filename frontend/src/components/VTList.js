@@ -23,6 +23,7 @@ export default function VTList(props) {
   const [assetTokenList, setAssetTokenList] = useState([]);
 
   const [clickedItem, setClickedItem] = useState(cVT);
+  const [sellCallList, setSellCallList] = useState([]);
   const [lastSellCall, setLastSellCall] = useState();
 
   async function showTokenInfo(e, i) {
@@ -64,7 +65,11 @@ export default function VTList(props) {
           vTokenList.push(v);
           let allSellCalls = v.findAllSellCalls();
           allSellCalls.then((result) => {
+            setSellCallList(result);
             setLastSellCall(result[result.length - 1]);
+          });
+          v.getOT(web3, v.address).then((result) => {
+            console.log(result);
           });
         }
       }
@@ -192,13 +197,18 @@ export default function VTList(props) {
       let y;
 
       r = r.toFixed(5);
-      if(lastSellCall === undefined) {
+      if (lastSellCall === undefined) {
         y = 0;
       } else {
-        y = (lastSellCall.returnValues.premiumReceived/1e18) / (normalizeValues(lastSellCall.returnValues.amountSold, 8, 18)/10**18) * 100;
+        y =
+          (lastSellCall.returnValues.premiumReceived /
+            1e18 /
+            (normalizeValues(lastSellCall.returnValues.amountSold, 8, 18) /
+              10 ** 18)) *
+          100;
         y = y.toFixed(3);
       }
-      
+
       v.setNAV(r + " " + v.assetObject.symbol());
       v.setYield(y + "%");
     }
@@ -370,6 +380,7 @@ export default function VTList(props) {
             acct={props.acctNum}
             mpAddress={props.mpAddress}
             ethBal={props.ethBal}
+            sellCallList={sellCallList}
           />
         </Route>
       </Switch>
