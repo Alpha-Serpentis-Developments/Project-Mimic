@@ -18,6 +18,7 @@ export class VaultToken extends ERC20 {
     this.collateralAmount = -1;
     this.oTokenAddr = "";
     this.oTokenObj = null;
+    this.oTokenNames = [];
     this.nav = -1;
     this.yield = -1;
   }
@@ -173,5 +174,8 @@ export class VaultToken extends ERC20 {
       fromBlock: 0,
       toBlock: "latest",
     });
+  }
+  setAllOtokenName(array) {
+    this.oTokenNames = array;
   }
 }

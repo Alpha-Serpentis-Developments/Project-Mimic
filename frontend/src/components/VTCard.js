@@ -1,12 +1,5 @@
-import { useState, useEffect } from "react";
-import { web3 } from "./Web3Handler";
-import { ERC20 } from "./Erc20";
-import { Modal, Button, Icon } from "semantic-ui-react";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { Button, Icon } from "semantic-ui-react";
 import { Link } from "react-router-dom";
-import VaultTokenInfo from "./VaultTokenInfo";
-import { VaultToken } from "./VaultToken";
-import TokenDes from "./TokenDes";
 import styled from "styled-components";
 import { currentChain, nwConfig } from "./NetworkConfig";
 
@@ -124,18 +117,34 @@ export default function VTCard(props) {
       <VTCardContainer>
         <VTNameContainer>
           <VTName>{item.name()}</VTName>
-          <VTAddress className="tAddr"><a href={makeEtherscanLink(item.address)} rel="noreferrer noopener" target="_blank">{item.address}</a></VTAddress>
+          <VTAddress className="tAddr">
+            <a
+              href={makeEtherscanLink(item.address)}
+              rel="noreferrer noopener"
+              target="_blank"
+            >
+              {item.address}
+            </a>
+          </VTAddress>
         </VTNameContainer>
         <VtContentcontainer>
           <LeftContent>
             <ManagedText>
               managed by{" "}
-              <a href="https://twitter.com/AlphaSerpentis_" rel="noreferrer noopener" target="_blank">@Amethyst</a>
+              <a
+                href="https://twitter.com/AlphaSerpentis_"
+                rel="noreferrer noopener"
+                target="_blank"
+              >
+                @Amethyst
+              </a>
             </ManagedText>
             <PercentContent>
               <ItemInfo>
                 <ItemTextHeader>Last Round</ItemTextHeader>
-                <ItemText>{item.yield === -1 ? <div>Calculating...</div> : item.yield}</ItemText>
+                <ItemText>
+                  {item.yield === -1 ? <div>Calculating...</div> : item.yield}
+                </ItemText>
               </ItemInfo>
               <ItemInfo>
                 <ItemTextHeader>NAV</ItemTextHeader>
