@@ -59,7 +59,6 @@ export default function Deposit(props) {
               display: "block",
               marginLeft: "auto",
               marginRight: "auto",
-              backgroundColor: "#9de0ad",
             }}
             onClick={() => {
               props.deposit(props.depositAmt);
@@ -67,10 +66,10 @@ export default function Deposit(props) {
             size="large"
             // labelPosition="left"
             disabled={
+              props.depositAmt === 0 ||
               props.token.totalSupply === 0 ||
               props.token.assetObject.myBalance === 0 ||
-              props.btnDisabled ||
-              props.depositAmt === 0
+              props.btnDisabled
             }
           >
             Deposit

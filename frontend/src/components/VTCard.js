@@ -8,6 +8,7 @@ import VaultTokenInfo from "./VaultTokenInfo";
 import { VaultToken } from "./VaultToken";
 import TokenDes from "./TokenDes";
 import styled from "styled-components";
+import { currentChain, nwConfig } from "./NetworkConfig";
 
 const VTAddress = styled.span`
   margin-left: 20px;
@@ -113,13 +114,17 @@ export default function VTCard(props) {
   //   setClickedItem(i.value);
   // }
 
+  function makeEtherscanLink(h) {
+    return nwConfig[currentChain].prefix + "address/" + h;
+  }
+
   function oneCard(item) {
     let path = `/vault/${item.address}`;
     return (
       <VTCardContainer>
         <VTNameContainer>
           <VTName>{item.name()}</VTName>
-          <VTAddress className="tAddr">{item.address}</VTAddress>
+          <VTAddress className="tAddr"><a href={makeEtherscanLink(item.address)}>{item.address}</a></VTAddress>
         </VTNameContainer>
         <VtContentcontainer>
           <LeftContent>

@@ -2,8 +2,8 @@ import { Message, Icon } from "semantic-ui-react";
 import { nwConfig, currentChain } from "./NetworkConfig";
 
 export default function SuccessMessage(props) {
-  function makeLink(h) {
-    return nwConfig[currentChain].prefix + h;
+  function makeLinkTx(h) {
+    return nwConfig[currentChain].prefix + "tx/" + h;
   }
 
   function iconName(s) {
@@ -33,7 +33,7 @@ export default function SuccessMessage(props) {
         {props.txHash !== "" && (
           <Message.Content size="small">
             TX Hash
-            <a href={makeLink(props.txHash)} target="_blank">
+            <a href={makeLinkTx(props.txHash)} target="_blank">
               {" "}
               {props.txHash}
             </a>{" "}

@@ -810,18 +810,14 @@ export default function VaultTokenInfo(props) {
     if (e.target.value > 0) {
       let a = web3.utils.toWei(e.target.value, "ether");
       overAmount(a, props.token.assetObject.myBalance, props.ethBal);
-      setDeposit(e.target.value);
-    } else {
-      setDeposit(e.target.value);
     }
+    setDeposit(e.target.value);
   }
   function clickShowD() {
-    console.log("click d");
     setShowD(true);
     setShowW(false);
   }
   function clickShowW() {
-    console.log("click w");
     setShowD(false);
     setShowW(true);
   }

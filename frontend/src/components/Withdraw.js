@@ -62,8 +62,8 @@ export default function Withdraw(props) {
             disabled={
               props.withdrawAmt === 0 ||
               props.btnDisabled ||
-              !(props.expireTime !== -1 && props.expireTime < Date.now() / 1000
-            )}
+              !(props.expireTime !== -1 && props.expireTime < Date.now() / 1000)
+            }
           >
             Withdraw
           </Button>
