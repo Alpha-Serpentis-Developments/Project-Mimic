@@ -158,20 +158,20 @@ export default function Landing(props) {
     <LandingContainer>
       <LandingText>Decentralized Social Trading for Options</LandingText>
       <DepositImg src={deposit} />
-      {/* <div
+      <div
         style={{
           display: "flex",
           flexDirection: "row",
-          justifyContent: "space-around",
+          justifyContent: "space-evenly",
         }}
-      > */}
-      <Link to="/trade">
-        <StartTXBtn clickTrade={props.clickTrade} />
-      </Link>
-      <Link to="/managed">
-        <StartManagingBtn clickManager={props.clickManager} />
-      </Link>
-      {/* </div> */}
+      >
+        <Link to="/trade">
+          <StartTXBtn clickTrade={props.clickTrade} />
+        </Link>
+        <Link to="/managed">
+          <StartManagingBtn clickManager={props.clickManager} />
+        </Link>
+      </div>
       <AboutContainer>
         <AboutTitle>About Us</AboutTitle>
         <AboutItemContainer>

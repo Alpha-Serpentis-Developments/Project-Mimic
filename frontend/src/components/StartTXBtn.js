@@ -1,6 +1,7 @@
 import "../App.css";
 
 export default function StartTXBtn(props) {
+  console.log(props);
   return (
     <button
       className="StartButtons"
