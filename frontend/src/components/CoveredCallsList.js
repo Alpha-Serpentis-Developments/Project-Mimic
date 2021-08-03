@@ -3,7 +3,7 @@ import { currentChain, nwConfig } from "./NetworkConfig";
 
 const CoveredCallDetail = styled.div`
   font-family: Roboto Slab;
-  border: 4px solid #0286c3;
+  border: 2px solid #0286c3;
   padding: 10px 15px;
   border-radius: 8px;
 `;
@@ -11,12 +11,12 @@ const CoveredCallDetail = styled.div`
 const SectionTitle = styled.div`
   margin-top: 20px;
   font-size: 30px;
-  margin-bottom: 35px;
+  margin-bottom: 30px;
 `;
 
 const HRLine = styled.div`
-  height: 8px;
-  background-color: #d8b863;
+  height: 2px;
+  background-color: #0286c3;
   border-radius: 30px;
 `;
 
@@ -50,10 +50,18 @@ export default function CoveredCallsList(props) {
     return nwConfig[currentChain].prefix + "tx/" + h;
   }
   function OneSellCall(el) {
+    let premiumAmt, oTokenAmt, estYield;
+
+    premiumAmt = el.returnValues.premiumReceived / (10**Number(props.token.tDecimals));
+    oTokenAmt = el.returnValues.amountSold / 1e8;
+    estYield = premiumAmt/oTokenAmt * 100;
+    estYield = estYield.toFixed(3);
+
     return (
       <div>
-        <div>+ {el.returnValues.premiumReceived / 1e18} WETH</div>
-        <div>{el.returnValues.amountSold / 1e18} oTokens Sold</div>
+        <div>+ {premiumAmt} WETH</div>
+        <div>{oTokenAmt} oTokens Sold</div>
+        <div>Est. Yield: {estYield}%</div>
       </div>
     );
   }
