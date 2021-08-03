@@ -113,30 +113,35 @@ const CardGroup = styled.div`
 
 const CardItem1 = styled.div`
   height: 308px;
-  width: 255px;
-  background-color: #5c2ef3;
+  // background-color: #5c2ef3;
+  background-color: grey;
   border-radius: 10px;
+  margin-right: 10px;
+  margin-left: 10px;
 `;
 
 const CardItem2 = styled.div`
   height: 308px;
-  width: 255px;
+
   background-color: #e905fd;
   border-radius: 10px;
+  margin-right: 10px;
+  margin-left: 10px;
 `;
 const CardItem3 = styled.div`
   height: 308px;
-  width: 255px;
-  background-color: #0091f0;
 
+  background-color: #0091f0;
   border-radius: 10px;
+  margin-right: 10px;
+  margin-left: 10px;
 `;
 const CardItem4 = styled.div`
   height: 308px;
-  width: 255px;
   background-color: #fa991c;
-
   border-radius: 10px;
+  margin-right: 10px;
+  margin-left: 10px;
 `;
 const AboutIconCard = styled.i`
   color: white;
@@ -145,12 +150,27 @@ const AboutIconCard = styled.i`
   margin-top: 23px;
   margin-bottom: 20px;
 `;
+const CardHeader = styled.div`
+  font-family: Roboto Slab;
+  font-size: 20px;
+  text-align: center;
+  padding-top: 25px;
+  margin-bottom: 25px;
+`;
 
+const CardContent = styled.div`
+  font-family: Roboto Slab;
+  font-size: 16px;
+  // text-align: center;
+  margin-left: 10px;
+  margin-right: 10px;
+`;
 export default function Landing(props) {
   const settings = {
+    dots: true,
     infinite: true,
     speed: 500,
-    slidesToShow: 3,
+    slidesToShow: 2,
     slidesToScroll: 1,
   };
 
@@ -202,21 +222,57 @@ export default function Landing(props) {
           </AboutItem>
         </AboutItemContainer>
       </AboutContainer>
-      <PerformanceHeader>Performance Leaderboard</PerformanceHeader>
-      <Performancetext>Coming soon...</Performancetext>
+      {/* <PerformanceHeader>Performance Leaderboard</PerformanceHeader>
+      <Performancetext>Coming soon...</Performancetext> */}
+      <PerformanceHeader>FAQ</PerformanceHeader>
+
       <CardGroup>
         <Slider {...settings}>
           <div>
-            <CardItem1 />
+            <CardItem1>
+              <CardHeader>What is a social token?</CardHeader>
+              <CardContent>
+                Social tokens are essentially “vaults” where users deposit the
+                respective asset and the social trader (manager) uses that to
+                collateralize call options to create covered call options.
+              </CardContent>
+            </CardItem1>
           </div>
           <div>
-            <CardItem2 />
+            <CardItem2>
+              {" "}
+              <CardHeader>What are options?</CardHeader>
+              <CardContent>
+                Options are derivatives and essentially provide buyers a way to
+                hedge against their assets (or place bets). Sellers can use
+                options to make passive income with the premiums earned for
+                writing options.
+              </CardContent>
+            </CardItem2>
           </div>
           <div>
-            <CardItem3 />
+            <CardItem3>
+              {" "}
+              <CardHeader>What is a covered call?</CardHeader>
+              <CardContent>
+                Covered calls is a type of strategy in options trading where
+                call options are sold, but own the underlying to cover for an
+                exercise.
+              </CardContent>
+            </CardItem3>
           </div>
           <div>
-            <CardItem4 />
+            <CardItem4>
+              {" "}
+              <CardHeader>What is an exercise?</CardHeader>
+              <CardContent>
+                An exercise is when the option expires “in-the-money,” resulting
+                in portions of the collateral being surrendered to the long
+                holder. As a result, this may cause a social token to be down in
+                the underlying asset (e.g., ETH, WBTC, etc.), but technically up
+                in USD.
+              </CardContent>
+            </CardItem4>
           </div>
         </Slider>
       </CardGroup>
