@@ -82,7 +82,8 @@ export default function VTList(props) {
                   let o = new Otoken(web3, oAddr);
                   o.getName().then((result) => {
                     o.setName(result);
-                    oArr.push(result);
+                    // oArr.push(result);
+                    oArr[h] = result;
                     v.setAllOtokenName(oArr);
                   });
                 });
