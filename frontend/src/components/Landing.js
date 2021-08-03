@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import StartManagingBtn from "./StartManagingBtn";
+import { Divider } from "semantic-ui-react";
 
 const LandingContainer = styled.div`
   background-image: linear-gradient(#8b1bef, #20759d);
@@ -232,6 +233,12 @@ export default function Landing(props) {
           <div>
             <CardItem1>
               <CardHeader>What is a social token?</CardHeader>
+              <Divider style=
+              {{
+                width: "80%",
+                marginLeft: "auto",
+                marginRight: "auto"
+              }} />
               <CardContent>
                 Social tokens are essentially “vaults” where users deposit the
                 respective asset and the social trader (manager) uses that to
@@ -243,6 +250,12 @@ export default function Landing(props) {
             <CardItem2>
               {" "}
               <CardHeader>What are options?</CardHeader>
+              <Divider style=
+              {{
+                width: "80%",
+                marginLeft: "auto",
+                marginRight: "auto"
+              }} />
               <CardContent>
                 Options are derivatives and essentially provide buyers a way to
                 hedge against their assets (or place bets). Sellers can use
@@ -255,6 +268,12 @@ export default function Landing(props) {
             <CardItem3>
               {" "}
               <CardHeader>What is a covered call?</CardHeader>
+              <Divider style=
+              {{
+                width: "80%",
+                marginLeft: "auto",
+                marginRight: "auto"
+              }} />
               <CardContent>
                 Covered calls is a type of strategy in options trading where
                 call options are sold, but own the underlying to cover for an
@@ -266,6 +285,12 @@ export default function Landing(props) {
             <CardItem4>
               {" "}
               <CardHeader>What is an exercise?</CardHeader>
+              <Divider style=
+              {{
+                width: "80%",
+                marginLeft: "auto",
+                marginRight: "auto"
+              }} />
               <CardContent>
                 An exercise is when the option expires “in-the-money,” resulting
                 in portions of the collateral being surrendered to the long
