@@ -377,7 +377,11 @@ export default function VTList(props) {
     <div>
       <Switch>
         <Route exact path="/">
-          <Landing />
+          <Landing
+            clickHome={props.clickHome}
+            clickTrade={props.clickTrade}
+            clickManager={props.clickManager}
+          />
         </Route>
         {/* <Route exact path="/detail/:id" component={Detail} /> */}
         <Route exact path="/trade">

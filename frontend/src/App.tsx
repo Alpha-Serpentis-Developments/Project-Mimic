@@ -5,15 +5,7 @@ import "semantic-ui-css/semantic.min.css";
 
 import { web3 } from "./components/Web3Handler";
 import VTList from "./components/VTList.js";
-import {
-  Button,
-  Icon,
-  Grid,
-  Menu,
-  Sidebar,
-  Message,
-  Divider,
-} from "semantic-ui-react";
+import { Icon, Menu, Sidebar, Message } from "semantic-ui-react";
 import DeployNewVaultToken from "./components/DeployNewVaultToken";
 import NavBar from "./components/NavBar";
 import Landing from "./components/Landing";
@@ -25,7 +17,6 @@ import { nwConfig, currentChain, setChain } from "./components/NetworkConfig";
 import AppReload from "./components/AppReload";
 import ChainAlert from "./components/ChainAlert";
 import "./App.css";
-import IpfsRouter from "ipfs-react-router";
 
 declare global {
   interface Window {
@@ -176,6 +167,7 @@ export default function App() {
     setTradeNav("#8b1bef");
   }
   function clickTrade(e: any) {
+    console.log("clicked trade=======");
     setRenderHome(false);
     setRenderManager(false);
     setRenderPortfolio(true);
@@ -289,7 +281,6 @@ export default function App() {
               visited={visited}
               clickToVisit={clickToVisit}
             />
-
             {!addr && renderHome && (
               <div
                 style={{
@@ -306,7 +297,7 @@ export default function App() {
                 <Landing />
               </div>
             )}
-
+            {/* 
             {!addr && (
               <div
                 style={{
@@ -321,7 +312,7 @@ export default function App() {
                   Please install MetaMask to continue
                 </Message>
               </div>
-            )}
+            )} */}
 
             {addr && (
               <div>
@@ -333,6 +324,9 @@ export default function App() {
                   renderPortfolio={renderPortfolio}
                   ethBal={ethBal}
                   openModal={openModal}
+                  clickHome={clickHome}
+                  clickTrade={clickTrade}
+                  clickManager={clickManager}
                 />
               </div>
             )}
