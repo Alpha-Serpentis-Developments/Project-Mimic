@@ -156,14 +156,15 @@ const CardHeader = styled.div`
   text-align: center;
   padding-top: 25px;
   margin-bottom: 25px;
+  font-weight: bold;
 `;
 
 const CardContent = styled.div`
   font-family: Roboto Slab;
   font-size: 16px;
   // text-align: center;
-  margin-left: 10px;
-  margin-right: 10px;
+  margin-left: 20px;
+  margin-right: 20px;
 `;
 export default function Landing(props) {
   const settings = {
