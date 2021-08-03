@@ -46,15 +46,17 @@ const NoCoverCall = styled.div`
   color: #e6696e;
 `;
 export default function CoveredCallsList(props) {
+  console.log(props);
   function makeEtherscanLink(h) {
     return nwConfig[currentChain].prefix + "tx/" + h;
   }
   function OneSellCall(el) {
     let premiumAmt, oTokenAmt, estYield;
 
-    premiumAmt = el.returnValues.premiumReceived / (10**Number(props.token.tDecimals));
+    premiumAmt =
+      el.returnValues.premiumReceived / 10 ** Number(props.token.tDecimals);
     oTokenAmt = el.returnValues.amountSold / 1e8;
-    estYield = premiumAmt/oTokenAmt * 100;
+    estYield = (premiumAmt / oTokenAmt) * 100;
     estYield = estYield.toFixed(3);
 
     return (
