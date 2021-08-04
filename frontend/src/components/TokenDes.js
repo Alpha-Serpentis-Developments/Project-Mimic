@@ -28,6 +28,7 @@ const TokenName = styled.div`
   margin-top: 50px;
   margin-bottom: 20px;
   font-size: 40px;
+  color: white;
 `;
 
 const VaultDescript = styled.div`
@@ -36,6 +37,7 @@ const VaultDescript = styled.div`
   margin-top: 20px;
   margin-bottom: 20px;
   line-height: 2;
+  color: white;
 `;
 
 const DWContainer = styled.div`

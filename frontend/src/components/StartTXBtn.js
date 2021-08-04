@@ -10,6 +10,7 @@ export default function StartTXBtn(props) {
         height: "50px",
         marginBottom: "20px",
         fontSize: "25px",
+        marginRight: "20px",
       }}
       onClick={props.clickTrade}
     >

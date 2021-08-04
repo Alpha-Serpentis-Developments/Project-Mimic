@@ -183,7 +183,7 @@ export default function Landing(props) {
         style={{
           display: "flex",
           flexDirection: "row",
-          justifyContent: "space-evenly",
+          justifyContent: "center",
         }}
       >
         <Link to="/trade">

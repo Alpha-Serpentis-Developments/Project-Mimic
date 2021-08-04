@@ -10,6 +10,7 @@ export default function StartManagingBtn(props) {
         height: "50px",
         marginBottom: "20px",
         fontSize: "25px",
+        marginLeft: "20px",
       }}
       onClick={props.clickManager}
     >

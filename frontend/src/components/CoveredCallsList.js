@@ -6,6 +6,7 @@ const CoveredCallDetail = styled.div`
   border: 2px solid #0286c3;
   padding: 10px 15px;
   border-radius: 8px;
+  color: white;
 `;
 
 const SectionTitle = styled.div`
@@ -27,15 +28,19 @@ const IndividualSC = styled.div`
 `;
 const SCLink = styled.a`
   text-decoration: none;
-  color: black;
+  color: white;
   :hover& {
-    color: black;
+    color: white;
   }
 `;
 const OTokenName = styled.div`
   font-size: 15px;
   font-weight: 700;
   margin-bottom: 10px;
+  color: white;
+  // :hover& {
+  //   color: black;
+  // }
 `;
 
 const NoCoverCall = styled.div`
@@ -45,8 +50,21 @@ const NoCoverCall = styled.div`
   margin-bottom: 30px;
   color: #e6696e;
 `;
+
+const NAVTSContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  margin-bottom: 15px;
+`;
+
+const NAV = styled.div`
+  margin-left: 20%;
+`;
+const TS = styled.div``;
 export default function CoveredCallsList(props) {
-  console.log(props);
+  let ts = props.token.expireTime;
+
   function makeEtherscanLink(h) {
     return nwConfig[currentChain].prefix + "tx/" + h;
   }
@@ -71,6 +89,10 @@ export default function CoveredCallsList(props) {
   return (
     <CoveredCallDetail>
       <SectionTitle>Traded Covered Calls</SectionTitle>
+      <NAVTSContainer>
+        {ts > Date.now ? <TS>Vault is OPENED</TS> : <TS>Vault is CLOSED</TS>}
+        <NAV>{props.token.nav}</NAV>
+      </NAVTSContainer>
       <HRLine />
       {props.sellCallList.length > 0 ? (
         <div>
