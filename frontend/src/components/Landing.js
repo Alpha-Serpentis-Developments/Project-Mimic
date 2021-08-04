@@ -21,6 +21,9 @@ const LandingText = styled.div`
   padding-top: 41px;
   padding-bottom: 40px;
   color: white;
+  @media (max-width: 700px) {
+    font-size: 25px;
+  }
 `;
 const DepositImg = styled.img`
   width: 588px;
@@ -30,6 +33,11 @@ const DepositImg = styled.img`
   margin-right: auto;
   margin-top: 32px;
   margin-bottom: 93px;
+  @media (max-width: 500px) {
+    margin-top: 20px;
+    width: 350px;
+    height: 25px;
+  }
 `;
 const AboutTitle = styled.div`
   margin-top: 56px;
@@ -48,6 +56,9 @@ const AboutContainer = styled.div`
   height: 465px;
   display: flex;
   flex-direction: column;
+  @media (max-width: 700px) {
+    height: 900px;
+  }
 `;
 
 const AboutItemContainer = styled.div`
@@ -57,6 +68,11 @@ const AboutItemContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-around;
+  @media (max-width: 700px) {
+    margin-left: auto;
+    margin-right: auto;
+    flex-direction: column;
+  }
 `;
 const AboutItem = styled.div`
   display: flex;
@@ -109,6 +125,9 @@ const CardGroup = styled.div`
   width: 790px;
   margin-top: 70px;
   padding-bottom: 70px;
+  @media (max-width: 700px) {
+    width: 300px;
+  }
 `;
 
 const CardItem1 = styled.div`
@@ -166,12 +185,25 @@ const CardContent = styled.div`
   margin-left: 20px;
   margin-right: 20px;
 `;
+const ButtonContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  @media (max-width: 700px) {
+    flex-direction: column;
+  }
+`;
 export default function Landing(props) {
+  let w = 2;
+  if (window.innerWidth < 700) {
+    w = 1;
+  }
   const settings = {
     dots: true,
     infinite: true,
     speed: 500,
-    slidesToShow: 2,
+    // slidesToShow: 2,
+    slidesToShow: w,
     slidesToScroll: 1,
   };
 
@@ -179,20 +211,14 @@ export default function Landing(props) {
     <LandingContainer>
       <LandingText>Decentralized Social Trading for Options</LandingText>
       <DepositImg src={deposit} />
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "center",
-        }}
-      >
+      <ButtonContainer>
         <Link to="/trade">
           <StartTXBtn clickTrade={props.clickTrade} />
         </Link>
         <Link to="/managed">
           <StartManagingBtn clickManager={props.clickManager} />
         </Link>
-      </div>
+      </ButtonContainer>
       <AboutContainer>
         <AboutTitle>About Us</AboutTitle>
         <AboutItemContainer>

@@ -138,4 +138,7 @@
   .topMenu {
     display: none;
   }
+  /* .tokenDes {
+    flex-direction: column;
+  } */
 }

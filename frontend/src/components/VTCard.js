@@ -7,6 +7,10 @@ const VTAddress = styled.span`
   margin-left: 20px;
   font-size: 10px;
   color: white;
+  @media only screen and (max-width: 600px) {
+    margin-left: 0px;
+    text-align: left;
+  }
 `;
 const VTCardContainer = styled.div`
   // background-color: #af84e7;
@@ -21,7 +25,12 @@ const VTCardContainer = styled.div`
   margin-left: auto;
   margin-right: auto;
   color: white;
-
+  @media only screen and (max-width: 600px) {
+    width: 450px;
+  }
+  @media only screen and (max-width: 500px) {
+    width: 350px;
+  }
   // &:hover {
   //   background-color: #8a02b2;
   //   color: white;
@@ -37,18 +46,29 @@ const VTNameContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  @media only screen and (max-width: 600px) {
+    flex-direction: column;
+  }
 `;
 const VTName = styled.div`
   // font-family: "Quantico", sans-serif;
   // text-shadow: white 1px 0 3px;
   font-size: 20px;
   font-weight: 800;
+  @media only screen and (max-width: 600px) {
+    text-align: left;
+    font-size: 13px;
+  }
 `;
 
 const ManagedText = styled.div`
   margin-top: 5px;
   font-size: 15px;
   margin-bottom: 20px;
+  @media only screen and (max-width: 600px) {
+    margin-left: 20px;
+    text-align: left;
+  }
 `;
 const VtContentcontainer = styled.div`
   display: flex;

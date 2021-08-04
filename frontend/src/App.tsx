@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { HashRouter as Router, Route, Switch } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import "semantic-ui-css/semantic.min.css";
 
@@ -216,7 +217,7 @@ export default function App() {
           vertical
           visible={showSidebar}
           width="thin"
-          color="purple"
+          style={{ backgroundColor: "#8b1bef" }}
         >
           <Menu.Item
             name="home"
@@ -226,7 +227,9 @@ export default function App() {
             // onClick={clickMenu}
             onClick={clickHome}
           >
-            <div style={{ color: "white", fontSize: "25px" }}>Home</div>
+            <Link to="/">
+              <div style={{ color: "white", fontSize: "25px" }}>Home</div>
+            </Link>
           </Menu.Item>
           <Menu.Item
             name="trade"
@@ -236,7 +239,9 @@ export default function App() {
             // onClick={clickMenu}
             onClick={clickTrade}
           >
-            <div style={{ color: "white", fontSize: "25px" }}>Trade</div>
+            <Link to="/trade">
+              <div style={{ color: "white", fontSize: "25px" }}>Trade</div>
+            </Link>
           </Menu.Item>
           <Menu.Item
             name="manager"
@@ -245,7 +250,9 @@ export default function App() {
             active={renderManager}
             onClick={clickManager}
           >
-            <div style={{ color: "white", fontSize: "25px" }}>Manager</div>
+            <Link to="/managed">
+              <div style={{ color: "white", fontSize: "25px" }}>Manager</div>
+            </Link>
           </Menu.Item>
         </Sidebar>
 
