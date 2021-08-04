@@ -1,19 +1,17 @@
-import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Divider } from "semantic-ui-react";
 import VaultTokenInfo from "./VaultTokenInfo";
 import CoveredCallsList from "./CoveredCallsList";
-import { web3 } from "./Web3Handler";
-import { Factory } from "./Factory";
-import { VaultToken } from "./VaultToken";
-import { Otoken } from "./Otoken";
-
-import { ERC20 } from "./Erc20";
+import "../App.css";
 
 const DesContainer = styled.div`
   display: flex;
   flex-direction: row;
   margin-left: 3%;
+  @media only screen and (max-width: 800px) {
+    margin-right: 3%;
+    flex-direction: column;
+  }
 `;
 
 const LeftDes = styled.div`
@@ -22,12 +20,20 @@ const LeftDes = styled.div`
   flex-direction: column;
   margin-left: auto;
   margin-right: auto;
+  @media only screen and (max-width: 800px) {
+    width: 90%;
+    flex-direction: column;
+  }
 `;
 const TokenName = styled.div`
   font-family: Roboto Slab;
   margin-top: 50px;
   margin-bottom: 20px;
   font-size: 40px;
+  color: white;
+  @media only screen and (max-width: 800px) {
+    font-size: 35px;
+  }
 `;
 
 const VaultDescript = styled.div`
@@ -36,11 +42,16 @@ const VaultDescript = styled.div`
   margin-top: 20px;
   margin-bottom: 20px;
   line-height: 2;
+  color: white;
 `;
 
 const DWContainer = styled.div`
   margin-right: 3%;
   width: 35%;
+  @media only screen and (max-width: 800px) {
+    margin-left: 3%;
+    width: 90%;
+  }
 `;
 
 export default function TokenDes(props) {
@@ -51,7 +62,7 @@ export default function TokenDes(props) {
         backgroundImage: "linear-gradient(#8b1bef,#20759D)",
       }}
     >
-      <DesContainer>
+      <DesContainer className="tokenDes">
         <LeftDes>
           <TokenName>{props.token.tName}</TokenName>
           <Divider />

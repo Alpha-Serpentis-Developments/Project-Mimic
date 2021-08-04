@@ -78,8 +78,10 @@ export default function NavBar(props) {
   return (
     <MainNav>
       <NavLeft>
-        {/* <TitleLogo src={cover} /> */}
-        <TitleImg src={optionalProfile} />
+        <Link to="/">
+          {/* <TitleLogo src={cover} /> */}
+          <TitleImg src={optionalProfile} onClick={props.clickHome} />
+        </Link>
       </NavLeft>
 
       <NavRight>
