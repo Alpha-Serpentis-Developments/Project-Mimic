@@ -54,12 +54,12 @@ describe('VaultToken contract (simple test)', () => {
     describe("Initialize the Vault", () => {
         it('Should revert for zero-value asset transfer (dust safety check)', async () => {
             await expect(
-                vaultToken.connect(manager).initializeRatio(1)
+                vaultToken.connect(manager).deposit(1)
             ).to.be.reverted;
         });
         it('Ratio should be initialized', async () => {
             await testToken.connect(manager).approve(vaultToken.address, 1e6);
-            await vaultToken.connect(manager).initializeRatio(ethers.utils.parseUnits('1', 18));
+            await vaultToken.connect(manager).deposit(ethers.utils.parseUnits('1', 6));
 
             const vaultTokenSupply = await vaultToken.totalSupply();
             const vaultBalance = await testToken.balanceOf(vaultToken.address);
@@ -185,7 +185,7 @@ describe('VaultToken contract (simple test)', () => {
 
         it('Should initialize the vault correctly', async () => {
             await testToken.connect(manager).approve(vaultToken.address, ethers.utils.parseUnits('1', 20));
-            await vaultToken.connect(manager).initializeRatio(ethers.utils.parseUnits('1', 18));
+            await vaultToken.connect(manager).deposit(ethers.utils.parseUnits('1', 20));
 
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('1', 20));
             expect(await vaultToken.totalSupply()).to.equal(ethers.utils.parseUnits('1', 18));
@@ -229,7 +229,7 @@ describe('VaultToken contract (simple test)', () => {
 
         it('Should initialize the vault correctly', async () => {
             await testToken.connect(manager).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
-            await vaultToken.connect(manager).initializeRatio(ethers.utils.parseUnits('1', 18));
+            await vaultToken.connect(manager).deposit(ethers.utils.parseUnits('1', 18));
 
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('1', 18));
             expect(await vaultToken.totalSupply()).to.equal(ethers.utils.parseUnits('1', 18));
@@ -255,7 +255,7 @@ describe('VaultToken contract (simple test)', () => {
                 vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('1', 18))
             ).to.be.revertedWith("Pausable: paused");
             await expect(
-                vaultToken.connect(depositor).initializeRatio(ethers.utils.parseUnits('1', 18))
+                vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18))
             ).to.be.revertedWith("Pausable: paused");
         });
         it('Should allow something to occur', async () => {

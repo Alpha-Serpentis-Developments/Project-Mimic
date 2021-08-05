@@ -152,7 +152,6 @@ export default function App() {
       const wAddress = `${fFive}...${lFive}`;
       setAcctNum(account);
       setBtnText(wAddress);
-
       getAccountDetail();
       localStorage.setItem("account", JSON.stringify(account));
     }
