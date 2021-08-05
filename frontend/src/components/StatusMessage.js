@@ -19,7 +19,12 @@ export default function SuccessMessage(props) {
     }
   }
   return (
-    <Message negative={props.statusError} size="small" icon>
+    <Message
+      negative={props.statusError}
+      size="small"
+      icon
+      onDismiss={props.resetForm}
+    >
       <Icon
         name={iconName(props.iconStatus)}
         size="tiny"

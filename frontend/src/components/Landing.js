@@ -143,7 +143,7 @@ const CardItem1 = styled.div`
 const CardItem2 = styled.div`
   height: 308px;
 
-  background-color: #e905fd;
+  background-color: #880a94;
   border-radius: 10px;
   margin-right: 10px;
   margin-left: 10px;
@@ -169,6 +169,21 @@ const AboutIconCard = styled.i`
   margin-right: auto;
   margin-top: 23px;
   margin-bottom: 20px;
+  &.icon1 {
+    background: linear-gradient(#ff5f6d, #ffc371);
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+  }
+  &.icon2 {
+    background: linear-gradient(to right, #4ca1af, #c4e0e5);
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+  }
+  &.icon3 {
+    background: linear-gradient(to right, #3a1c71, #d76d77, #ffaf7b);
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+  }
 `;
 const CardHeader = styled.div`
   font-family: Roboto Slab;
@@ -177,6 +192,22 @@ const CardHeader = styled.div`
   padding-top: 25px;
   margin-bottom: 25px;
   font-weight: bold;
+`;
+const CardHeader1 = styled.div`
+  font-family: Roboto Slab;
+  font-size: 20px;
+  text-align: center;
+  padding-top: 25px;
+  margin-bottom: 25px;
+  font-weight: bold;
+  color: white;
+`;
+const CardContent2 = styled.div`
+  font-family: Roboto Slab;
+  font-size: 16px;
+  margin-left: 20px;
+  margin-right: 20px;
+  color: white;
 `;
 
 const CardContent = styled.div`
@@ -228,21 +259,27 @@ export default function Landing(props) {
             <ItemText>Powered by Opyn's Gamma Protocol</ItemText>
           </AboutItem>
           <AboutItem>
-            <AboutIconCard className="fas fa-user-tie fa-4x" />
+            <AboutIconCard className="fas fa-user-tie fa-4x icon1" />
             <ItemText>
               Enables Social Traders to utilize options to potentially enhance
               yield
             </ItemText>
           </AboutItem>
           <AboutItem>
-            <AboutIconCard className="fas fa-users  fa-4x" />
+            <AboutIconCard
+              className="fas fa-users  fa-4x icon2"
+              style={{ color: "#bc544b" }}
+            />
             <ItemText>
               Followers can expose their assets to the growth of their favorite
               Social Trader
             </ItemText>
           </AboutItem>
           <AboutItem>
-            <AboutIconCard className="fas fa-hand-holding-usd fa-4x" />
+            <AboutIconCard
+              className="fas fa-hand-holding-usd fa-4x icon3"
+              style={{ color: "#ffdf00" }}
+            />
             <ItemText>
               Social Traders can earn fees from deposits, withdrawals, and
               performance
@@ -259,12 +296,13 @@ export default function Landing(props) {
           <div>
             <CardItem1>
               <CardHeader>What is a social token?</CardHeader>
-              <Divider style=
-              {{
-                width: "80%",
-                marginLeft: "auto",
-                marginRight: "auto"
-              }} />
+              <Divider
+                style={{
+                  width: "80%",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                }}
+              />
               <CardContent>
                 Social tokens are essentially “vaults” where users deposit the
                 respective asset and the social trader (manager) uses that to
@@ -275,31 +313,26 @@ export default function Landing(props) {
           <div>
             <CardItem2>
               {" "}
-              <CardHeader>What are options?</CardHeader>
-              <Divider style=
-              {{
-                width: "80%",
-                marginLeft: "auto",
-                marginRight: "auto"
-              }} />
-              <CardContent>
+              <CardHeader1>What are options?</CardHeader1>
+              <CardContent2>
                 Options are derivatives and essentially provide buyers a way to
                 hedge against their assets (or place bets). Sellers can use
                 options to make passive income with the premiums earned for
                 writing options.
-              </CardContent>
+              </CardContent2>
             </CardItem2>
           </div>
           <div>
             <CardItem3>
               {" "}
               <CardHeader>What is a covered call?</CardHeader>
-              <Divider style=
-              {{
-                width: "80%",
-                marginLeft: "auto",
-                marginRight: "auto"
-              }} />
+              <Divider
+                style={{
+                  width: "80%",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                }}
+              />
               <CardContent>
                 Covered calls is a type of strategy in options trading where
                 call options are sold, but own the underlying to cover for an
@@ -311,12 +344,13 @@ export default function Landing(props) {
             <CardItem4>
               {" "}
               <CardHeader>What is an exercise?</CardHeader>
-              <Divider style=
-              {{
-                width: "80%",
-                marginLeft: "auto",
-                marginRight: "auto"
-              }} />
+              <Divider
+                style={{
+                  width: "80%",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                }}
+              />
               <CardContent>
                 An exercise is when the option expires “in-the-money,” resulting
                 in portions of the collateral being surrendered to the long
