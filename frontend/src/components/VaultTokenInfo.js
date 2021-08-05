@@ -291,26 +291,6 @@ export default function VaultTokenInfo(props) {
     }
   }
 
-  function overAmount(a, b, c) {
-    c = c * 1e18;
-    console.log(a, b, c);
-    if (a > b + c) {
-      setSM("Error", "You don't have enough balance", true, true);
-      setIconStatus("error");
-      return;
-    } else if (a > b && a < b + c) {
-      setSM(
-        "Error",
-        `You need to convert ${(a - b) / 1e18} ETH to WETH`,
-        true,
-        true
-      );
-      setIconStatus("error");
-      setShowConvertForm(true);
-      return;
-    }
-  }
-
   function deposit(amt) {
     console.log(props);
     startTX();
@@ -333,7 +313,7 @@ export default function VaultTokenInfo(props) {
           let i = error.message.indexOf(":");
           m = error.message.substring(0, i > 0 ? i : 40);
         }
-        setSM("" + " TX Error", m, true, true);
+        setSM(" TX Error", m, true, true);
         setTxSent(false);
         setIconStatus("error");
       })
