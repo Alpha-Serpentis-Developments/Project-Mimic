@@ -259,13 +259,17 @@ export default function VaultTokenInfo(props) {
         setIconStatus("error");
       })
       .on("confirmation", function (confirmationNumber, receipt) {
-        setSM(
-          label + " TX Confirmed",
-          confirmationNumber + " Confirmation Received",
-          true,
-          false
-        );
-        setIconStatus("confirmed");
+        // setSM(
+        //   label + " TX Confirmed",
+        //   confirmationNumber + " Confirmation Received",
+        //   true,
+        //   false
+        // );
+        // setIconStatus("confirmed");
+        if (confirmationNumber === 1) {
+          setSM(label + " TX Confirmed", "Confirmation Received", true, false);
+          setIconStatus("confirmed");
+        }
       });
   }
 
@@ -852,20 +856,22 @@ export default function VaultTokenInfo(props) {
     <div>
       {showStatus && (
         <Grid>
-          <Grid.Column width={14}>
+          <Grid.Column width={16}>
             <StatusMessage
               statusHeader={statusHeader}
               statusMessage={statusMessage}
               statusError={statusError}
               txHash={txHash}
               iconStatus={iconStatus}
+              resetForm={resetForm}
+              iconStatus={iconStatus}
             />
           </Grid.Column>
-          <Grid.Column width={2} verticalAlign="middle">
+          {/* <Grid.Column width={2} verticalAlign="middle">
             {iconStatus !== "loading" && (
               <Button onClick={resetForm} icon="check" circular />
             )}
-          </Grid.Column>
+          </Grid.Column> */}
         </Grid>
       )}
       {/* {showConvertForm && convertForm()} */}
