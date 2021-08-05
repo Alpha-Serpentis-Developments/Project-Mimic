@@ -18,6 +18,9 @@ export class VaultToken extends ERC20 {
     this.collateralAmount = -1;
     this.oTokenAddr = "";
     this.oTokenObj = null;
+    this.oTokenNames = [];
+    this.nav = -1;
+    this.yield = -1;
   }
   // return the manager address
 
@@ -156,5 +159,23 @@ export class VaultToken extends ERC20 {
   }
   setOT(a) {
     this.oTokenAddr = a;
+  }
+
+  setNAV(amt) {
+    this.nav = amt;
+  }
+
+  setYield(amt) {
+    this.yield = amt;
+  }
+
+  findAllSellCalls() {
+    return this.vt.getPastEvents("CallsSold", {
+      fromBlock: 0,
+      toBlock: "latest",
+    });
+  }
+  setAllOtokenName(array) {
+    this.oTokenNames = array;
   }
 }

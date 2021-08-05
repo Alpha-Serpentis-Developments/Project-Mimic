@@ -76,13 +76,13 @@
 /* sidebar when at mobile screen size */
 .topSidebar {
   display: none;
-  background-color: #eddbf4;
+  background-color: #8b1bef;
 }
 
-.StartTXBtn {
+.StartButtons {
   display: block;
   border-radius: 10px;
-  background-color: #bf81ff;
+  background-color: #c80ad994;
   border: none;
   color: #ffffff;
   text-align: center;
@@ -97,13 +97,12 @@
   box-shadow: 0 20px 40px 0 rgba(0, 0, 0, 0.2), 0 20px 40px 0 rgba(0, 0, 0, 0.2);
   font-family: "Lato", "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
-.StartTXBtn span {
-  cursor: pointer;
+.StartButtons span {
   display: inline-block;
   position: relative;
   transition: 0.5s;
 }
-.StartTXBtn span:after {
+.StartButtons span:after {
   content: "\00bb";
   position: absolute;
   opacity: 0;
@@ -111,10 +110,10 @@
   right: -20px;
   transition: 0.5s;
 }
-.StartTXBtn:hover span {
+.StartButtons:hover span {
   padding-right: 25px;
 }
-.StartTXBtn:hover span:after {
+.StartButtons:hover span:after {
   opacity: 1;
   right: 0;
 }
@@ -139,4 +138,7 @@
   .topMenu {
     display: none;
   }
+  /* .tokenDes {
+    flex-direction: column;
+  } */
 }

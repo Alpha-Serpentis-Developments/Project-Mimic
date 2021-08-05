@@ -1,21 +1,56 @@
 import { useEffect, useState } from "react";
+import { HashRouter as Route, Switch } from "react-router-dom";
+
 import { web3 } from "./Web3Handler";
 import { Factory } from "./Factory";
 import { VaultToken } from "./VaultToken";
-import TokenList from "./TokenList";
-import BigNumber from "bignumber.js";
 import { Otoken } from "./Otoken";
 
-import { Table } from "semantic-ui-react";
 import { ERC20 } from "./Erc20";
+import Trade from "../pages/Trade";
+import Landing from "../components/Landing";
+import Managed from "../pages/Managed";
+import TokenDes from "./TokenDes";
 
 export default function VTList(props) {
+  let cVT = JSON.parse(localStorage.getItem("cVT") || "{}");
+  // let cVTAddr = JSON.parse(localStorage.getItem("cVTAddr") || "false");
+
   const [vtList, setVTList] = useState([]);
   const [update, setUpdate] = useState(0);
   const [managedList, setManagedList] = useState([]);
   const [portfolioList, setPortfolioList] = useState([]);
   const [followList, setFollowList] = useState([]);
   const [assetTokenList, setAssetTokenList] = useState([]);
+
+  const [clickedItem, setClickedItem] = useState(cVT);
+  const [sellCallList, setSellCallList] = useState([]);
+  const [lastSellCall, setLastSellCall] = useState();
+  // const [currentTokenAddr, setCurrentTokenAddr] = useState(cVTAddr);
+
+  async function showTokenInfo(e, i) {
+    console.log(i.value);
+    await setClickedItem(i.value);
+    //  await setCurrentTokenAddr(i.value.address);
+
+    let T = i.value;
+    function getCircularReplacer() {
+      const seen = new WeakSet();
+      return (key, value) => {
+        if (typeof value === "object" && value !== null) {
+          if (seen.has(value)) {
+            return;
+          }
+          seen.add(value);
+        }
+        return value;
+      };
+    }
+
+    await localStorage.setItem("cVT", "");
+    await localStorage.setItem("cVT", JSON.stringify(T, getCircularReplacer()));
+    // await localStorage.setItem("cVTAddr", JSON.stringify(i.value.address));
+  }
 
   function getAllVT() {
     let factoryObj = new Factory(web3);
@@ -33,6 +68,27 @@ export default function VTList(props) {
           foundNewToken = true;
           let v = new VaultToken(web3, events[i].returnValues.vaultToken);
           vTokenList.push(v);
+          let allSellCalls = v.findAllSellCalls();
+          allSellCalls.then((result) => {
+            setSellCallList(result);
+            setLastSellCall(result[result.length - 1]);
+            let oArr = [];
+            for (let h = 0; h < result.length; h++) {
+              web3.eth
+                .getStorageAt(v.address, 11, result[h].blockNumber)
+                .then((result) => {
+                  let oAddr = `0x${result.slice(-40)}`;
+
+                  let o = new Otoken(web3, oAddr);
+                  o.getName().then((result) => {
+                    o.setName(result);
+                    // oArr.push(result);
+                    oArr[h] = result;
+                    v.setAllOtokenName(oArr);
+                  });
+                });
+            }
+          });
         }
       }
       if (foundNewToken) {
@@ -42,22 +98,6 @@ export default function VTList(props) {
     setTimeout(() => {
       getAllVT();
     }, 10000);
-  }
-
-  function getAllVTOld() {
-    let factoryObj = new Factory(web3);
-
-    let p = factoryObj.findAllVT();
-    let vTokenList = [];
-    p.then((result) => {
-      let events = result;
-      for (let i = 0; i < events.length; i++) {
-        let v = new VaultToken(web3, events[i].returnValues.vaultToken);
-
-        vTokenList.push(v);
-      }
-      setVTList(vTokenList);
-    });
   }
 
   function include(address, list) {
@@ -102,10 +142,6 @@ export default function VTList(props) {
         for (i = 0; i < assetTokenList.length; i++) {
           if (assetTokenList[i].address === result) {
             found = true;
-            // console.log("found object" + assetTokenList[i]);
-            // let n = [...vtList];
-            // n[k].assetObject = assetTokenList[i];
-            // setVTList(n);
             vtList[k].assetObject = assetTokenList[i];
           }
         }
@@ -125,23 +161,17 @@ export default function VTList(props) {
       });
     }
   }
+  function normalizeValues(val, origDecimals, newDecimals) {
+    let decimalDiff = origDecimals - newDecimals;
 
-  function populateName1(i) {
-    // v.getName().then((result) => {
-    // });
-    let v = vtList[i];
-    if (v.tName === "") {
-      let o = [];
-
-      v.getName(props.acctNum).then((result) => {
-        v.setName(result);
-        o = [...vtList];
-        o[i] = v;
-        setVTList(o);
-      });
+    if (decimalDiff > 0) {
+      return val / 10 ** decimalDiff;
+    } else if (decimalDiff < 0) {
+      return val * 10 ** -decimalDiff;
+    } else {
+      return val;
     }
   }
-
   function populateName(i) {
     // v.getName().then((result) => {
     // });
@@ -154,6 +184,13 @@ export default function VTList(props) {
     if (v.tSymbol === "") {
       v.getSymbol(props.acctNum).then((result) => {
         v.setSymbol(result);
+      });
+    }
+    if (v.tDecimals === -1) {
+      console.log("at decimals");
+      v.getDecimals(props.acctNum).then((result) => {
+        console.log(result);
+        v.setDecimals(result);
       });
     }
     if (v.collateralAmount === -1) {
@@ -169,11 +206,9 @@ export default function VTList(props) {
           "0x0000000000000000000000000000000000000000000000000000000000000000"
         ) {
           let oAddr = `0x${result.slice(-40)}`;
-          console.log(result);
           v.setOT(oAddr);
           if (v.oTokenAddr !== "") {
             let o = new Otoken(web3, v.oTokenAddr);
-            console.log(o.name());
             v.oTokenObj = o;
             o.getName().then((result) => {
               o.setName(result);
@@ -181,6 +216,26 @@ export default function VTList(props) {
           }
         }
       });
+    }
+    if (v.collateralAmount !== -1 && v.vaultBalance !== -1) {
+      let r = (parseInt(v.collateralAmount) + parseInt(v.vaultBalance)) / 1e18;
+      let y;
+
+      r = r.toFixed(5);
+      if (lastSellCall === undefined) {
+        y = 0;
+      } else {
+        y =
+          (lastSellCall.returnValues.premiumReceived /
+            1e18 /
+            (normalizeValues(lastSellCall.returnValues.amountSold, 8, 18) /
+              10 ** 18)) *
+          100;
+        y = y.toFixed(3);
+      }
+
+      v.setNAV(r + " " + v.assetObject.symbol());
+      v.setYield(y + "%");
     }
   }
   function populateAssetName(i) {
@@ -208,32 +263,17 @@ export default function VTList(props) {
           v.ercStatus = false;
         });
     }
-  }
-
-  function populateAssetName1(i) {
-    // v.getName().then((result) => {
-    // });
-
-    let v = assetTokenList[i];
-    if (v.tName === "") {
-      v.getName(props.acctNum)
+    if (v.tDecimals === -1) {
+      v.getDecimals(props.acctNum)
         .then((result) => {
-          v.setName(result);
+          v.setDecimals(result);
         })
         .catch((error) => {
-          v.setName("Non erc20 token");
+          v.setDecimals("Non erc20 token");
           v.ercStatus = false;
         });
     }
   }
-
-  // function populateBalance(i) {
-  //   let v = vList[i];
-  //   if (v.balance(props.acctNum) !== 0) {
-  //     portfolioList.push(v);
-  //     setPortfolioList(portfolioList);
-  //   }
-  // }
 
   function populate() {
     // if (vtList.length === 0) {
@@ -282,24 +322,6 @@ export default function VTList(props) {
         if (result.length > 0) {
           let ts = result[result.length - 1].returnValues.closesAfter;
           vtList[i].expireTime = ts;
-          // let date = new Date(ts * 1000);
-          // var hours = date.getHours();
-          // // Minutes part from the timestamp
-          // var minutes = "0" + date.getMinutes();
-          // // Seconds part from the timestamp
-          // var seconds = "0" + date.getSeconds();
-
-          // // Will display time in 10:30:23 format
-          // var formattedTime =
-          //   date +
-          //   " " +
-          //   hours +
-          //   ":" +
-          //   minutes.substr(-2) +
-          //   ":" +
-          //   seconds.substr(-2);
-
-          // console.log(formattedTime);
         }
       });
     }
@@ -315,17 +337,6 @@ export default function VTList(props) {
       assetTokenList[i].updateTotalSupply().then((result) => {
         assetTokenList[i].setTotalSupply(result);
       });
-
-      // console.log(assetTokenList);
-      // populateManager(i);
-      // populateAsset(i);
-      // vtList[i].getBalance(props.acctNum).then((result) => {
-      //   console.log(result);
-      //   vtList[i].setBalance(result);
-      // });
-      // vtList[i].updateTotalSupply().then((result) => {
-      //   vtList[i].setTotalSupply(result);
-      // });
     }
 
     for (let i = 0; i < vtList.length; i++) {
@@ -346,11 +357,14 @@ export default function VTList(props) {
         !(include(v.address, portfolioList) || include(v.address, managedList))
       ) {
         nList.push(v);
-        // setFollowList(followList);
       }
     }
     setFollowList(nList);
   }
+
+  // function showTokenInfo(e, i) {
+  //   setClickedItem(i.value);
+  // }
 
   useEffect(() => {
     getAllVT();
@@ -359,55 +373,57 @@ export default function VTList(props) {
   useEffect(() => {
     populate();
   }, [update]);
+
   return (
     <div>
-      <Table textAlign="center" celled={true} style={{ borderStyle: "none" }}>
-        <Table.Body>
-          <Table.Row verticalAlign="top">
-            {/* <Table.Cell>
-              {" "}
-              <TokenList tList={vtList} update={update} title="Token List" />
-            </Table.Cell> */}
-            {props.renderManager && (
-              <Table.Cell>
-                <TokenList
-                  tList={managedList}
-                  update={update}
-                  title="Managed Token"
-                  acct={props.acctNum}
-                  mpAddress={props.mpAddress}
-                  showSpinner={vtList.length === 0}
-                  ethBal={props.ethBal}
-                />
-              </Table.Cell>
-            )}
-            {props.renderPortfolio && (
-              <Table.Cell>
-                <TokenList
-                  tList={portfolioList}
-                  update={update}
-                  title="Portfolio"
-                  acct={props.acctNum}
-                  showSpinner={vtList.length === 0}
-                  ethBal={props.ethBal}
-                />
-              </Table.Cell>
-            )}
-            {props.renderFollow && (
-              <Table.Cell>
-                <TokenList
-                  tList={followList}
-                  update={update}
-                  title="Follow List"
-                  acct={props.acctNum}
-                  showSpinner={vtList.length === 0}
-                  ethBal={props.ethBal}
-                />
-              </Table.Cell>
-            )}
-          </Table.Row>
-        </Table.Body>
-      </Table>
+      <Switch>
+        <Route exact path="/">
+          <Landing
+            clickHome={props.clickHome}
+            clickTrade={props.clickTrade}
+            clickManager={props.clickManager}
+          />
+        </Route>
+        {/* <Route exact path="/detail/:id" component={Detail} /> */}
+        <Route exact path="/trade">
+          <Trade
+            pList={portfolioList}
+            fList={followList}
+            update={update}
+            title="Portfolio"
+            acct={props.acctNum}
+            showSpinner={vtList.length === 0}
+            ethBal={props.ethBal}
+            vtList={vtList}
+            showTokenInfo={showTokenInfo}
+          />
+        </Route>
+        <Route exact path="/managed">
+          <Managed
+            mList={managedList}
+            update={update}
+            title="Managed Vaults"
+            acct={props.acctNum}
+            mpAddress={props.mpAddress}
+            showSpinner={vtList.length === 0}
+            ethBal={props.ethBal}
+            vtList={vtList}
+            showTokenInfo={showTokenInfo}
+            openModal={props.openModal}
+          />
+        </Route>
+
+        <Route exact path="/vault/:address">
+          <TokenDes
+            //  currentTokenAddr={currentTokenAddr}
+            token={clickedItem}
+            acct={props.acctNum}
+            mpAddress={props.mpAddress}
+            ethBal={props.ethBal}
+            sellCallList={sellCallList}
+          />
+        </Route>
+      </Switch>
     </div>
   );
 }

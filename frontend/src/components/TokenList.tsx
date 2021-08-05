@@ -15,6 +15,7 @@ export default function TokenList(props: {
   const [clickedItem, setClickedItem] = useState<Object | null>();
 
   function showTokenInfo(e: any, i: any) {
+    console.log(i.value);
     setClickedItem(i.value);
     setOpen(true);
   }
