@@ -76,7 +76,7 @@ export default function CoveredCallsList(props) {
     oTokenAmt = el.returnValues.amountSold / 1e8;
     estYield = (premiumAmt / oTokenAmt) * 100;
     estYield = estYield.toFixed(3);
-    estYieldAnnualized = estYield * 52;
+    estYieldAnnualized = (((estYield/100 + 1)**52 - 1) * 100);
     estYieldAnnualized = estYieldAnnualized.toFixed(3);
 
     return (
