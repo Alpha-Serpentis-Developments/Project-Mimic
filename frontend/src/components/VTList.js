@@ -230,7 +230,7 @@ export default function VTList(props) {
             1e18 /
             (normalizeValues(lastSellCall.returnValues.amountSold, 8, 18) /
               10 ** 18)) *
-          100;
+          100 * 52;
         y = y.toFixed(3);
       }
 
