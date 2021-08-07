@@ -97,9 +97,6 @@ export default function CoveredCallsList(props) {
       {props.sellCallList.length > 0 ? (
         <div>
           {props.sellCallList.map((t, i) => {
-            // console.log(t);
-            // OneSellCall(t);
-            // let l = `https://etherscan.io/tx/${props.sellCallList[i].transactionHash}`;
             return (
               <IndividualSC>
                 <SCLink

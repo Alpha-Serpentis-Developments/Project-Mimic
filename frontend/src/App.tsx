@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { HashRouter as Router, Route, Switch } from "react-router-dom";
+import { HashRouter as Router } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 import "semantic-ui-css/semantic.min.css";
 
 import { web3 } from "./components/Web3Handler";
 import VTList from "./components/VTList.js";
-import { Icon, Menu, Sidebar, Message } from "semantic-ui-react";
+import { Icon, Menu, Sidebar, Message, Button } from "semantic-ui-react";
 import DeployNewVaultToken from "./components/DeployNewVaultToken";
 import NavBar from "./components/NavBar";
 import Landing from "./components/Landing";
@@ -17,6 +17,9 @@ import MMInstallModal from "./components/MMInstallModal.js";
 import { nwConfig, currentChain, setChain } from "./components/NetworkConfig";
 import AppReload from "./components/AppReload";
 import ChainAlert from "./components/ChainAlert";
+import MMConnect from "./components/MMconnection";
+import optionalProfile from "./images/optionalProfile.png";
+
 import "./App.css";
 
 declare global {
@@ -78,6 +81,7 @@ export default function App() {
       const fFive = addr.slice(0, 10);
       const lFive = addr.slice(-8);
       let t = `${fFive}...${lFive}`;
+
       getChainID();
       setBtnText(t);
       getMarginPoolAddress();
@@ -150,6 +154,7 @@ export default function App() {
       const fFive = account.slice(0, 10);
       const lFive = account.slice(-8);
       const wAddress = `${fFive}...${lFive}`;
+
       setAcctNum(account);
       setBtnText(wAddress);
 
@@ -216,9 +221,18 @@ export default function App() {
           onHide={() => setShowSidebar(false)}
           vertical
           visible={showSidebar}
-          width="thin"
-          style={{ backgroundColor: "#8b1bef" }}
+          style={{ backgroundColor: "#8b1bef", width: "300px" }}
         >
+          <Menu.Item>
+            <img
+              src={optionalProfile}
+              style={{
+                height: "70px",
+                marginLeft: "auto",
+                marginRight: "auto",
+              }}
+            />{" "}
+          </Menu.Item>
           <Menu.Item
             name="home"
             position="right"
@@ -253,6 +267,35 @@ export default function App() {
             <Link to="/managed">
               <div style={{ color: "white", fontSize: "25px" }}>Manager</div>
             </Link>
+          </Menu.Item>
+          <Menu.Item>
+            <Button
+              //   color="grey"
+              icon
+              labelPosition="left"
+              size="tiny"
+              style={{
+                backgroundColor: "#8b1bef",
+                color: "white",
+                border: "2px solid white",
+                borderRadius: "10px",
+                borderStyle: "groove",
+                marginRight: "20px",
+              }}
+            >
+              <Icon
+                name="dot circle"
+                size="tiny"
+                style={{ backgroundColor: "#8b1bef", color: `${mmColor}` }}
+              />{" "}
+              <MMConnect
+                btnText={btnText}
+                acctNum={acctNum}
+                chainId={chainId}
+                ethBal={ethBal}
+                connectMM={connectMM}
+              />
+            </Button>
           </Menu.Item>
         </Sidebar>
 

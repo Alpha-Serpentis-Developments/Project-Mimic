@@ -8,6 +8,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import StartManagingBtn from "./StartManagingBtn";
 import { Divider } from "semantic-ui-react";
+import optionalProfile from "../images/optionalProfile.png";
 
 const LandingContainer = styled.div`
   background-image: linear-gradient(#8b1bef, #20759d);
@@ -234,7 +235,6 @@ export default function Landing(props) {
     dots: true,
     infinite: true,
     speed: 500,
-    // slidesToShow: 2,
     slidesToShow: w,
     slidesToScroll: 1,
   };
@@ -314,6 +314,13 @@ export default function Landing(props) {
             <CardItem2>
               {" "}
               <CardHeader1>What are options?</CardHeader1>
+              <Divider
+                style={{
+                  width: "80%",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                }}
+              />
               <CardContent2>
                 Options are derivatives and essentially provide buyers a way to
                 hedge against their assets (or place bets). Sellers can use
