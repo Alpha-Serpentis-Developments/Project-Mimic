@@ -22,7 +22,6 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     error NotEnoughFunds_ReserveViolation();
     error NotEnoughFunds_ObligatedFees();
     error MaximumFundsReached();
-    error RatioAlreadyDefined();
     error WithdrawalWindowNotActive();
     error WithdrawalWindowActive();
     error oTokenNotCleared();
@@ -193,6 +192,18 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     function sweepFees() external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
         IERC20(asset).safeTransfer(msg.sender, obligatedFees);
         obligatedFees = 0;
+    }
+
+    /// @notice Allows the manager to collect random tokens sent to the contract
+    /// @dev Transfers all of the unrelated tokens to the manager
+    /// @param _token Address of the unrelated token that is not the oToken or the asset token
+    function sweepUnrelatedTokens(address _token) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
+        if(_token == oToken || _token == asset)
+            revert Invalid();
+
+        IERC20 unrelated = IERC20(_token);
+
+        unrelated.safeTransfer(msg.sender, unrelated.balanceOf(address(this)));
     }
 
     /// @notice Allows the manager to disperse obligatedFees to the depositors
@@ -476,6 +487,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         collateralAmount = 0;
         oToken = address(0);
         currentReserves = 0;
+        premiumsWithheld = 0;
         
         emit WithdrawalWindowActivated(withdrawalWindowExpires);
     }
