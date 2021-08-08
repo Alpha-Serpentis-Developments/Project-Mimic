@@ -268,7 +268,7 @@ export default function App() {
               <div style={{ color: "white", fontSize: "25px" }}>Manager</div>
             </Link>
           </Menu.Item>
-          <Menu.Item>
+          <Menu.Item style={{ margin: "5px" }}>
             <Button
               //   color="grey"
               icon
@@ -280,7 +280,6 @@ export default function App() {
                 border: "2px solid white",
                 borderRadius: "10px",
                 borderStyle: "groove",
-                marginRight: "20px",
               }}
             >
               <Icon
