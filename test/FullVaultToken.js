@@ -625,6 +625,21 @@ describe('VaultToken contract (full test)', () => {
             expect(await mockWETH.balanceOf(depositor.address)).to.be.equal(prevBal_mockWETH.add(ethers.utils.parseUnits('0.2', 18)));
         });
 
+        // it('Should NOT give the withdrawer extra funds for mock "call-write sell"', async () => {
+        //     // emulate premiums from a call-write being sold
+        //     await mockWETH.connect(depositor).transfer(vaultToken.address, ethers.utils.parseUnits('0.1', 18));
+
+        //     const reserveAmount = await vaultToken.currentReserves();
+        //     const prevBal_VT = await vaultToken.balanceOf(depositor.address);
+        //     const prevBal_mockWETH = await mockWETH.balanceOf(depositor.address);
+
+        //     await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('0.2', 18));
+            
+        //     // console.log((await mockWETH.balanceOf(depositor.address) - prevBal_mockWETH) / (ethers.utils.parseUnits('1', 18)));
+
+        //     expect(await vaultToken.currentReserves()).to.be.equal(reserveAmount.sub(ethers.utils.parseUnits('0.2', 18)));
+        // });
+
         it('Should fail to expend the reserves due to insufficient reserves', async () => {
             await expect(
                 vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('1', 18))

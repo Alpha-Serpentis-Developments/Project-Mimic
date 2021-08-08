@@ -35,6 +35,8 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     uint256 public withdrawalWindowLength;
     /// @notice Amount of collateral for the address already used for collateral
     uint256 public collateralAmount;
+    /// @notice Amount temporarily withheld for the round by premiums
+    uint256 public premiumsWithheld;
     /// @notice Current active vault
     uint256 private currentVaultId;
     /// @notice Maximum funds
@@ -264,7 +266,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         if(_amount == 0)
             revert Invalid();
 
-        uint256 assetAmount = _amount * (IERC20(asset).balanceOf(address(this)) + collateralAmount - obligatedFees) / totalSupply();
+        uint256 assetAmount = _amount * (IERC20(asset).balanceOf(address(this)) + collateralAmount - premiumsWithheld - obligatedFees) / totalSupply();
         uint256 protocolFee;
         uint256 vaultFee;
         
@@ -585,6 +587,9 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         obligatedFees += _percentMultiply(_order.signer.amount, performanceFee);
         IERC20(asset).transfer(address(factory), _percentMultiply(_order.signer.amount, factory.performanceFee()));
 
+        // Withhold premiums temporarily
+        premiumsWithheld = _order.signer.amount;
+
         emit OptionsSold(_order.sender.amount, _order.signer.amount);
     }
 
@@ -625,7 +630,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
             revert ClosedPermanently();
     }
 
-    function _percentMultiply(uint256 _subtotal, uint16 _fee) internal pure returns(uint256) {
-        return _subtotal * _fee / 10000;
+    function _percentMultiply(uint256 _val, uint16 _percent) internal pure returns(uint256) {
+        return _val * _percent / 10000;
     }
 }
