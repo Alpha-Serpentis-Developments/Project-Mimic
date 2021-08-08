@@ -157,7 +157,6 @@ export default function App() {
 
       setAcctNum(account);
       setBtnText(wAddress);
-
       getAccountDetail();
       localStorage.setItem("account", JSON.stringify(account));
     }
@@ -336,7 +335,7 @@ export default function App() {
                   textAlign: "center",
                   fontSize: "20px",
                   backgroundColor: "#8b1bef",
-                  color: "red",
+                  //color: "red",
                 }}
               >
                 <Message color="purple" compact>

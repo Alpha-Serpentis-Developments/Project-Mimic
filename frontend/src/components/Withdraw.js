@@ -1,6 +1,14 @@
 import { Button, Divider, Form } from "semantic-ui-react";
 
 export default function Withdraw(props) {
+
+  console.log(props.withdrawAmt);
+  console.log(props.btnDisabled);
+  console.log(props.token.expireTime);
+  console.log(props.token.expireTime < Date.now() / 1000);
+  console.log((props.token.expireTime !== -1 && props.token.expireTime < Date.now() / 1000));
+  // console.log(props);
+
   return (
     <div>
       {props.token.totalSupply > 0 && !props.managerClick && (
@@ -57,12 +65,12 @@ export default function Withdraw(props) {
               marginRight: "auto",
             }}
             onClick={() => props.withDraw(props.withdrawAmt)}
-            color={(props.expireTime !== -1 && props.expireTime < Date.now() / 1000) ? "blue" : "red"}
+            color={(props.token.expireTime !== -1 && props.token.expireTime < Date.now() / 1000) ? "blue" : "red"}
             size="large"
             disabled={
               props.withdrawAmt === 0 ||
               props.btnDisabled ||
-              !(props.expireTime !== -1 && props.expireTime < Date.now() / 1000)
+              (props.token.expireTime !== -1 && props.token.expireTime < Date.now() / 1000)
             }
           >
             Withdraw

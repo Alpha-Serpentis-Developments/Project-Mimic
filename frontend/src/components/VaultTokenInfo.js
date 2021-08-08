@@ -313,7 +313,7 @@ export default function VaultTokenInfo(props) {
           let i = error.message.indexOf(":");
           m = error.message.substring(0, i > 0 ? i : 40);
         }
-        setSM("" + " TX Error", m, true, true);
+        setSM(" TX Error", m, true, true);
         setTxSent(false);
         setIconStatus("error");
       })
@@ -799,6 +799,7 @@ export default function VaultTokenInfo(props) {
       </div>
     );
   }
+  
   function updateWDAmt(e) {
     setWithdrawAmt(e.target.value);
   }
@@ -878,6 +879,7 @@ export default function VaultTokenInfo(props) {
       <Divider hidden />
       <Divider hidden />
       {props.token.totalSupply !== 0 && showTokenPair()}
+
 
       {props.token.totalSupply === 0 && showInitialize()}
 
