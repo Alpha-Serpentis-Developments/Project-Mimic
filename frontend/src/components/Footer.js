@@ -51,7 +51,7 @@ export default function Footer() {
     <FooterContainer>
       <SocialContainer>
         <SocialStyle className="socialLink twitter">
-          <a href="https://twitter.com/OptionalFinance">
+          <a href="https://twitter.com/OptionalFinance" target="_blank">
             <i
               class="fab fa-twitter  fa-2x"
               style={{
@@ -66,6 +66,7 @@ export default function Footer() {
           <a
             style={{ color: "purple" }}
             href="https://github.com/Alpha-Serpentis-Developments/Project-Mimic"
+            target="_blank"
           >
             <Icon
               size="big"
@@ -81,13 +82,16 @@ export default function Footer() {
           </a>
         </SocialStyle>
         <SocialStyle className="socialLink discord">
-          <a style={{ color: "purple" }} href="https://discord.gg/u9wMgBY">
+          <a
+            style={{ color: "purple" }}
+            href="https://discord.gg/u9wMgBY"
+            target="_blank"
+          >
             <Icon
               size="big"
               name="discord"
               style={{
                 color: "#7289da",
-
                 paddingTop: "12px",
                 paddingLeft: "3px",
               }}
