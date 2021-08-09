@@ -69,19 +69,22 @@ export default function CoveredCallsList(props) {
     return nwConfig[currentChain].prefix + "tx/" + h;
   }
   function OneSellCall(el) {
-    let premiumAmt, oTokenAmt, estYield;
+    let premiumAmt, oTokenAmt, estYield, estYieldAnnualized;
 
     premiumAmt =
       el.returnValues.premiumReceived / 10 ** Number(props.token.tDecimals);
     oTokenAmt = el.returnValues.amountSold / 1e8;
     estYield = (premiumAmt / oTokenAmt) * 100;
     estYield = estYield.toFixed(3);
+    estYieldAnnualized = (((estYield/100 + 1)**52 - 1) * 100);
+    estYieldAnnualized = estYieldAnnualized.toFixed(3);
 
     return (
       <div>
         <div>+ {premiumAmt} WETH</div>
         <div>{oTokenAmt} oTokens Sold</div>
         <div>Est. Yield: {estYield}%</div>
+        <div>Annualized: {estYieldAnnualized}%</div>
       </div>
     );
   }
@@ -90,16 +93,13 @@ export default function CoveredCallsList(props) {
     <CoveredCallDetail>
       <SectionTitle>Traded Covered Calls</SectionTitle>
       <NAVTSContainer>
-        {ts > Date.now ? <TS>Vault is OPENED</TS> : <TS>Vault is CLOSED</TS>}
+        {ts > (Date.now()/1000) ? <TS>Vault is OPENED</TS> : <TS>Vault is CLOSED</TS>}
         <NAV>{props.token.nav}</NAV>
       </NAVTSContainer>
       <HRLine />
       {props.sellCallList.length > 0 ? (
         <div>
           {props.sellCallList.map((t, i) => {
-            // console.log(t);
-            // OneSellCall(t);
-            // let l = `https://etherscan.io/tx/${props.sellCallList[i].transactionHash}`;
             return (
               <IndividualSC>
                 <SCLink

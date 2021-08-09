@@ -13,7 +13,13 @@ export default function MMInstallModal(props) {
       </Header>
       <Modal.Content>
         <Grid textAlign="center">
-          <p>A MetaMask installation is required</p>
+          <p>
+            A{" "}
+            <a href="https://metamask.io/" target="_blank">
+              MetaMask
+            </a>{" "}
+            installation is required
+          </p>
         </Grid>
       </Modal.Content>
       <Modal.Actions>
