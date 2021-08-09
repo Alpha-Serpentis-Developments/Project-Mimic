@@ -3,32 +3,6 @@
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "_newAdmin",
-				"type": "address"
-			}
-		],
-		"name": "changeAdmin",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_newImplementation",
-				"type": "address"
-			}
-		],
-		"name": "changeCurrentImplementation",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
 				"name": "_exchange",
 				"type": "address"
 			},
@@ -103,78 +77,6 @@
 		],
 		"name": "AdminChanged",
 		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint16",
-				"name": "_newFee",
-				"type": "uint16"
-			}
-		],
-		"name": "changeDepositFee",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint16",
-				"name": "_newFee",
-				"type": "uint16"
-			}
-		],
-		"name": "changePerformanceFee",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint16",
-				"name": "_newFee",
-				"type": "uint16"
-			}
-		],
-		"name": "changeWithdrawalFee",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_name",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_symbol",
-				"type": "string"
-			},
-			{
-				"internalType": "address",
-				"name": "_asset",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_withdrawalWindowLength",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_maximumAssets",
-				"type": "uint256"
-			}
-		],
-		"name": "deployNewVaultToken",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
 	},
 	{
 		"anonymous": false,
@@ -293,6 +195,71 @@
 		"type": "function"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_newAdmin",
+				"type": "address"
+			}
+		],
+		"name": "changeAdmin",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_newImplementation",
+				"type": "address"
+			}
+		],
+		"name": "changeCurrentImplementation",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint16",
+				"name": "_newFee",
+				"type": "uint16"
+			}
+		],
+		"name": "changeDepositFee",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint16",
+				"name": "_newFee",
+				"type": "uint16"
+			}
+		],
+		"name": "changePerformanceFee",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint16",
+				"name": "_newFee",
+				"type": "uint16"
+			}
+		],
+		"name": "changeWithdrawalFee",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"inputs": [],
 		"name": "currentImplementation",
 		"outputs": [
@@ -303,6 +270,39 @@
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_symbol",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "_asset",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_withdrawalWindowLength",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_maximumAssets",
+				"type": "uint256"
+			}
+		],
+		"name": "deployNewVaultToken",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{

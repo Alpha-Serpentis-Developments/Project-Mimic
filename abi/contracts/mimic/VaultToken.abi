@@ -31,11 +31,6 @@
 	},
 	{
 		"inputs": [],
-		"name": "RatioAlreadyDefined",
-		"type": "error"
-	},
-	{
-		"inputs": [],
 		"name": "SettlementNotReady",
 		"type": "error"
 	},
@@ -810,6 +805,19 @@
 	},
 	{
 		"inputs": [],
+		"name": "premiumsWithheld",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
 		"name": "reactivateWithdrawalWindow",
 		"outputs": [],
 		"stateMutability": "nonpayable",
@@ -983,6 +991,19 @@
 	{
 		"inputs": [],
 		"name": "sweepFees",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_token",
+				"type": "address"
+			}
+		],
+		"name": "sweepUnrelatedTokens",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"

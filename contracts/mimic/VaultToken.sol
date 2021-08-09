@@ -42,6 +42,8 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     uint256 public maximumAssets;
     /// @notice Obligated fees to the manager
     uint256 public obligatedFees;
+    /// @notice Current reserves
+    uint256 public currentReserves;
     /// @notice Deposit fee
     uint16 public depositFee;
     /// @notice Take profit fee
@@ -50,8 +52,6 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     uint16 public performanceFee;
     /// @notice Withdrawal reserve percentage
     uint16 public withdrawalReserve;
-    /// @notice Current reserves
-    uint256 public currentReserves;
     /// @notice Address of the current oToken
     address public oToken;
     /// @notice Address of the AddressBook
@@ -324,33 +324,6 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         emit WithdrawalWindowActivated(withdrawalWindowExpires);
     }
 
-    /// @notice Write options for an _amount of asset for the specified oToken
-    /// @dev Allows the manager to write options for an x 
-    /// @param _amount amount of the asset to deposit as collateral
-    /// @param _oToken address of the oToken
-    function writeOptions(uint256 _amount, address _oToken) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        _writeOptions(_amount, _oToken);
-    }
-
-    /// @notice Write options for a _percentage of the current balance of the vault
-    /// @dev Uses percentage of the vault instead of a specific number (helpful for multi-sigs)
-    /// @param _percentage A uint16 representing up to 10000 (100.00%) with two decimals of precision for the amount of asset tokens to write
-    /// @param _oToken address of the oToken
-    function writeOptions(uint16 _percentage, address _oToken) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        if(_percentage > 10000)
-            revert Invalid();
-
-        if(_percentage > _percentage - withdrawalReserve)
-            _percentage -= withdrawalReserve;
-        
-        _writeOptions(
-            _percentMultiply(
-                IERC20(asset).balanceOf(address(this)) - currentReserves - obligatedFees, _percentage
-            ),
-            _oToken
-        );
-    }
-
     /// @notice Burns away the oTokens to redeem the asset collateral
     /// @dev Operation to burn away the oTOkens in redemption of the asset collateral
     /// @param _amount Amount of options to burn
@@ -404,6 +377,33 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         }
 
         emit OptionsBurned(_amount);
+    }
+
+    /// @notice Write options for an _amount of asset for the specified oToken
+    /// @dev Allows the manager to write options for an x 
+    /// @param _amount amount of the asset to deposit as collateral
+    /// @param _oToken address of the oToken
+    function writeOptions(uint256 _amount, address _oToken) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
+        _writeOptions(_amount, _oToken);
+    }
+
+    /// @notice Write options for a _percentage of the current balance of the vault
+    /// @dev Uses percentage of the vault instead of a specific number (helpful for multi-sigs)
+    /// @param _percentage A uint16 representing up to 10000 (100.00%) with two decimals of precision for the amount of asset tokens to write
+    /// @param _oToken address of the oToken
+    function writeOptions(uint16 _percentage, address _oToken) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
+        if(_percentage > 10000)
+            revert Invalid();
+
+        if(_percentage > _percentage - withdrawalReserve)
+            _percentage -= withdrawalReserve;
+        
+        _writeOptions(
+            _percentMultiply(
+                IERC20(asset).balanceOf(address(this)) - currentReserves - obligatedFees, _percentage
+            ),
+            _oToken
+        );
     }
 
     /// @notice Operation to sell options to an EXISTING order on AirSwap (via off-chain signature)
