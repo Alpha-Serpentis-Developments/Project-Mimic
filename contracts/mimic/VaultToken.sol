@@ -4,6 +4,7 @@ pragma solidity =0.8.4;
 import {IFactory} from "./interfaces/IFactory.sol";
 import {ISwap, Types} from "./airswap/interfaces/ISwap.sol";
 import {IAddressBook} from "./gamma/interfaces/IAddressBook.sol";
+import {IOracle} from "./gamma/interfaces/IOracle.sol";
 import {Actions, GammaTypes, IController} from "./gamma/interfaces/IController.sol";
 import {OtokenInterface} from "./gamma/interfaces/OtokenInterface.sol";
 import {ERC20Upgradeable} from "../oz/token/ERC20/ERC20Upgradeable.sol";
@@ -18,6 +19,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     error Unauthorized();
     error Unauthorized_COUNTERPARTY_DID_NOT_SIGN();
     error Invalid();
+    error Invalid_StrikeTooDeepITM();
     error NotEnoughFunds();
     error NotEnoughFunds_ReserveViolation();
     error NotEnoughFunds_ObligatedFees();
@@ -422,7 +424,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         uint256 _amount,
         address _oToken,
         Types.Order memory _order
-    ) external onlyManager nonReentrant() whenNotPaused() {
+    ) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
         _writeOptions(
             _amount,
             _oToken
@@ -457,7 +459,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
 
     /// @notice Operation to settle the vault
     /// @dev Settles the currently open vault and opens the withdrawal window
-    function settleVault() external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
+    function settleVault() external ifNotClosed nonReentrant() whenNotPaused() {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
 
@@ -501,6 +503,21 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
             revert NotEnoughFunds();
         if(_oToken != oToken && oToken != address(0))
             revert oTokenNotCleared();
+
+        // Verify option is not too deep ITM
+        if(OtokenInterface(_oToken).isPut()) {
+            if(
+                OtokenInterface(_oToken).strikePrice() < _percentMultiply(IOracle(addressBook.getOracle()).getPrice(OtokenInterface(_oToken).underlyingAsset()), 10000 - 500)
+            ) {
+                revert Invalid_StrikeTooDeepITM();
+            }
+        } else {
+            if(
+                OtokenInterface(_oToken).strikePrice() > _percentMultiply(IOracle(addressBook.getOracle()).getPrice(OtokenInterface(_oToken).underlyingAsset()), 10000 + 500)
+            ) {
+                    revert Invalid_StrikeTooDeepITM();
+            }
+        }
 
         // Calculate reserves if not already done
         if(oToken == address(0))
