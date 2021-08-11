@@ -32,8 +32,9 @@ describe('VaultToken contract (full test)', () => {
         MarginCalculator = await ethers.getContractFactory('MarginCalculator');
         MarginVault = await ethers.getContractFactory('MarginVault');
         AddressBook = await ethers.getContractFactory('AddressBook');
+        Pricer = await ethers.getContractFactory('TestPricer');
 
-        [manager, depositor, depositor_1, depositor_2, random_user, deployer, pricer, fake_multisig, fake_airswap] = await ethers.getSigners();
+        [manager, depositor, depositor_1, depositor_2, random_user, deployer, fake_multisig, fake_airswap] = await ethers.getSigners();
 
         // Deploy all the addresses
         addressBook = await AddressBook.connect(deployer).deploy();
@@ -122,6 +123,9 @@ describe('VaultToken contract (full test)', () => {
             receipt.events[0].args.vaultToken,
             manager
         );
+
+        // Prepare pricer
+        pricer = await Pricer.connect(deployer).deploy(addressBook.getOracle(), mockWETH.address);
 
         // Prepare the oracle
         await oracle.connect(fake_multisig).setAssetPricer(mockWETH.address, pricer.address);
@@ -251,6 +255,7 @@ describe('VaultToken contract (full test)', () => {
     describe("Interact after the withdrawal window closes", () => {
         before(async () => {
             await vaultToken.connect(manager).adjustTheMaximumAssets(ethers.utils.parseUnits('110', 18));
+            await pricer.connect(manager).setTestPrice(ethers.utils.parseUnits('1500', 18));
             await network.provider.send('evm_increaseTime', [86400]);
         });
         it('Should write calls when the withdrawal window is closed', async () => {
@@ -407,10 +412,9 @@ describe('VaultToken contract (full test)', () => {
 
     describe("Settle the vault (OTM)", () => {
         before(async () => {
-            await oracle.connect(pricer).setExpiryPrice(
-                mockWETH.address,
+            await pricer.connect(manager).setTestPrice(999e8);
+            await pricer.connect(manager).setExpiryPriceInOracle(
                 1640937600,
-                999e8
             );
         });
         it('Should settle the vault with no exercise', async () => {
@@ -580,7 +584,7 @@ describe('VaultToken contract (full test)', () => {
                 mockWETH.address,
                 mockUSDC.address,
                 mockWETH.address,
-                ethers.utils.parseUnits('1000', 18),
+                ethers.utils.parseUnits('1000', 8),
                 1640937600 + 604800 , // 2022 Jan. 7 @ 8 UTC
                 false
             );
@@ -669,7 +673,7 @@ describe('VaultToken contract (full test)', () => {
                 mockWETH.address,
                 mockUSDC.address,
                 mockUSDC.address,
-                ethers.utils.parseUnits('1000', 6),
+                ethers.utils.parseUnits('1000', 8),
                 1640937600 + 2419200, // 2022 Jan. 28 @ 8 UTC
                 true
             );
@@ -718,10 +722,9 @@ describe('VaultToken contract (full test)', () => {
         it('Should settle fine without exercise', async () => {
             // Prepare the settlement
             await network.provider.send('evm_setNextBlockTimestamp', [ethers.BigNumber.from(await mockOtoken.expiryTimestamp()).toNumber() + 1]);
-            await oracle.connect(pricer).setExpiryPrice(
-                mockWETH.address,
-                1640937600 + 2419200,
-                1000e8
+            await pricer.connect(manager).setTestPrice(1000e8);
+            await pricer.connect(manager).setExpiryPriceInOracle(
+                1640937600 + 2419200
             );
 
             await vaultToken.settleVault();
@@ -731,7 +734,7 @@ describe('VaultToken contract (full test)', () => {
     });
 
     describe('Closing the vault permanently', async () => {
-        it('Should NOT close the vault', async () => {
+        before(async () => {
             await network.provider.send('evm_increaseTime', [86400]);
 
             // Prepare another oToken
@@ -739,7 +742,7 @@ describe('VaultToken contract (full test)', () => {
                 mockWETH.address,
                 mockUSDC.address,
                 mockUSDC.address,
-                ethers.utils.parseUnits('1000', 6),
+                ethers.utils.parseUnits('1000', 8),
                 1643961600, // 2022 Feb. 4 @ 8 UTC
                 true
             );
@@ -755,7 +758,6 @@ describe('VaultToken contract (full test)', () => {
 
             normalVaultToken = vaultToken;
             vaultToken = new ethers.Contract(vaultToken.address, abi, manager);
-
             await expect(
                 vaultToken.connect(manager)['writeOptions(uint16,address)'](
                     10000,
@@ -763,7 +765,8 @@ describe('VaultToken contract (full test)', () => {
                 )
             ).to.not.be.reverted;
             vaultToken = normalVaultToken;
-
+        });
+        it('Should NOT close the vault', async () => {
             await expect(
                 vaultToken.connect(manager).closeVaultPermanently()
             ).to.be.revertedWith("oTokenNotCleared()");

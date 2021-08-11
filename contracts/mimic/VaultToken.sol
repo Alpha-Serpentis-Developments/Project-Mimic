@@ -339,7 +339,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         uint256 normalizedAmount;
         
         if(OtokenInterface(oToken).isPut()) {
-            normalizedAmount = _normalize(_amount * OtokenInterface(oToken).strikePrice(), 14, ERC20(asset).decimals());
+            normalizedAmount = _normalize(_amount * OtokenInterface(oToken).strikePrice(), 16, ERC20(asset).decimals());
         } else {
            normalizedAmount = _normalize(_amount, 8, 18);
         }
@@ -397,8 +397,8 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         if(_percentage > 10000)
             revert Invalid();
 
-        if(_percentage > _percentage - withdrawalReserve)
-            _percentage -= withdrawalReserve;
+        if(_percentage > 10000 - withdrawalReserve)
+            _percentage -= _percentage - (10000 - withdrawalReserve);
         
         _writeOptions(
             _percentMultiply(
@@ -444,8 +444,8 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         address _oToken,
         Types.Order memory _order
     ) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        if(_percentage > _percentage - withdrawalReserve)
-            _percentage -= withdrawalReserve;
+        if(_percentage > 10000 - withdrawalReserve)
+            _percentage -= _percentage - (10000 - withdrawalReserve);
 
         _writeOptions(
             _percentMultiply(
@@ -571,7 +571,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         uint256 oTokensToWrite;
 
         if(OtokenInterface(_oToken).isPut()) {
-            oTokensToWrite = _normalize(_amount, ERC20(asset).decimals(), 14) / OtokenInterface(_oToken).strikePrice();
+            oTokensToWrite = _normalize(_amount, ERC20(asset).decimals(), 16) / OtokenInterface(_oToken).strikePrice();
         } else {
             oTokensToWrite = _normalize(_amount, ERC20(asset).decimals(), 8);
         }
