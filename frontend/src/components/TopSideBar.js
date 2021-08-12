@@ -1,15 +1,17 @@
-import React from "react";
 import "../App.css";
-import profileImg from "../images/profile.png";
+import styled from "styled-components";
 import { Icon, Grid, Image } from "semantic-ui-react";
-import cover from "../images/cover.png";
+import optionalProfile from "../images/optionalProfile.png";
 
+const TitleImg = styled.img`
+  width: 150px;
+`;
 export default function TopSidebar(props) {
   return (
     <div className="topSidebar">
-      <Grid>
+      <Grid style={{ marginRight: "0px" }}>
         <Grid.Column floated="left" width={5}>
-          <Image src={profileImg} />
+          <TitleImg src={optionalProfile} />
         </Grid.Column>
         <Grid.Column floated="right" width={3}>
           {props.showSidebar ? (

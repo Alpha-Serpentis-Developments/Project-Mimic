@@ -1,4 +1,3 @@
-import React from "react";
 import { Button, Header, Icon, Modal, Grid } from "semantic-ui-react";
 
 export default function MMInstallModal(props) {
@@ -14,7 +13,7 @@ export default function MMInstallModal(props) {
       </Header>
       <Modal.Content>
         <Grid textAlign="center">
-          <p>You didn't install Meta Mask</p>
+          <p>A MetaMask installation is required</p>
         </Grid>
       </Modal.Content>
       <Modal.Actions>

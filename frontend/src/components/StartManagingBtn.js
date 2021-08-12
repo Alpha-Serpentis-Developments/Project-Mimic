@@ -13,11 +13,10 @@ const TXBtn = styled.button`
     margin-left: auto;
   }
 `;
-
-export default function StartTXBtn(props) {
+export default function StartManagingBtn(props) {
   return (
-    <TXBtn className="StartButtons" onClick={props.clickTrade}>
-      <span>Start Trading </span>
+    <TXBtn className="StartButtons" onClick={props.clickManager}>
+      <span>Start Managing</span>
     </TXBtn>
   );
 }

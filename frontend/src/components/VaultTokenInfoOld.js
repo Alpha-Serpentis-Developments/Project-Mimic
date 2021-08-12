@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import StatusMessage from "./StatusMessage";
 import { nwConfig, currentChain } from "./NetworkConfig";
 
@@ -8,7 +8,10 @@ import {
   Grid,
   Divider,
   Icon,
+  Segment,
   Form,
+  Popup,
+  Label,
   Accordion,
 } from "semantic-ui-react";
 import { web3 } from "./Web3Handler";
@@ -16,8 +19,6 @@ import WethWrap from "./WethWrap";
 import Withdraw from "./Withdraw";
 import Deposit from "./Deposit";
 import styled from "styled-components";
-import { VaultToken } from "./VaultToken";
-import { ERC20 } from "./Erc20";
 
 const DWIndicator = styled.div`
   display: flex;
@@ -65,6 +66,17 @@ const WIndicator = styled.div`
   }
 `;
 
+// const InitializeBtn = styled.div`
+//   padding-top: 17px;
+//   cursor: pointer;
+//   border-radius: 20px 20px 0 0;
+//   background-color: #146ca4;
+//   width: 50%;
+//   text-align: center;
+//   &:hover {
+//     background-color: purple;
+//   }
+// `;
 const MagmrCallsIndicator = styled.div`
   display: flex;
   flex-direction: row;
@@ -159,10 +171,7 @@ const ConfirmCancelBtns = styled.div`
   justify-content: space-evenly;
 `;
 export default function VaultTokenInfo(props) {
-  let ct = JSON.parse(localStorage.getItem("cVT") || "{}");
-  let ctAddr = ct.address;
   console.log(props);
-  const [cVT, setcVT] = useState();
   const [depositAmt, setDeposit] = useState(0);
   const [withdrawAmt, setWithdrawAmt] = useState(0);
   const [initializeAmt, setInitializeAmt] = useState(0);
@@ -193,17 +202,6 @@ export default function VaultTokenInfo(props) {
   const [activeIndex, setActiveIndex] = useState(-1);
   const [showD, setShowD] = useState(false);
   const [showW, setShowW] = useState(true);
-
-  useEffect(() => {
-    createVT(ctAddr, ctAddr);
-  }, []);
-
-  function createVT(va, aa) {
-    let t = new VaultToken(web3, va);
-    let a = new ERC20(web3, aa);
-    t.assetObject = a;
-    setcVT(t);
-  }
 
   function ethInputAmt(event) {
     if (event.target.value > props.ethBal) {
@@ -259,17 +257,13 @@ export default function VaultTokenInfo(props) {
         setIconStatus("error");
       })
       .on("confirmation", function (confirmationNumber, receipt) {
-        // setSM(
-        //   label + " TX Confirmed",
-        //   confirmationNumber + " Confirmation Received",
-        //   true,
-        //   false
-        // );
-        // setIconStatus("confirmed");
-        if (confirmationNumber === 1) {
-          setSM(label + " TX Confirmed", "Confirmation Received", true, false);
-          setIconStatus("confirmed");
-        }
+        setSM(
+          label + " TX Confirmed",
+          confirmationNumber + " Confirmation Received",
+          true,
+          false
+        );
+        setIconStatus("confirmed");
       });
   }
 
@@ -291,26 +285,6 @@ export default function VaultTokenInfo(props) {
     }
   }
 
-  function overAmount(a, b, c) {
-    c = c * 1e18;
-    console.log(a, b, c);
-    if (a > b + c) {
-      setSM("Error", "You don't have enough balance", true, true);
-      setIconStatus("error");
-      return;
-    } else if (a > b && a < b + c) {
-      setSM(
-        "Error",
-        `You need to convert ${(a - b) / 1e18} ETH to WETH`,
-        true,
-        true
-      );
-      setIconStatus("error");
-      setShowConvertForm(true);
-      return;
-    }
-  }
-
   function deposit(amt) {
     console.log(props);
     startTX();
@@ -321,7 +295,7 @@ export default function VaultTokenInfo(props) {
     }
     // let amount = web3.utils.toWei(amt, dUnit);
     let amount = web3.utils.toWei(amt, "ether");
-    cVT
+    props.token
       .approveAsset(amount, props.acct)
       .on("transactionHash", function (hash) {
         setTxHash(hash);
@@ -339,7 +313,7 @@ export default function VaultTokenInfo(props) {
       })
       .on("confirmation", function (confirmationNumber, receipt) {
         if (confirmationNumber === 1) {
-          let i = cVT.deposit(amount, props.acct);
+          let i = props.token.deposit(amount, props.acct);
           sendTX(i, "deposit");
           setSM("Approval TX Confirmed", "Confirmation Received", true, false);
 
@@ -357,7 +331,7 @@ export default function VaultTokenInfo(props) {
       return;
     }
     let amount = web3.utils.toWei(amt, "ether");
-    cVT
+    props.token
       .approveAsset(amount, props.acct)
       .on("transactionHash", function (hash) {
         setTxHash(hash);
@@ -375,7 +349,7 @@ export default function VaultTokenInfo(props) {
       })
       .on("confirmation", function (confirmationNumber, receipt) {
         if (confirmationNumber === 1) {
-          let i = cVT.initialize(amount, props.acct);
+          let i = props.token.initialize(amount, props.acct);
           sendTX(i, "initialize");
           setSM("Approval TX Confirmed", " Confirmation Received", true, false);
 
@@ -395,13 +369,13 @@ export default function VaultTokenInfo(props) {
 
     // let amount = web3.utils.toWei(amt, wUnit);
     let amount = web3.utils.toWei(amt, "ether");
-    let w = cVT.withdraw(amount, props.acct);
+    let w = props.token.withdraw(amount, props.acct);
     sendTX(w, "Withdraw");
   }
 
   function settleVault() {
     startTX();
-    let s = cVT.settleVault(props.acct);
+    let s = props.token.settleVault(props.acct);
     sendTX(s, "Settle Vault");
   }
 
@@ -409,7 +383,12 @@ export default function VaultTokenInfo(props) {
     startTX();
     //  let amount = web3.utils.toWei(amt, writeCallUnit);
     let amount = web3.utils.toWei(amt, "ether");
-    let wc = cVT.writeCalls(amount, oTAddress, props.mpAddress, props.acct);
+    let wc = props.token.writeCalls(
+      amount,
+      oTAddress,
+      props.mpAddress,
+      props.acct
+    );
     sendTX(wc, "Write Call");
   }
 
@@ -418,7 +397,12 @@ export default function VaultTokenInfo(props) {
     let amount = parseInt(amt) * (1e8).toString();
     // let pAmount = web3.utils.toWei(premiumAmount, pemiumUnit);
     let pAmount = web3.utils.toWei(premiumAmount, "ether");
-    let sc = cVT.sellCalls(amount, pAmount, otherPartyAddress, props.acct);
+    let sc = props.token.sellCalls(
+      amount,
+      pAmount,
+      otherPartyAddress,
+      props.acct
+    );
     sendTX(sc, "Sell Call");
   }
 
@@ -819,7 +803,6 @@ export default function VaultTokenInfo(props) {
       </div>
     );
   }
-  
   function updateWDAmt(e) {
     setWithdrawAmt(e.target.value);
   }
@@ -877,29 +860,26 @@ export default function VaultTokenInfo(props) {
     <div>
       {showStatus && (
         <Grid>
-          <Grid.Column width={16}>
+          <Grid.Column width={14}>
             <StatusMessage
               statusHeader={statusHeader}
               statusMessage={statusMessage}
               statusError={statusError}
               txHash={txHash}
               iconStatus={iconStatus}
-              resetForm={resetForm}
-              iconStatus={iconStatus}
             />
           </Grid.Column>
-          {/* <Grid.Column width={2} verticalAlign="middle">
+          <Grid.Column width={2} verticalAlign="middle">
             {iconStatus !== "loading" && (
               <Button onClick={resetForm} icon="check" circular />
             )}
-          </Grid.Column> */}
+          </Grid.Column>
         </Grid>
       )}
       {/* {showConvertForm && convertForm()} */}
       <Divider hidden />
       <Divider hidden />
       {props.token.totalSupply !== 0 && showTokenPair()}
-
 
       {props.token.totalSupply === 0 && showInitialize()}
 

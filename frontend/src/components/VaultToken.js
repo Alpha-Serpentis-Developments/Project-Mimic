@@ -15,8 +15,19 @@ export class VaultToken extends ERC20 {
     this.assetObject = null;
     this.manageToken = false;
     this.expireTime = -1;
+    this.collateralAmount = -1;
+    this.oTokenAddr = "";
+    this.oTokenObj = null;
+    this.oTokenNames = [];
+    this.nav = -1;
+    this.yield = -1;
   }
   // return the manager address
+
+  // let ad = events[i].returnValues.vaultToken;
+  // web3.eth.getStorageAt(ad, 2).then((result) => {
+  //   console.log(result);
+  // });
 
   async getManager() {
     return this.vt.methods.manager().call();
@@ -26,9 +37,9 @@ export class VaultToken extends ERC20 {
     this.manager = a;
   }
 
-  async symbol() {
-    return this.vt.methods.symbol().call();
-  }
+  // async symbol() {
+  //   return this.vt.methods.symbol().call();
+  // }
 
   // asset is the contract address of an ERC20 token that can be used to buy or sell this vault token
 
@@ -127,5 +138,44 @@ export class VaultToken extends ERC20 {
       asset = result;
     });
     return asset;
+  }
+
+  findAllOT() {
+    return this.VT.getPastEvents("CallsMinted", {
+      fromBlock: 0,
+      toBlock: "latest",
+    });
+  }
+
+  getCA(w, address) {
+    return w.eth.getStorageAt(address, 8);
+  }
+  setCA(a) {
+    this.collateralAmount = a;
+  }
+
+  getOT(w, address) {
+    return w.eth.getStorageAt(address, 11);
+  }
+  setOT(a) {
+    this.oTokenAddr = a;
+  }
+
+  setNAV(amt) {
+    this.nav = amt;
+  }
+
+  setYield(amt) {
+    this.yield = amt;
+  }
+
+  findAllSellCalls() {
+    return this.vt.getPastEvents("CallsSold", {
+      fromBlock: 0,
+      toBlock: "latest",
+    });
+  }
+  setAllOtokenName(array) {
+    this.oTokenNames = array;
   }
 }

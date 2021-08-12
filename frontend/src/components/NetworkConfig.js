@@ -3,10 +3,11 @@ export let nwConfig = {
     name: "Ethereum",
     chainId: 1,
     color: "green",
-    prefix: "https://etherscan.io/tx/",
+    prefix: "https://etherscan.io/",
     factoryAddress: "0xe73aFc806411859D49977dbADe5c9328CD565Bcb",
     addressBookAddr: "0x1E31F2DCBad4dc572004Eae6355fB18F9615cBe4",
     controllerAddress: "0x4ccc2339F87F6c59c6893E1A678c2266cA58dC72",
+    wethContractAddr: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
     aTokenAddrs: [
       {
         key: "1",
@@ -24,10 +25,11 @@ export let nwConfig = {
     name: "Kovan",
     chainId: 42,
     color: "purple",
-    prefix: "https://kovan.etherscan.io/tx/",
+    prefix: "https://kovan.etherscan.io/",
     factoryAddress: "0xa7CD2F79F9aebc0E0fe9bd33Ebf3ce9bD1eBE20c",
     addressBookAddr: "0x8812f219f507e8cfe9d2f1e790164714c5e06a73",
     controllerAddress: "0xdee7d0f8ccc0f7ac7e45af454e5e7ec1552e8e4e",
+    wethContractAddr: "0xd0a1e359811322d97991e03f863a0c30c2cf029c",
     aTokenAddrs: [
       {
         key: "1",
@@ -45,7 +47,7 @@ export let nwConfig = {
     name: "Ropsten",
     chainId: 3,
     color: "pink",
-    prefix: "https://ropsten.etherscan.io/tx/",
+    prefix: "https://ropsten.etherscan.io/",
     factoryAddress: "0x7a6828ef4ab3cb9c08c40d0a05ad2416c8335c5c",
     addressBookAddr: "0xE71417EEfC794C9B83Fc494861981721e26db0E9",
     controllerAddress: "0x7e9beaccdccee88558aaa2dc121e52ec6226864e",

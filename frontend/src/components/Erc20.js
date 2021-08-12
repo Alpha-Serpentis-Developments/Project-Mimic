@@ -7,6 +7,7 @@ export class ERC20 {
     this.address = address;
     this.tName = "";
     this.tSymbol = "";
+    this.tDecimals = -1;
     this.myBalance = -1;
     this.totalSupply = -1;
     this.ercStatus = true;
@@ -49,8 +50,32 @@ export class ERC20 {
     return this.tName;
   }
 
+  async getSymbol() {
+    if (!this.ercStatus) {
+      return "No Symbol";
+    }
+    return this.erc.methods.symbol().call();
+  }
+  setSymbol(s) {
+    this.tSymbol = s;
+  }
+
   symbol() {
     return this.tSymbol;
+  }
+  async getDecimals() {
+    if (!this.ercStatus) {
+      return "No Symbol";
+    }
+    return this.erc.methods.decimals().call();
+  }
+
+  setDecimals(s) {
+    this.tDecimals = s;
+  }
+
+  decimals() {
+    return this.tDecimals;
   }
 
   async getBalance(addr) {

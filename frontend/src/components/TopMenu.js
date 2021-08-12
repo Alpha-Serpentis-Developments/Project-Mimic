@@ -1,4 +1,3 @@
-import React from "react";
 import { Menu, Button, Header, Icon } from "semantic-ui-react";
 import MMConnect from "./MMconnection";
 import profileImg from "../images/cover.png";

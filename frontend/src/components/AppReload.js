@@ -1,6 +1,5 @@
-import React from "react";
-import { nwConfig, currentChain, setChain } from "./NetworkConfig";
-import { Button, Header, Icon, Modal, Grid } from "semantic-ui-react";
+import { nwConfig, currentChain } from "./NetworkConfig";
+import { Header, Icon, Modal, Grid } from "semantic-ui-react";
 
 export default function AppReload(props) {
   return (
