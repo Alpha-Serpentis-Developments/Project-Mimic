@@ -1,4 +1,12 @@
 // import "../style/mmConnect.css";
+import styled from "styled-components";
+
+const MMBox = styled.div`
+  @media (max-width: 700px) {
+    font-size: 12px;
+    margin-left: -60px;
+  }
+`;
 
 export default function MMconnect(props: {
   btnText: string;
@@ -13,10 +21,10 @@ export default function MMconnect(props: {
   // if not installed, show modal=> this part of the function not working currently
 
   return (
-    <div>
+    <MMBox>
       <div onClick={props.connectMM}>
-        <p>{props.btnText}</p>
+        <p style={{ lineHeight: "0px" }}>{props.btnText}</p>
       </div>
-    </div>
+    </MMBox>
   );
 }

@@ -202,16 +202,17 @@ export default function DeployNewVaultToken(props: {
 
             {showStatus && txSent && (
               <Grid>
-                <Grid.Column width={14}>
+                <Grid.Column width={16}>
                   <StatusMessage
                     statusHeader={statusHeader}
                     statusMessage={statusMessage}
                     statusError={statusError}
                     txHash={txHash}
                     iconStatus={iconStatus}
+                    resetForm={resetForm}
                   />
                 </Grid.Column>
-                <Grid.Column width={2} verticalAlign="middle">
+                {/* <Grid.Column width={2} verticalAlign="middle">
                   {iconStatus !== "loading" && (
                     <Button
                       onClick={resetForm}
@@ -220,7 +221,7 @@ export default function DeployNewVaultToken(props: {
                       color="teal"
                     />
                   )}
-                </Grid.Column>
+                </Grid.Column> */}
               </Grid>
             )}
             {/* {showSuccessMessage && <SuccessMessage />} */}

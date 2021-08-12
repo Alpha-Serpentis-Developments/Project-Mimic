@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
+import { HashRouter as Router } from "react-router-dom";
+import { Link } from "react-router-dom";
+
 import "semantic-ui-css/semantic.min.css";
 
 import { web3 } from "./components/Web3Handler";
 import VTList from "./components/VTList.js";
-import { Button, Icon, Grid, Menu, Sidebar, Message } from "semantic-ui-react";
+import { Icon, Menu, Sidebar, Message, Button } from "semantic-ui-react";
 import DeployNewVaultToken from "./components/DeployNewVaultToken";
-import TopMenu from "./components/TopMenu";
-import Introduction from "./components/Introduction";
+import NavBar from "./components/NavBar";
+import Landing from "./components/Landing";
 import Footer from "./components/Footer";
 import { AddressBook } from "./components/AddressBook";
 import TopSidebar from "./components/TopSideBar";
@@ -14,6 +17,9 @@ import MMInstallModal from "./components/MMInstallModal.js";
 import { nwConfig, currentChain, setChain } from "./components/NetworkConfig";
 import AppReload from "./components/AppReload";
 import ChainAlert from "./components/ChainAlert";
+import MMConnect from "./components/MMconnection";
+import optionalProfile from "./images/optionalProfile.png";
+
 import "./App.css";
 
 declare global {
@@ -26,6 +32,9 @@ let nC: any = nwConfig;
 
 export default function App() {
   let addr: string = JSON.parse(localStorage.getItem("account") || "false");
+  let isVisit: boolean = JSON.parse(localStorage.getItem("new") || "true");
+  console.log(isVisit);
+  const [visited, setVisited] = useState(isVisit);
 
   const [hasMM, setHasMM] = useState<boolean>(false);
   const [btnText, setBtnText] = useState<string>("Connect MetaMask");
@@ -39,9 +48,9 @@ export default function App() {
   const [renderPortfolio, setRenderPortfolio] = useState<boolean>(false);
   const [openPlusModal, setOpenPlusModal] = useState<boolean>(false);
 
-  const [homeNav, setHomeNav] = useState("black");
-  const [managerNav, setManagerNav] = useState("black");
-  const [tradeNav, setTradeNav] = useState("black");
+  const [homeNav, setHomeNav] = useState("#8b1bef");
+  const [managerNav, setManagerNav] = useState("#8b1bef");
+  const [tradeNav, setTradeNav] = useState("#8b1bef");
   const [mmColor, setMMColor] = useState("grey");
   const [showSidebar, setShowSidebar] = useState(false);
   const [showMMInstallModal, setShowMMInstallModal] = useState(false);
@@ -72,14 +81,20 @@ export default function App() {
       const fFive = addr.slice(0, 10);
       const lFive = addr.slice(-8);
       let t = `${fFive}...${lFive}`;
+
       getChainID();
       setBtnText(t);
       getMarginPoolAddress();
       getAccountDetail();
     }
-
+    localStorage.setItem("new", JSON.stringify(visited));
     hasMMInstall();
   }, []);
+
+  async function clickToVisit() {
+    await setVisited(false);
+    localStorage.setItem("new", "false");
+  }
 
   async function getAccountDetail() {
     getChainID();
@@ -139,49 +154,41 @@ export default function App() {
       const fFive = account.slice(0, 10);
       const lFive = account.slice(-8);
       const wAddress = `${fFive}...${lFive}`;
+
       setAcctNum(account);
       setBtnText(wAddress);
-      // const chain_Id = await web3.eth.getChainId();
-      // getChainID();
-      // const weiBal = await web3.eth.getBalance(account);
-      // console.log(weiBal);
-      // const ethBal = parseInt(weiBal) / 1000000000000000000;
-      // // setChainId(chain_Id);
-      // setEthBal(ethBal);
       getAccountDetail();
       localStorage.setItem("account", JSON.stringify(account));
     }
   }
 
   function clickHome(e: any) {
-    e.preventDefault();
     setRenderHome(true);
     setRenderManager(false);
     setRenderPortfolio(false);
     setRenderFollow(false);
-    setHomeNav("purple");
-    setManagerNav("black");
-    setTradeNav("black");
+    setHomeNav("#9489ffba");
+    setManagerNav("#8b1bef");
+    setTradeNav("#8b1bef");
   }
   function clickTrade(e: any) {
-    e.preventDefault();
+    console.log("clicked trade=======");
     setRenderHome(false);
     setRenderManager(false);
     setRenderPortfolio(true);
     setRenderFollow(true);
-    setHomeNav("black");
-    setManagerNav("black");
-    setTradeNav("purple");
+    setHomeNav("#8b1bef");
+    setManagerNav("#8b1bef");
+    setTradeNav("#9489ffba");
   }
   function clickManager(e: any) {
-    e.preventDefault();
     setRenderHome(false);
     setRenderManager(true);
     setRenderPortfolio(false);
     setRenderFollow(false);
-    setHomeNav("black");
-    setManagerNav("purple");
-    setTradeNav("black");
+    setHomeNav("#8b1bef");
+    setManagerNav("#9489ffba");
+    setTradeNav("#8b1bef");
   }
 
   function openModal() {
@@ -200,151 +207,211 @@ export default function App() {
   }
 
   return (
+    // <Router>
     <div>
-      {reload && <AppReload chainId={chainId} reload={reload} />}
-      {/* <Sidebar.Pushable> */}
-      <Sidebar
-        as={Menu}
-        animation="overlay"
-        icon="labeled"
-        inverted
-        onHide={() => setShowSidebar(false)}
-        vertical
-        visible={showSidebar}
-        width="thin"
-        color="purple"
-      >
-        <Menu.Item
-          name="home"
-          position="right"
-          // active={menuActive === "home"}
-          active={renderHome}
-          // onClick={clickMenu}
-          onClick={clickHome}
+      <Router>
+        {reload && <AppReload chainId={chainId} reload={reload} />}
+        {/* <Sidebar.Pushable> */}
+        <Sidebar
+          as={Menu}
+          animation="overlay"
+          icon="labeled"
+          inverted
+          onHide={() => setShowSidebar(false)}
+          vertical
+          visible={showSidebar}
+          style={{ backgroundColor: "#8b1bef", width: "300px" }}
         >
-          <div style={{ color: "white", fontSize: "25px" }}>Home</div>
-        </Menu.Item>
-        <Menu.Item
-          name="trade"
-          position="right"
-          // active={menuActive === "trade"}
-          active={renderFollow}
-          // onClick={clickMenu}
-          onClick={clickTrade}
-        >
-          <div style={{ color: "white", fontSize: "25px" }}>Trade</div>
-        </Menu.Item>
-        <Menu.Item
-          name="manager"
-          position="right"
-          // active={menuActive === "manager"}
-          active={renderManager}
-          onClick={clickManager}
-        >
-          <div style={{ color: "white", fontSize: "25px" }}>Manager</div>
-        </Menu.Item>
-      </Sidebar>
-
-      <Sidebar.Pusher dimmed={showSidebar}>
-        <div
-          className="content"
-          // style={{
-          //   backgroundImage: "linear-gradient(#eddbf4, #f54aefad)",
-          // }}
-        >
-          <TopSidebar
-            showSidebar={showSidebar}
-            clickShowSidebar={clickShowSidebar}
-            clickHideSidebar={clickHideSidebar}
-          />
-          <TopMenu
-            btnText={btnText}
-            acctNum={acctNum}
-            chainId={chainId}
-            ethBal={ethBal}
-            connectMM={connectMM}
-            clickHome={clickHome}
-            clickTrade={clickTrade}
-            clickManager={clickManager}
-            renderHome={renderHome}
-            renderManager={renderManager}
-            renderFollow={renderFollow}
-            renderPortfolio={renderPortfolio}
-            homeNav={homeNav}
-            tradeNav={tradeNav}
-            managerNav={managerNav}
-            mmColor={mmColor}
-          />
-          {!addr && (
-            <div
+          <Menu.Item>
+            <img
+              src={optionalProfile}
               style={{
-                textAlign: "center",
-                fontSize: "20px",
-                marginTop: "20px",
-                color: "red",
+                height: "70px",
+                marginLeft: "auto",
+                marginRight: "auto",
+              }}
+            />{" "}
+          </Menu.Item>
+          <Menu.Item
+            name="home"
+            position="right"
+            // active={menuActive === "home"}
+            active={renderHome}
+            // onClick={clickMenu}
+            onClick={clickHome}
+          >
+            <Link to="/">
+              <div style={{ color: "white", fontSize: "25px" }}>Home</div>
+            </Link>
+          </Menu.Item>
+          <Menu.Item
+            name="trade"
+            position="right"
+            // active={menuActive === "trade"}
+            active={renderFollow}
+            // onClick={clickMenu}
+            onClick={clickTrade}
+          >
+            <Link to="/trade">
+              <div style={{ color: "white", fontSize: "25px" }}>Trade</div>
+            </Link>
+          </Menu.Item>
+          <Menu.Item
+            name="manager"
+            position="right"
+            // active={menuActive === "manager"}
+            active={renderManager}
+            onClick={clickManager}
+          >
+            <Link to="/managed">
+              <div style={{ color: "white", fontSize: "25px" }}>Manager</div>
+            </Link>
+          </Menu.Item>
+          <Menu.Item style={{ margin: "5px" }}>
+            <Button
+              //   color="grey"
+              icon
+              labelPosition="left"
+              size="tiny"
+              style={{
+                backgroundColor: "#8b1bef",
+                color: "white",
+                border: "2px solid white",
+                borderRadius: "10px",
+                borderStyle: "groove",
               }}
             >
-              <Message color="purple" compact>
-                <Icon name="exclamation triangle" color="red" />
-                Please install MetaMask to continue
-              </Message>
-              {/* <a href="https://metamask.io/" style={{ fontWeight: "bold" }}>
-                {" "}
-                MetaMask
-              </a>{" "} */}
-            </div>
-          )}
-          {renderHome && <Introduction clickTrade={clickTrade} />}
-
-          {addr && (
-            <div>
-              <VTList
+              <Icon
+                name="dot circle"
+                size="tiny"
+                style={{ backgroundColor: "#8b1bef", color: `${mmColor}` }}
+              />{" "}
+              <MMConnect
+                btnText={btnText}
                 acctNum={acctNum}
-                mpAddress={mpAddress}
-                renderManager={renderManager}
-                renderFollow={renderFollow}
-                renderPortfolio={renderPortfolio}
+                chainId={chainId}
                 ethBal={ethBal}
+                connectMM={connectMM}
               />
-              {renderManager && (
-                <Grid centered padded>
-                  <Grid.Row />
-                  <Button
-                    icon="plus circle"
-                    size="huge"
-                    color="purple"
-                    onClick={openModal}
-                    disabled={!acctNum}
-                  >
-                    New Token
-                  </Button>
-                  <Grid.Row />
-                  <Grid.Row />
-                  <Grid.Row />
-                </Grid>
-              )}
-            </div>
-          )}
-          <MMInstallModal
-            showMMInstallModal={showMMInstallModal}
-            closeMMInstallModal={closeMMInstallModal}
-          />
-          <ChainAlert showChainAlert={showChainAlert} />
-          <DeployNewVaultToken
-            openPlusModal={openPlusModal}
-            onClose={() => setOpenPlusModal(false)}
-            acctNum={acctNum}
-          />
-        </div>
-        {/* {!renderHome && (
-          <>
+            </Button>
+          </Menu.Item>
+        </Sidebar>
+
+        <Sidebar.Pusher dimmed={showSidebar}>
+          <div
+            className="content"
+            // style={{
+            //   backgroundImage: "linear-gradient(#eddbf4, #f54aefad)",
+            // }}
+          >
+            <TopSidebar
+              showSidebar={showSidebar}
+              clickShowSidebar={clickShowSidebar}
+              clickHideSidebar={clickHideSidebar}
+            />
+            <NavBar
+              btnText={btnText}
+              acctNum={acctNum}
+              chainId={chainId}
+              ethBal={ethBal}
+              connectMM={connectMM}
+              clickHome={clickHome}
+              clickTrade={clickTrade}
+              clickManager={clickManager}
+              renderHome={renderHome}
+              renderManager={renderManager}
+              renderFollow={renderFollow}
+              renderPortfolio={renderPortfolio}
+              homeNav={homeNav}
+              tradeNav={tradeNav}
+              managerNav={managerNav}
+              mmColor={mmColor}
+              visited={visited}
+              clickToVisit={clickToVisit}
+            />
+            {!addr && renderHome && (
+              <div
+                style={{
+                  textAlign: "center",
+                  fontSize: "20px",
+                  backgroundColor: "#8b1bef",
+                  //color: "red",
+                }}
+              >
+                <Message color="purple" compact>
+                  <Icon name="exclamation triangle" color="red" />
+                  Please install MetaMask to continue
+                </Message>
+                <Landing />
+              </div>
+            )}
+            {/* 
+            {!addr && (
+              <div
+                style={{
+                  textAlign: "center",
+                  fontSize: "20px",
+                  backgroundColor: "#8b1bef",
+                  color: "red",
+                }}
+              >
+                <Message color="purple" compact>
+                  <Icon name="exclamation triangle" color="red" />
+                  Please install MetaMask to continue
+                </Message>
+              </div>
+            )} */}
+
+            {addr && (
+              <div>
+                <VTList
+                  acctNum={acctNum}
+                  mpAddress={mpAddress}
+                  renderManager={renderManager}
+                  renderFollow={renderFollow}
+                  renderPortfolio={renderPortfolio}
+                  ethBal={ethBal}
+                  openModal={openModal}
+                  clickHome={clickHome}
+                  clickTrade={clickTrade}
+                  clickManager={clickManager}
+                />
+              </div>
+            )}
+            <MMInstallModal
+              showMMInstallModal={showMMInstallModal}
+              closeMMInstallModal={closeMMInstallModal}
+            />
+            <ChainAlert showChainAlert={showChainAlert} />
+            <DeployNewVaultToken
+              openPlusModal={openPlusModal}
+              onClose={() => setOpenPlusModal(false)}
+              acctNum={acctNum}
+            />
+          </div>
+          {/* {!renderHome && (
+          <div style={{ backgroundImage: "linear-gradient(#493CB3,#1A5387)" }}>
+            <Divider hidden style={{ marginTop: "0px" }} />
             <Divider hidden />
-         
-          </>
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden />
+            <Divider hidden style={{ marginBottom: "0px" }} />
+          </div>
         )} */}
-        <Footer />
-      </Sidebar.Pusher>
-      {/* </Sidebar.Pushable> */}
+          <Footer />
+        </Sidebar.Pusher>
+        {/* </Sidebar.Pushable> */}
+      </Router>
     </div>
+
+    // </Router>
   );
 }
