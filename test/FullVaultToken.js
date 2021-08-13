@@ -447,18 +447,18 @@ describe('VaultToken contract (full test)', () => {
             await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18));
 
             expect(await vaultToken.balanceOf(depositor.address)).to.be.equal(ethers.utils.parseUnits('0.99', 18));
-            expect(await mockWETH.balanceOf(deployer.address)).to.be.equal(ethers.utils.parseUnits('0.01', 18));
+            expect(await vaultToken.withheldProtocolFees()).to.be.equal(ethers.utils.parseUnits('0.01', 18));
         });
         it('Take protocol fees for withdrawing', async () => {
             const prevBal = await mockWETH.balanceOf(depositor.address);
-            const adminBal = await mockWETH.balanceOf(deployer.address);
-            await factory.connect(deployer).changeWithdrawalFee(100);
+            const adminBal = await vaultToken.withheldProtocolFees();
+            await factory.connect(deployer).changeWithdrawalFee(1000);
             
             await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('0.99', 18));
 
             expect(await vaultToken.balanceOf(depositor.address)).to.be.equal(0);
-            expect(await mockWETH.balanceOf(deployer.address)).to.be.equal((ethers.utils.parseUnits('0.0099', 18)).add(adminBal));
-            expect(await mockWETH.balanceOf(depositor.address)).to.be.equal((ethers.utils.parseUnits('0.9801', 18)).add(prevBal));
+            expect(await vaultToken.withheldProtocolFees()).to.be.equal((ethers.utils.parseUnits('0.099', 18)).add(adminBal));
+            expect(await mockWETH.balanceOf(depositor.address)).to.be.equal((ethers.utils.parseUnits('0.891', 18)).add(prevBal));
         });
         it('Verify ratio is still 1:1', async () => {
             const prevBal_0 = await vaultToken.balanceOf(depositor.address);
@@ -521,7 +521,7 @@ describe('VaultToken contract (full test)', () => {
         it('Should correctly charge both fees at the same time (deposit)', async () => {
             const prevBal_0 = await vaultToken.balanceOf(depositor.address);
             const prevBal_1 = await vaultToken.balanceOf(depositor_1.address);
-            const prevBal_admin = await mockWETH.balanceOf(deployer.address);
+            const prevBal_admin = await vaultToken.withheldProtocolFees();
 
             await mockWETH.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
             await mockWETH.connect(depositor_1).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
@@ -531,19 +531,19 @@ describe('VaultToken contract (full test)', () => {
 
             expect(await vaultToken.balanceOf(depositor.address)).to.be.equal((ethers.utils.parseUnits('0.98', 18)).add(prevBal_0));
             expect(await vaultToken.balanceOf(depositor_1.address)).to.be.equal((ethers.utils.parseUnits('0.98', 18)).add(prevBal_1));
-            expect(await mockWETH.balanceOf(deployer.address)).to.be.equal((ethers.utils.parseUnits('0.02', 18)).add(prevBal_admin));
+            expect(await vaultToken.withheldProtocolFees()).to.be.equal((ethers.utils.parseUnits('0.02', 18)).add(prevBal_admin));
         });
         it('Should correctly charge both fees at the same time (withdrawal)', async () => {
             const prevBal_0 = await mockWETH.balanceOf(depositor.address);
             const prevBal_1 = await mockWETH.balanceOf(depositor_1.address);
-            const prevBal_admin = await mockWETH.balanceOf(deployer.address);
+            const prevBal_admin = await vaultToken.withheldProtocolFees();
 
             await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('0.98', 18));
             await vaultToken.connect(depositor_1).withdraw(ethers.utils.parseUnits('0.98', 18));
 
             expect(await mockWETH.balanceOf(depositor.address)).to.be.equal((ethers.utils.parseUnits('0.9604', 18)).add(prevBal_0));
             expect(await mockWETH.balanceOf(depositor_1.address)).to.be.equal((ethers.utils.parseUnits('0.9604', 18)).add(prevBal_1));
-            expect(await mockWETH.balanceOf(deployer.address)).to.be.equal((ethers.utils.parseUnits('0.0196', 18)).add(prevBal_admin));
+            expect(await vaultToken.withheldProtocolFees()).to.be.equal((ethers.utils.parseUnits('0.0196', 18)).add(prevBal_admin));
         });
     });
 

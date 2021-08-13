@@ -114,10 +114,30 @@ describe('VaultToken contract (simple test)', () => {
             expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(1e6);
         });
+        it('Should receive 90e18 vault tokens for 100e6 test tokens (10% protocol deposit fee)', async () => {
+            await factory.connect(deployer).changeDepositFee(1000);
+            await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('100', 6));
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('100', 6));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(ethers.utils.parseUnits('90', 18));
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('101', 6));
+            expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('10', 6));
+        });
+        it('Should receive 81e6 test tokens for 90e18 vault tokens (10% protocol withdrawal fee)', async () => {
+            await factory.connect(deployer).changeWithdrawalFee(1000);
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('90', 18));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(20e6);
+            expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('19', 6));
+        });
     });
 
     describe("Depositor interaction (1:2 ratio)", () => {
         before(async () => {
+            await factory.connect(deployer).changeDepositFee(0);
+            await factory.connect(deployer).changeWithdrawalFee(0);
+            await vaultToken.sendWithheldProtocolFees();
             await testToken.connect(depositor).rugPull(0.5e6, vaultToken.address);
         });
         it('Should receive 1e18 vault tokens for 0.5e6 test tokens', async () => {
@@ -133,10 +153,30 @@ describe('VaultToken contract (simple test)', () => {
             expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(0.5e6);
         });
+        it('Should receive 180e18 vault tokens for 100e6 test tokens (10% protocol deposit fee)', async () => {
+            await factory.connect(deployer).changeDepositFee(1000);
+            await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('100', 6));
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('100', 6));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(ethers.utils.parseUnits('180', 18));
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('100.5', 6));
+            expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('10', 6));
+        });
+        it('Should receive 81e6 test tokens for 180e18 vault tokens (10% protocol withdrawal fee)', async () => {
+            await factory.connect(deployer).changeWithdrawalFee(1000);
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('180', 18));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(19.5e6);
+            expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('19', 6));
+        });
     });
 
     describe("Depositor interaction (2:1 ratio)", () => {
         before(async () => {
+            await factory.connect(deployer).changeDepositFee(0);
+            await factory.connect(deployer).changeWithdrawalFee(0);
+            await vaultToken.sendWithheldProtocolFees();
             await testToken.connect(depositor).transfer(vaultToken.address, 1.5e6);
         });
         it('Should receive 0.5e18 vault tokens for 1e6 test tokens', async () => {
@@ -152,10 +192,30 @@ describe('VaultToken contract (simple test)', () => {
             expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(2e6);
         });
+        it('Should receive 45e18 vault tokens for 100e6 test tokens (10% protocol deposit fee)', async () => {
+            await factory.connect(deployer).changeDepositFee(1000);
+            await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('100', 6));
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('100', 6));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(ethers.utils.parseUnits('45', 18));
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('102', 6));
+            expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('10', 6));
+        });
+        it('Should receive 81e6 test tokens for 45e18 vault tokens (10% protocol withdrawal fee)', async () => {
+            await factory.connect(deployer).changeWithdrawalFee(1000);
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('45', 18));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(21e6);
+            expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('19', 6));
+        });
     });
 
     describe("Depositor interaction (1:4 ratio)", () => {
         before(async () => {
+            await factory.connect(deployer).changeDepositFee(0);
+            await factory.connect(deployer).changeWithdrawalFee(0);
+            await vaultToken.sendWithheldProtocolFees();
             await testToken.connect(depositor).rugPull(1.75e6, vaultToken.address);
         });
         it('Should receive 4e18 vault tokens for 1e6 test tokens', async () => {
@@ -170,6 +230,23 @@ describe('VaultToken contract (simple test)', () => {
 
             expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(0.25e6);
+        });
+        it('Should receive 360e18 vault tokens for 100e6 test tokens (10% protocol deposit fee)', async () => {
+            await factory.connect(deployer).changeDepositFee(1000);
+            await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('100', 6));
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('100', 6));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(ethers.utils.parseUnits('360', 18));
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('100.25', 6));
+            expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('10', 6));
+        });
+        it('Should receive 81e6 test tokens for 360e18 vault tokens (10% protocol withdrawal fee)', async () => {
+            await factory.connect(deployer).changeWithdrawalFee(1000);
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('360', 18));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(19.25e6);
+            expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('19', 6));
         });
     });
 
@@ -198,6 +275,8 @@ describe('VaultToken contract (simple test)', () => {
             );
 
             await testToken.connect(depositor).transfer(manager.address, ethers.utils.parseUnits('1', 20));
+            await factory.connect(deployer).changeDepositFee(0);
+            await factory.connect(deployer).changeWithdrawalFee(0);
         });
 
         it('Should initialize the vault correctly', async () => {
@@ -213,6 +292,29 @@ describe('VaultToken contract (simple test)', () => {
 
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('2', 20));
             expect(await vaultToken.totalSupply()).to.equal(ethers.utils.parseUnits('2', 18));
+        });
+        it('Should receive 1e20 test tokens for 1e18 vault tokens', async () => {
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('1', 18));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('1', 20));
+        });
+        it('Should receive 90e18 vault tokens for 100e20 test tokens (10% protocol deposit fee)', async () => {
+            await factory.connect(deployer).changeDepositFee(1000);
+            await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('100', 20));
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('100', 20));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(ethers.utils.parseUnits('90', 18));
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('101', 20));
+            expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('10', 20));
+        });
+        it('Should receive 81e20 test tokens for 91e18 vault tokens (10% protocol withdrawal fee)', async () => {
+            await factory.connect(deployer).changeWithdrawalFee(1000);
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('90', 18));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('20', 20));
+            expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('19', 20));
         });
     });
 
@@ -241,6 +343,8 @@ describe('VaultToken contract (simple test)', () => {
             );
 
             await testToken.connect(depositor).transfer(manager.address, ethers.utils.parseUnits('1', 18));
+            await factory.connect(deployer).changeDepositFee(0);
+            await factory.connect(deployer).changeWithdrawalFee(0);
         });
 
         it('Should initialize the vault correctly', async () => {
@@ -256,6 +360,29 @@ describe('VaultToken contract (simple test)', () => {
 
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('2', 18));
             expect(await vaultToken.totalSupply()).to.equal(ethers.utils.parseUnits('2', 18));
+        });
+        it('Should receive 1e18 test tokens for 1e18 vault tokens', async () => {
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('1', 18));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('1', 18));
+        });
+        it('Should receive 90e18 vault tokens for 100e18 test tokens (10% protocol deposit fee)', async () => {
+            await factory.connect(deployer).changeDepositFee(1000);
+            await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('100', 18));
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('100', 18));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(ethers.utils.parseUnits('90', 18));
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('101', 18));
+            expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('10', 18));
+        });
+        it('Should receive 81e6 test tokens for 90e18 vault tokens (10% protocol withdrawal fee)', async () => {
+            await factory.connect(deployer).changeWithdrawalFee(1000);
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('90', 18));
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('20', 18));
+            expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('19', 18));
         });
     });
 
