@@ -26,7 +26,7 @@ export let nwConfig = {
     chainId: 42,
     color: "purple",
     prefix: "https://kovan.etherscan.io/",
-    factoryAddress: "0xa7CD2F79F9aebc0E0fe9bd33Ebf3ce9bD1eBE20c",
+    factoryAddress: "0x03b5a144a67198c26751cba726b03c116f41239d",
     addressBookAddr: "0x8812f219f507e8cfe9d2f1e790164714c5e06a73",
     controllerAddress: "0xdee7d0f8ccc0f7ac7e45af454e5e7ec1552e8e4e",
     wethContractAddr: "0xd0a1e359811322d97991e03f863a0c30c2cf029c",

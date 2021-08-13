@@ -53,6 +53,13 @@ export default function VTList(props) {
   }
 
   function getAllVT() {
+    fetch(
+      "https://raw.githubusercontent.com/Alpha-Serpentis-Developments/Mimic-Token-Info/main/tokenInfo.json"
+    )
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+      });
     let factoryObj = new Factory(web3);
 
     let p = factoryObj.findAllVT();
@@ -226,10 +233,11 @@ export default function VTList(props) {
         y = 0;
       } else {
         y =
-          (lastSellCall.returnValues.premiumReceived /
+          lastSellCall.returnValues.premiumReceived /
             1e18 /
             (normalizeValues(lastSellCall.returnValues.amountSold, 8, 18) /
-              10 ** 18)) + 1;
+              10 ** 18) +
+          1;
         y **= 52;
         y -= 1;
         y *= 100;

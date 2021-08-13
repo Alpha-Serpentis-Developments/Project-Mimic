@@ -60,6 +60,7 @@ export default function TokenDes(props) {
       style={{
         backgroundColor: "#070036",
         backgroundImage: "linear-gradient(#8b1bef,#20759D)",
+        minHeight: "100vh",
       }}
     >
       <DesContainer className="tokenDes">
