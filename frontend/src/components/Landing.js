@@ -23,6 +23,7 @@ const LandingText = styled.div`
   padding-top: 41px;
   padding-bottom: 40px;
   color: white;
+  min-height: 100%;
   @media (max-width: 700px) {
     font-size: 25px;
   }

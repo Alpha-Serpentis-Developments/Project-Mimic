@@ -21,6 +21,9 @@ export class VaultToken extends ERC20 {
     this.oTokenNames = [];
     this.nav = -1;
     this.yield = -1;
+    this.twitterLink = "";
+    this.twitterHandle = "";
+    this.vtStrategy = "";
   }
   // return the manager address
 

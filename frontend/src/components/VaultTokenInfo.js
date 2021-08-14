@@ -799,7 +799,7 @@ export default function VaultTokenInfo(props) {
       </div>
     );
   }
-  
+
   function updateWDAmt(e) {
     setWithdrawAmt(e.target.value);
   }
@@ -879,7 +879,6 @@ export default function VaultTokenInfo(props) {
       <Divider hidden />
       <Divider hidden />
       {props.token.totalSupply !== 0 && showTokenPair()}
-
 
       {props.token.totalSupply === 0 && showInitialize()}
 
