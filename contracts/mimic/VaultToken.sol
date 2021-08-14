@@ -243,10 +243,12 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         uint256 vaultMint;
         uint256 protocolFees;
         uint256 vaultFees;
+        
+        uint16 factoryFee = factory.depositFee();
 
         // Calculate protocol-level fees
-        if(factory.depositFee() != 0) {
-            protocolFees = _percentMultiply(_amount, factory.depositFee());
+        if(factoryFee != 0) {
+            protocolFees = _percentMultiply(_amount, factoryFee);
         }
 
         // Calculate vault-level fees
@@ -295,8 +297,10 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         uint256 protocolFee;
         uint256 vaultFee;
         
-        if(factory.withdrawalFee() > 0) {
-            protocolFee = _percentMultiply(assetAmount, factory.withdrawalFee());
+        uint16 factoryFee = factory.withdrawalFee();
+        
+        if(factoryFee > 0) {
+            protocolFee = _percentMultiply(assetAmount, factoryFee);
             withheldProtocolFees += protocolFee;
         }
         if(withdrawalFee > 0) {
@@ -618,11 +622,13 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         if(_order.sender.amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
             revert Invalid();
 
+        address airswap = factory.airswapExchange();
+
         // Approve
-        IERC20(oToken).approve(factory.airswapExchange(), _order.sender.amount);
+        IERC20(oToken).approve(airswap, _order.sender.amount);
 
         // Submit the order
-        ISwap(factory.airswapExchange()).swap(_order);
+        ISwap(airswap).swap(_order);
 
         // Fee calculation + withheldProtocolFees 
         obligatedFees += _percentMultiply(_order.signer.amount, performanceFee);
