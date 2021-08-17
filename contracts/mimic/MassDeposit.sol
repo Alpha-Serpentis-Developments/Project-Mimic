@@ -7,7 +7,7 @@ import {ReentrancyGuard} from "../oz/security/ReentrancyGuard.sol";
 import {VaultToken} from "./VaultToken.sol";
 
 // DO NOT USE IN PROD - STILL EVALUATING
-contract MassDeposit is ReentrancyGuard {
+contract MassDeposit is ERC20, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     error Invalid_ExitTooLarge();
@@ -35,7 +35,7 @@ contract MassDeposit is ReentrancyGuard {
     event RemovedDeposit(address depositor, uint256 amount);
     event ClearedQueue();
 
-    constructor(address _depositingOn, uint256 _maxQueue) {
+    constructor(address _depositingOn, uint256 _maxQueue) ERC20("Cheap Deposit", "TEST") {
         require(_depositingOn != address(0), "0 address");
 
         depositingOn = VaultToken(_depositingOn);
@@ -47,25 +47,32 @@ contract MassDeposit is ReentrancyGuard {
     /// @notice Queue the provided deposit
     /// @dev msg.sender queues _depositAmount to be deposited into the vault
     /// @param _depositAmount Amount of the asset token to deposit
+    // function queueDeposit(uint256 _depositAmount) external nonReentrant() {
+    //     // Check if the queue is filled
+    //     if(addressQueue.length == maxQueue)
+    //         revert MaxQueueHit();
+        
+    //     QueueDeposit memory deposit;
+        
+    //     if(deposit.depositor != msg.sender) {
+    //         addressQueue.push(msg.sender);
+    //         deposit.depositor = msg.sender;
+    //     } else {
+    //         deposit.depositor = msg.sender;   
+    //     }
+
+    //     deposit.depositAmount += _depositAmount;
+    //     queued[msg.sender] = deposit;
+    //     collectiveQueue += _depositAmount;
+
+    //     //IERC20(depositingOn.asset()).safeTransferFrom(msg.sender, address(this), _depositAmount);
+
+    //     emit NewQueuedDeposit(msg.sender, _depositAmount);
+    // }
+
     function queueDeposit(uint256 _depositAmount) external nonReentrant() {
-        // Check if the queue is filled
-        if(addressQueue.length == maxQueue)
-            revert MaxQueueHit();
-        
-        QueueDeposit memory deposit;
-        
-        if(deposit.depositor != msg.sender) {
-            addressQueue.push(msg.sender);
-            deposit.depositor = msg.sender;
-        } else {
-            deposit.depositor = msg.sender;   
-        }
-
-        deposit.depositAmount += _depositAmount;
-        queued[msg.sender] = deposit;
-        collectiveQueue += _depositAmount;
-
-        //IERC20(depositingOn.asset()).safeTransferFrom(msg.sender, address(this), _depositAmount);
+        IERC20(depositingOn.asset()).safeTransferFrom(msg.sender, address(this), _depositAmount);
+        _mint(msg.sender, _depositAmount);
 
         emit NewQueuedDeposit(msg.sender, _depositAmount);
     }
