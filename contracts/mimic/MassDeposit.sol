@@ -47,35 +47,33 @@ contract MassDeposit is ERC20, ReentrancyGuard {
     /// @notice Queue the provided deposit
     /// @dev msg.sender queues _depositAmount to be deposited into the vault
     /// @param _depositAmount Amount of the asset token to deposit
-    // function queueDeposit(uint256 _depositAmount) external nonReentrant() {
-    //     // Check if the queue is filled
-    //     if(addressQueue.length == maxQueue)
-    //         revert MaxQueueHit();
-        
-    //     QueueDeposit memory deposit;
-        
-    //     if(deposit.depositor != msg.sender) {
-    //         addressQueue.push(msg.sender);
-    //         deposit.depositor = msg.sender;
-    //     } else {
-    //         deposit.depositor = msg.sender;   
-    //     }
-
-    //     deposit.depositAmount += _depositAmount;
-    //     queued[msg.sender] = deposit;
-    //     collectiveQueue += _depositAmount;
-
-    //     //IERC20(depositingOn.asset()).safeTransferFrom(msg.sender, address(this), _depositAmount);
-
-    //     emit NewQueuedDeposit(msg.sender, _depositAmount);
-    // }
-
     function queueDeposit(uint256 _depositAmount) external nonReentrant() {
+        // Check if the queue is filled
+        if(addressQueue.length == maxQueue)
+            revert MaxQueueHit();
+        
+        QueueDeposit storage deposit = queued[msg.sender];
+        
+        if(deposit.depositor != msg.sender) {
+            addressQueue.push(msg.sender);
+            deposit.depositor = msg.sender;
+        }
+
+        deposit.depositAmount += _depositAmount;
+        //collectiveQueue += _depositAmount;
+
         IERC20(depositingOn.asset()).safeTransferFrom(msg.sender, address(this), _depositAmount);
-        _mint(msg.sender, _depositAmount);
+        // _mint(msg.sender, _depositAmount);
 
         emit NewQueuedDeposit(msg.sender, _depositAmount);
     }
+
+    // function queueDeposit(uint256 _depositAmount) external nonReentrant() {
+    //     IERC20(depositingOn.asset()).safeTransferFrom(msg.sender, address(this), _depositAmount);
+    //     _mint(msg.sender, _depositAmount);
+
+    //     emit NewQueuedDeposit(msg.sender, _depositAmount);
+    // }
     
     /// @notice Exit the queue with the amount to exit
     /// @dev Reduces msg.sender amount in queue up to the initial queued amount
