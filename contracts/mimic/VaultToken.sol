@@ -212,7 +212,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
 
     /// @notice Allows the manager to disperse obligatedFees to the depositors
     /// @dev Transfers _amount to the vault and deducts against obligatedFees
-    function disperseFees(uint256 _amount) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
+    function disperseFees(uint256 _amount) external onlyManager nonReentrant() whenNotPaused() {
         if(_amount > obligatedFees)
             revert NotEnoughFunds_ObligatedFees();
 
@@ -227,7 +227,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         currentReserves = IERC20(asset).balanceOf(address(this));
     }
 
-    function sendWithheldProtocolFees() external ifNotClosed nonReentrant() whenNotPaused() {
+    function sendWithheldProtocolFees() external nonReentrant() whenNotPaused() {
         IERC20(asset).safeTransfer(factory.admin(), withheldProtocolFees);
         withheldProtocolFees = 0;
     }
@@ -331,7 +331,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     /// @notice Allows anyone to call it in the event the withdrawal window is closed, but no action has occurred within 1 day
     /// @dev Reopens the withdrawal window for a minimum of one day, whichever is greater
     function reactivateWithdrawalWindow() external ifNotClosed nonReentrant() whenNotPaused() {
-        if(block.timestamp < withdrawalWindowExpires + 1 days)
+        if(block.timestamp < withdrawalWindowExpires + 1 days || oToken != address(0))
             revert Invalid();
         
         if(withdrawalWindowLength > 1 days)

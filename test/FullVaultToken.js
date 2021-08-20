@@ -319,10 +319,34 @@ describe('VaultToken contract (full test)', () => {
             
             expect(await mockWETH.balanceOf(depositor.address)).to.equal(priorBalance.add(ethers.utils.parseUnits('11', 18)));
         });
+        it('Should NOT allow a depositor to reopen the withdrawal window', async () => {
+            // Setup the scenario
+            await mockWETH.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18));
+            await network.provider.send('evm_increaseTime', [86400]);
+
+            normalVaultToken = vaultToken;
+            vaultToken = new ethers.Contract(vaultToken.address, abi, manager);
+
+            await expect(
+                vaultToken.connect(manager)['writeOptions(uint256,address)'](
+                    ethers.utils.parseUnits('1', 18),
+                    mockOtokenAddr
+                )
+            ).to.not.be.reverted;
+            vaultToken = normalVaultToken;
+
+            // Attempt to reopen the window
+            await expect(
+                vaultToken.connect(depositor).reactivateWithdrawalWindow()
+            ).to.be.revertedWith("Invalid");
+            
+        });
     });
 
     describe("Handle oTokens getting sent to the vault token directly", () => {
         before(async () => {
+            await vaultToken.connect(manager).burnOptions(ethers.utils.parseUnits('1', 8));
             await mockWETH.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('11', 18));
             await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('11', 18));
 
@@ -381,10 +405,17 @@ describe('VaultToken contract (full test)', () => {
             await mockOtoken.connect(random_user).transfer(vaultToken.address, ethers.utils.parseUnits('1', 8));
         });
         it('Ratio should not change for random oToken deposit', async () => {
+            const prevSupply = await vaultToken.totalSupply();
+
             await mockWETH.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
             await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18));
 
-            expect(await vaultToken.totalSupply()).to.equal(ethers.utils.parseUnits('107', 18));
+            expect(await vaultToken.totalSupply()).to.equal(ethers.utils.parseUnits('1', 18).add(prevSupply));
+        });
+        it('Sweep the unrelated oToken', async () => {
+            await vaultToken.connect(manager).sweepUnrelatedTokens(mockOtoken.address);
+
+            expect(await mockOtoken.balanceOf(manager.address)).to.be.equal(ethers.utils.parseUnits('1', 8));
         });
     });
 
@@ -420,7 +451,7 @@ describe('VaultToken contract (full test)', () => {
         it('Should settle the vault with no exercise', async () => {
             await vaultToken.connect(manager).settleVault();
 
-            expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('107', 18));
+            expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('108', 18));
         });
         it('Should let people withdraw from the vault', async () => {
             const depBal = (await vaultToken.balanceOf(depositor.address)).add(await mockWETH.balanceOf(depositor.address));

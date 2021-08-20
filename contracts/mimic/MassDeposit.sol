@@ -96,7 +96,7 @@ contract MassDeposit is ERC20, ReentrancyGuard {
             deposit.depositAmount -= _amountToExit;
         }
 
-        collectiveQueue -= _amountToExit;
+        //collectiveQueue -= _amountToExit;
         assetToken.safeTransfer(msg.sender, _amountToExit);
         
         emit RemovedDeposit(msg.sender, _amountToExit);
