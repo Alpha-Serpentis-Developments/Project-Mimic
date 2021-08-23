@@ -11,6 +11,11 @@
 	},
 	{
 		"inputs": [],
+		"name": "Invalid_StrikeTooDeepITM",
+		"type": "error"
+	},
+	{
+		"inputs": [],
 		"name": "MaximumFundsReached",
 		"type": "error"
 	},
@@ -618,7 +623,7 @@
 		"inputs": [
 			{
 				"internalType": "bool",
-				"name": "_pause",
+				"name": "_val",
 				"type": "bool"
 			}
 		],
@@ -983,6 +988,13 @@
 	},
 	{
 		"inputs": [],
+		"name": "sendWithheldProtocolFees",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
 		"name": "settleVault",
 		"outputs": [],
 		"stateMutability": "nonpayable",
@@ -1142,6 +1154,19 @@
 	{
 		"inputs": [],
 		"name": "withdrawalWindowLength",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "withheldProtocolFees",
 		"outputs": [
 			{
 				"internalType": "uint256",
