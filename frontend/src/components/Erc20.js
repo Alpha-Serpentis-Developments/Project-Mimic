@@ -13,22 +13,6 @@ export class ERC20 {
     this.ercStatus = true;
     this.erc = new web3.eth.Contract(abi, address);
   }
-  async getName1(f) {
-    if (!this.ercStatus) {
-      return this.tName;
-    }
-    let name = "undefined";
-    await this.erc.methods.name().call({ from: f }, function (error, result) {
-      if (error !== null) {
-        return "undefined";
-      }
-      name = result;
-    });
-    // this.erc.methods.symbol().call(function (error, result) {
-    //   this.tSymbol = result;
-    // });
-    return name;
-  }
 
   async getName(f) {
     if (!this.ercStatus) {
@@ -65,7 +49,7 @@ export class ERC20 {
   }
   async getDecimals() {
     if (!this.ercStatus) {
-      return "No Symbol";
+      return "No Decimal Available";
     }
     return this.erc.methods.decimals().call();
   }
