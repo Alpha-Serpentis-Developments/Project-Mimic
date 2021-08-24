@@ -100,7 +100,8 @@ export default function DeployNewVaultToken(props: {
         setIconStatus("confirmed");
       });
   }
-  function handleClick(e: any) {
+  async function handleClick(e: any) {
+    getATDecimal(assetTokenAddr);
     startTX();
     e.preventDefault();
     if (tokenName === "" || tokenSymble === "" || assetTokenAddr === "") {
@@ -108,8 +109,11 @@ export default function DeployNewVaultToken(props: {
       setIconStatus("error");
       return;
     }
-    // let amount = web3.utils.toWei(maxAmt, "ether");
-    let amount = parseInt(maxAmt) * 10 ** atDecial;
+
+    let amounta = web3.utils.toWei(maxAmt, "ether");
+    console.log(typeof amounta);
+    let amount = (10 ** atDecial * parseFloat(maxAmt)).toString();
+    console.log(amount);
     let c = factory.deployNewVT(
       tokenName,
       tokenSymble,
@@ -143,11 +147,13 @@ export default function DeployNewVaultToken(props: {
   }
 
   function getATDecimal(atAddr: string) {
+    console.log(atAddr);
     let at = new ERC20(web3, atAddr);
     at.getDecimals()
       .then((result) => {
         at.setDecimals(result);
         setATDecimal(result);
+        console.log(atDecial);
       })
       .catch((error) => {
         at.ercStatus = false;
@@ -264,7 +270,6 @@ export default function DeployNewVaultToken(props: {
               // value={second}
               onChange={(e: any) => {
                 setAssetTokenAddr(e.target.value);
-                getATDecimal(e.target.value);
               }}
               required
             />

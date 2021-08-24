@@ -1,4 +1,5 @@
 import { ERC20 } from "./Erc20";
+
 const vtabi = require("../abi/vtAbi.json");
 
 // create a vault token class and inherent ERC 20 class
@@ -86,20 +87,20 @@ export class VaultToken extends ERC20 {
     this.vaultBalance = parseInt(amount);
   }
 
-  initialize1(amount, f) {
-    this.assetObject.approve(this.address, amount, f).then((result) => {
-      console.log("approve result +");
-      console.log(result);
-    });
-    return this.vt.methods["initializeRatio"](amount).send({ from: f });
-  }
+  // initialize1(amount, f) {
+  //   this.assetObject.approve(this.address, amount, f).then((result) => {
+  //     console.log("approve result +");
+  //     console.log(result);
+  //   });
+  //   return this.vt.methods["initializeRatio"](amount).send({ from: f });
+  // }
 
   approveAsset(amount, f) {
     return this.assetObject.approve(this.address, amount, f);
   }
-  initialize(amount, f) {
-    return this.vt.methods["initializeRatio"](amount).send({ from: f });
-  }
+  // initialize(amount, f) {
+  //   return this.vt.methods["initializeRatio"](amount).send({ from: f });
+  // }
 
   findWithdrawalWindowActivated() {
     return this.vt.getPastEvents("WithdrawalWindowActivated", {
@@ -112,13 +113,24 @@ export class VaultToken extends ERC20 {
     return this.vt.methods["settleVault"]().send({ from: f });
   }
 
-  writeCalls(amount, otAddress, mpAddress, f) {
+  writeCalls1(amount, otAddress, mpAddress, f) {
     return this.vt.methods["writeCalls"](amount, otAddress, mpAddress).send({
       from: f,
     });
   }
 
-  sellCalls(amount, premiumAmount, otherPartyAddress, f) {
+  //   function displayName(param1, param2, option) {
+  //     switch(option) {
+  //        case 'JUST_NAME':
+  //            return `Hi ${param1}`;
+  //        case 'FULL_NAME':
+  //            return `Hi ${param1} ${param2}`;
+  //       default:
+  //           return 'No option provided.';
+  //      }
+  // }
+
+  sell(amount, premiumAmount, otherPartyAddress, f) {
     return this.vt.methods["sellCalls"](
       amount,
       premiumAmount,
@@ -173,12 +185,37 @@ export class VaultToken extends ERC20 {
   }
 
   findAllSellCalls() {
-    return this.vt.getPastEvents("CallsSold", {
+    return this.vt.getPastEvents("OptionsSold", {
       fromBlock: 0,
       toBlock: "latest",
     });
   }
   setAllOtokenName(array) {
     this.oTokenNames = array;
+  }
+
+  writeOptionsAmt(amount, otAddress, f) {
+    return this.vt.methods["writeCalls"](amount, otAddress).send({
+      from: f,
+    });
+  }
+  writeOptionsPcent(pcent, otAddress, f) {
+    return this.vt.methods["writeCalls"](pcent, otAddress).send({
+      from: f,
+    });
+  }
+
+  sellOptions(a, f) {
+    return this.vt.methods["sellOptions"](a).send({ from: f });
+  }
+  writeAndSellOptionsAmt(amount, otAddress, a, f) {
+    return this.vt.methods["writeAndSellOptions"](amount, otAddress, a).send({
+      from: f,
+    });
+  }
+  writeAndSellOptionsPcent(pcent, otAddress, a, f) {
+    return this.vt.methods["writeAndSellOptions"](pcent, otAddress, a).send({
+      from: f,
+    });
   }
 }
