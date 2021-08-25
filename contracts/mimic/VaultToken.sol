@@ -307,6 +307,7 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
             vaultFee = _percentMultiply(assetAmount, withdrawalFee);
             obligatedFees += vaultFee;
         }
+        assetAmount = _calculatePenalty(assetAmount);
 
         assetAmount -= (protocolFee + vaultFee);
 
@@ -643,6 +644,29 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
 
     function _calculateAndSetReserves() internal {
         currentReserves = _percentMultiply(IERC20(asset).balanceOf(address(this)) - obligatedFees, withdrawalReserve);
+    }
+
+    function _calculatePenalty(uint256 _assetAmount) internal view returns(uint256 adjustedBal) {
+        if(oToken == address(0))
+            return _assetAmount;
+        
+        uint256 strikePrice = OtokenInterface(oToken).strikePrice();
+        uint256 oraclePrice = IOracle(addressBook.getOracle()).getPrice(OtokenInterface(oToken).underlyingAsset());
+        uint16 percentageForUser;
+
+        if(OtokenInterface(oToken).isPut() && strikePrice > oraclePrice) {
+            percentageForUser = uint16(
+                (10e22 * oraclePrice / strikePrice)/10e18
+            );
+            adjustedBal = _percentMultiply(_assetAmount, percentageForUser);
+        } else if(oraclePrice > strikePrice) {
+            percentageForUser = uint16(
+                (10e22 * strikePrice / oraclePrice)/10e18
+            );
+            adjustedBal = _percentMultiply(_assetAmount, percentageForUser);
+        } else {
+            adjustedBal = _assetAmount;
+        }
     }
 
     function _onlyManager() internal view {

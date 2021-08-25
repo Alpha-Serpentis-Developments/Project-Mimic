@@ -255,7 +255,7 @@ describe('VaultToken contract (full test)', () => {
     describe("Interact after the withdrawal window closes", () => {
         before(async () => {
             await vaultToken.connect(manager).adjustTheMaximumAssets(ethers.utils.parseUnits('110', 18));
-            await pricer.connect(manager).setTestPrice(ethers.utils.parseUnits('1500', 18));
+            await pricer.connect(manager).setTestPrice(ethers.utils.parseUnits('1000', 18));
             await network.provider.send('evm_increaseTime', [86400]);
         });
         it('Should write calls when the withdrawal window is closed', async () => {
@@ -680,6 +680,16 @@ describe('VaultToken contract (full test)', () => {
                 vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('1', 18))
             ).to.be.revertedWith("NotEnoughFunds_ReserveViolation()");
         });
+        it('Should penalize the user for withdrawing early', async () => {
+            const prevBalVaultWETH = await mockWETH.balanceOf(vaultToken.address);
+            const prevBal = await mockWETH.balanceOf(depositor.address);
+
+            await pricer.connect(manager).setTestPrice(2000e8);
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('0.2', 18));
+
+            expect(await mockWETH.balanceOf(depositor.address)).to.be.equal(prevBal.add(ethers.utils.parseUnits('0.1', 18)));
+            
+        });
     });
 
     describe("Put test", async () => {
@@ -717,6 +727,7 @@ describe('VaultToken contract (full test)', () => {
                 mockOtokenAddr,
                 fake_multisig
             );
+            await pricer.connect(manager).setTestPrice(1000e8);
         });
 
         it('Should allow deposits in mockUSDC', async () => {
