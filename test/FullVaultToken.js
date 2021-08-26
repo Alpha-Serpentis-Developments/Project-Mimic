@@ -773,6 +773,56 @@ describe('VaultToken contract (full test)', () => {
 
             expect(await mockUSDC.balanceOf(vaultToken.address)).to.be.equal(500e6);
         });
+
+        it('Should penalize the user for withdrawing ITM', async () => {
+            // Prepare another oToken
+            await network.provider.send('evm_increaseTime', [86400]);
+
+            mockOtokenTransaction = await otokenFactory.connect(fake_multisig).createOtoken(
+                mockWETH.address,
+                mockUSDC.address,
+                mockUSDC.address,
+                ethers.utils.parseUnits('1000', 8),
+                1643961600, // 2022 Feb. 4 @ 8 UTC
+                true
+            );
+
+            const mockOtokenReceipt = await mockOtokenTransaction.wait();
+            mockOtokenAddr = mockOtokenReceipt.events[1].args[0];
+
+            mockOtoken = await ethers.getContractAt(
+                'Otoken',
+                mockOtokenAddr,
+                fake_multisig
+            );
+            
+            await vaultToken.connect(manager).adjustWithdrawalReserve(2000);
+
+            normalVaultToken = vaultToken;
+            vaultToken = new ethers.Contract(vaultToken.address, abi, manager);
+            await expect(
+                vaultToken.connect(manager)['writeOptions(uint16,address)'](
+                    10000,
+                    mockOtokenAddr
+                )
+            ).to.not.be.reverted;
+            vaultToken = normalVaultToken;
+                
+            await pricer.connect(manager).setTestPrice(500e8);
+
+            const prevBal_mockUSDC = await mockUSDC.balanceOf(depositor.address);
+            
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('100', 18));
+            expect(await mockUSDC.balanceOf(depositor.address)).to.be.equal(prevBal_mockUSDC.add(50e6));
+            
+            // To clear the below
+            await pricer.connect(manager).setTestPrice(1000e8);
+            await network.provider.send('evm_setNextBlockTimestamp', [1643961600 + 1]);
+            await pricer.connect(manager).setExpiryPriceInOracle(
+                1643961600
+            );
+            await vaultToken.settleVault();
+        });
     });
 
     describe('Closing the vault permanently', async () => {
@@ -785,7 +835,7 @@ describe('VaultToken contract (full test)', () => {
                 mockUSDC.address,
                 mockUSDC.address,
                 ethers.utils.parseUnits('1000', 8),
-                1643961600, // 2022 Feb. 4 @ 8 UTC
+                1644566400, // 2022 Feb. 11 @ 8 UTC
                 true
             );
 
@@ -853,11 +903,11 @@ describe('VaultToken contract (full test)', () => {
             const prevBal = await mockUSDC.balanceOf(depositor.address);
 
             await vaultToken.connect(depositor).withdraw(
-                ethers.utils.parseUnits('500', 18)
+                ethers.utils.parseUnits('100', 18)
             );
-
-            expect(await mockUSDC.balanceOf(depositor.address) - prevBal).to.be.equal(500e6);
-            expect(await vaultToken.totalSupply()).to.be.equal(0);
+            
+            // Offset 12.5e6 due to the previous penalty distribution
+            expect(await mockUSDC.balanceOf(depositor.address)).to.be.equal(prevBal.add(112.5e6));
         });
     });
 
