@@ -10,6 +10,8 @@ import {
   Icon,
   Form,
   Accordion,
+  Menu,
+  Dropdown,
 } from "semantic-ui-react";
 import { web3 } from "./Web3Handler";
 import WethWrap from "./WethWrap";
@@ -161,10 +163,13 @@ export default function VaultTokenInfo(props) {
   const [oTokenAddress, setOTokenaddress] = useState("");
   const [writeCallAmt, setWriteCallAmt] = useState(0);
   const [writeCallPcent, setWriteCallPcent] = useState(0);
+  const [writeSellOptionAmt, setWriteSellOptionAmt] = useState(0);
+  const [writeSellOptionPcent, setWriteSellOptionPcent] = useState(0);
   const [typeHash, setTypeHash] = useState("");
   const [asHash, setASHash] = useState({});
 
   const [showWriteCall, setShowWriteCall] = useState(false);
+  const [showWriteSellOption, setShowWriteSellOption] = useState(false);
   const [showSellCall, setShowSellCall] = useState(false);
   const [writeColor, setWriteColor] = useState("teal");
   const [sellColor, setSellColor] = useState("teal");
@@ -185,6 +190,7 @@ export default function VaultTokenInfo(props) {
   const [activeIndex, setActiveIndex] = useState(-1);
   const [showD, setShowD] = useState(false);
   const [showW, setShowW] = useState(true);
+  const [onAmt, setOnAmt] = useState(1);
 
   useEffect(() => {
     createVT(ctAddr, ctAddr);
@@ -197,14 +203,7 @@ export default function VaultTokenInfo(props) {
     setcVT(t);
   }
 
-  async function sellOptions(e) {
-    if (typeHash === "") {
-      setSM("Error", "Form input Error", true, true);
-      setIconStatus("error");
-      return;
-    }
-
-    console.log("atsell");
+  async function getTypeHash() {
     const typeUrlPrefix = await "https://dweb.link/ipfs/";
     const typeUrl = await (typeUrlPrefix + typeHash);
     console.log(typeUrl);
@@ -218,6 +217,17 @@ export default function VaultTokenInfo(props) {
       .catch((error) => {
         console.error("Error:", error);
       });
+  }
+
+  function sellOptions(e) {
+    if (typeHash === "") {
+      setSM("Error", "Form input Error", true, true);
+      setIconStatus("error");
+      return;
+    }
+
+    console.log("atsell");
+    getTypeHash();
     startTX();
     e.preventDefault();
     let s = cVT.sellOptions(asHash);
@@ -384,6 +394,31 @@ export default function VaultTokenInfo(props) {
     sendTX(wc, "Write and sell");
   }
 
+  function comfirmWriteSellOptionsPcent(e) {
+    startTX();
+    e.preventDefault();
+    if (writeCallAmt === 0 || oTokenAddress === "") {
+      setSM("Error", "Form input Error", true, true);
+      setIconStatus("error");
+
+      return;
+    }
+
+    writeSellOptionsPcent(writeCallAmt, oTokenAddress, asHash);
+  }
+  function comfirmWriteSellOptionsAmt(e) {
+    startTX();
+    e.preventDefault();
+    if (writeCallAmt === 0 || oTokenAddress === "") {
+      setSM("Error", "Form input Error", true, true);
+      setIconStatus("error");
+
+      return;
+    }
+    getTypeHash();
+    writeSellOptionsAmt(writeCallAmt, oTokenAddress, asHash);
+  }
+
   function confirmWriteCallAmt(e) {
     startTX();
     e.preventDefault();
@@ -394,7 +429,7 @@ export default function VaultTokenInfo(props) {
       return;
     }
 
-    writeSellOptionsAmt(writeCallAmt, oTokenAddress);
+    writeCallAmtF(writeCallAmt, oTokenAddress);
   }
   function confirmWriteCallPcent(e) {
     startTX();
@@ -406,7 +441,7 @@ export default function VaultTokenInfo(props) {
       return;
     }
 
-    writeSellOptionsPcent(writeCallPcent, oTokenAddress);
+    writeCallPcentF(writeCallPcent, oTokenAddress);
   }
 
   function startTX() {
@@ -460,6 +495,11 @@ export default function VaultTokenInfo(props) {
     );
   }
 
+  const options = [
+    { key: 1, text: props.token.assetObject.tSymbol, value: 1 },
+    { key: 2, text: "%", value: 2 },
+  ];
+
   function writeCallRender() {
     return (
       <MgmrCallForm>
@@ -475,9 +515,14 @@ export default function VaultTokenInfo(props) {
               justifyContent: "center",
             }}
           >
-            <div style={{ marginTop: "10px" }}>Amount</div>
+            {/* <div style={{ marginTop: "10px" }}>Amount</div> */}
+
             <input
-              style={{ width: " 60%", marginLeft: "15px", marginRight: "15px" }}
+              style={{
+                width: " 60%",
+                marginLeft: "15px",
+                marginRight: "15px",
+              }}
               value={writeCallAmt}
               // onChange={(e) => setWriteCallAmt(e.target.value)}
               onChange={(e) => {
@@ -488,15 +533,34 @@ export default function VaultTokenInfo(props) {
                     props.token.assetObject.myBalance,
                     props.ethBal
                   );
-                  setWriteCallAmt(e.target.value);
+                  if (onAmt === 1) {
+                    setWriteCallAmt(e.target.value);
+                  } else {
+                    setWriteCallPcent(e.target.value);
+                  }
                 } else {
-                  setWriteCallAmt(e.target.value);
+                  if (onAmt === 1) {
+                    setWriteCallAmt(e.target.value);
+                  } else {
+                    setWriteCallPcent(e.target.value);
+                  }
                 }
               }}
             />
-            <div style={{ marginTop: "10px" }}>
+            <Dropdown
+              item
+              simple
+              direction="right"
+              compact
+              selection
+              options={options}
+              style={{ width: "80px" }}
+              onChange={(e, data) => setOnAmt(data.value)}
+            />
+
+            {/* <div style={{ marginTop: "10px" }}>
               {props.token.assetObject.tSymbol}
-            </div>
+            </div> */}
           </Form.Group>
 
           <Form.Field
@@ -513,7 +577,9 @@ export default function VaultTokenInfo(props) {
             <Button
               style={{ width: "40%" }}
               color="teal"
-              onClick={confirmWriteCallAmt}
+              onClick={
+                onAmt === 1 ? confirmWriteCallAmt : confirmWriteCallPcent
+              }
               disabled={btnDisabled}
             >
               Write Call
@@ -532,6 +598,95 @@ export default function VaultTokenInfo(props) {
               disabled={btnDisabled}
             >
               Cancel
+            </Button>
+          </ConfirmCancelBtns>
+        </Form>
+      </MgmrCallForm>
+    );
+  }
+
+  function renderWriteSellOptions() {
+    return (
+      <MgmrCallForm>
+        <Form>
+          <Divider hidden />
+          <Form.Group
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              marginTop: "30px",
+              marginBottom: "50px",
+              justifyContent: "center",
+            }}
+          >
+            {/* <div style={{ marginTop: "10px" }}>Amount</div> */}
+
+            <input
+              style={{
+                width: " 60%",
+                marginLeft: "15px",
+                marginRight: "15px",
+              }}
+              // onChange={(e) => setWriteCallAmt(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value > 0) {
+                  let a = web3.utils.toWei(e.target.value, "ether");
+                  overAmount(
+                    a,
+                    props.token.assetObject.myBalance,
+                    props.ethBal
+                  );
+                  if (onAmt === 1) {
+                    setWriteSellOptionAmt(e.target.value);
+                  } else {
+                    setWriteSellOptionPcent(e.target.value);
+                  }
+                } else {
+                  if (onAmt === 1) {
+                    setWriteSellOptionAmt(e.target.value);
+                  } else {
+                    setWriteSellOptionPcent(e.target.value);
+                  }
+                }
+              }}
+            />
+            <Dropdown
+              item
+              simple
+              direction="right"
+              compact
+              selection
+              options={options}
+              style={{ width: "80px" }}
+              onChange={(e, data) => setOnAmt(data.value)}
+            />
+
+            {/* <div style={{ marginTop: "10px" }}>
+              {props.token.assetObject.tSymbol}
+            </div> */}
+          </Form.Group>
+          <Form.Field
+            style={{ width: "90%", marginRight: "auto", marginLeft: "auto" }}
+          >
+            <label>TX Hash</label>
+            <input
+              value={typeHash}
+              onChange={(e) => setTypeHash(e.target.value)}
+            />
+          </Form.Field>
+          <ConfirmCancelBtns>
+            {" "}
+            <Button
+              style={{ width: "40%" }}
+              color="teal"
+              onClick={
+                onAmt === 1
+                  ? comfirmWriteSellOptionsAmt
+                  : comfirmWriteSellOptionsPcent
+              }
+              disabled={btnDisabled}
+            >
+              Write Sell Option{" "}
             </Button>
           </ConfirmCancelBtns>
         </Form>
@@ -580,6 +735,8 @@ export default function VaultTokenInfo(props) {
             onClick={() => {
               setShowWriteCall(true);
               setWriteColor("teal");
+              setShowWriteSellOption(false);
+
               setShowSellCall(false);
               setSellColor("grey");
               setSettleColor("grey");
@@ -596,6 +753,7 @@ export default function VaultTokenInfo(props) {
             onClick={() => {
               setShowSellCall(true);
               setShowWriteCall(false);
+              setShowWriteSellOption(false);
               setSellColor("teal");
               setWriteColor("grey");
               setSettleColor("grey");
@@ -605,7 +763,22 @@ export default function VaultTokenInfo(props) {
           >
             Sell Call
           </SellCallBtn>
-
+          <SellCallBtn
+            labelPosition="right"
+            color={writeColor}
+            onClick={() => {
+              setShowWriteSellOption(true);
+              setWriteColor("teal");
+              setShowSellCall(false);
+              setShowWriteCall(false);
+              setSellColor("grey");
+              setSettleColor("grey");
+              setManagerClick(true);
+            }}
+            disabled={btnDisabled}
+          >
+            Write Call Option
+          </SellCallBtn>
           <SettleVaultBtn
             color={settleColor}
             onClick={settleVault}
@@ -617,6 +790,7 @@ export default function VaultTokenInfo(props) {
 
         {showWriteCall && writeCallRender()}
         {showSellCall && renderSellCall()}
+        {showWriteSellOption && renderWriteSellOptions()}
       </div>
     );
   }
@@ -689,14 +863,8 @@ export default function VaultTokenInfo(props) {
               iconStatus={iconStatus}
             />
           </Grid.Column>
-          {/* <Grid.Column width={2} verticalAlign="middle">
-            {iconStatus !== "loading" && (
-              <Button onClick={resetForm} icon="check" circular />
-            )}
-          </Grid.Column> */}
         </Grid>
       )}
-      {/* {showConvertForm && convertForm()} */}
       <Divider hidden />
       <Divider hidden />
       {props.token.totalSupply !== 0 && showTokenPair()}
