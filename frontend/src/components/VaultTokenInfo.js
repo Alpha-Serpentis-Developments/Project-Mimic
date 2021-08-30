@@ -464,6 +464,14 @@ export default function VaultTokenInfo(props) {
     setActiveIndex(newIndex);
   }
 
+  function overPcent(a) {
+    if (a > 100) {
+      setSM("Error", "You cannot enter number over 100", true, true);
+      setIconStatus("error");
+      return;
+    }
+  }
+
   function convertForm() {
     return (
       <div style={{ textAlign: "center" }}>
@@ -523,25 +531,21 @@ export default function VaultTokenInfo(props) {
                 marginLeft: "15px",
                 marginRight: "15px",
               }}
-              value={writeCallAmt}
               // onChange={(e) => setWriteCallAmt(e.target.value)}
               onChange={(e) => {
                 if (e.target.value > 0) {
-                  let a = web3.utils.toWei(e.target.value, "ether");
-                  overAmount(
-                    a,
-                    props.token.assetObject.myBalance,
-                    props.ethBal
-                  );
                   if (onAmt === 1) {
+                    let a = web3.utils.toWei(e.target.value, "ether");
+                    overAmount(
+                      a,
+                      props.token.assetObject.myBalance,
+                      props.ethBal
+                    );
+                    console.log(onAmt);
                     setWriteCallAmt(e.target.value);
                   } else {
-                    setWriteCallPcent(e.target.value);
-                  }
-                } else {
-                  if (onAmt === 1) {
-                    setWriteCallAmt(e.target.value);
-                  } else {
+                    let a = e.target.value;
+                    overPcent(a);
                     setWriteCallPcent(e.target.value);
                   }
                 }
@@ -555,7 +559,11 @@ export default function VaultTokenInfo(props) {
               selection
               options={options}
               style={{ width: "80px" }}
-              onChange={(e, data) => setOnAmt(data.value)}
+              onChange={async (e, data) => {
+                console.log(data.value);
+                await setOnAmt(data.value);
+                console.log(onAmt);
+              }}
             />
 
             {/* <div style={{ marginTop: "10px" }}>
@@ -630,21 +638,17 @@ export default function VaultTokenInfo(props) {
               // onChange={(e) => setWriteCallAmt(e.target.value)}
               onChange={(e) => {
                 if (e.target.value > 0) {
-                  let a = web3.utils.toWei(e.target.value, "ether");
-                  overAmount(
-                    a,
-                    props.token.assetObject.myBalance,
-                    props.ethBal
-                  );
                   if (onAmt === 1) {
+                    let a = web3.utils.toWei(e.target.value, "ether");
+                    overAmount(
+                      a,
+                      props.token.assetObject.myBalance,
+                      props.ethBal
+                    );
                     setWriteSellOptionAmt(e.target.value);
                   } else {
-                    setWriteSellOptionPcent(e.target.value);
-                  }
-                } else {
-                  if (onAmt === 1) {
-                    setWriteSellOptionAmt(e.target.value);
-                  } else {
+                    let a = e.target.value;
+                    overPcent(a);
                     setWriteSellOptionPcent(e.target.value);
                   }
                 }
@@ -863,8 +867,14 @@ export default function VaultTokenInfo(props) {
               iconStatus={iconStatus}
             />
           </Grid.Column>
+          {/* <Grid.Column width={2} verticalAlign="middle">
+            {iconStatus !== "loading" && (
+              <Button onClick={resetForm} icon="check" circular />
+            )}
+          </Grid.Column> */}
         </Grid>
       )}
+      {/* {showConvertForm && convertForm()} */}
       <Divider hidden />
       <Divider hidden />
       {props.token.totalSupply !== 0 && showTokenPair()}
