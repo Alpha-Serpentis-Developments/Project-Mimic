@@ -17,7 +17,6 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     using SafeERC20 for IERC20;
 
     error Unauthorized();
-    error Unauthorized_COUNTERPARTY_DID_NOT_SIGN();
     error Invalid();
     error Invalid_StrikeTooDeepITM();
     error NotEnoughFunds();
@@ -29,6 +28,12 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     error oTokenNotCleared();
     error SettlementNotReady();
     error ClosedPermanently();
+
+    struct Waiver {
+        uint16 depositDeduction;
+        uint16 withdrawalDeduction;
+        bool isERC1155;
+    }
 
     /// @notice Time in which the withdrawal window expires
     uint256 public withdrawalWindowExpires;
@@ -48,6 +53,8 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     uint256 public currentReserves;
     /// @notice Fees to the protocol
     uint256 public withheldProtocolFees;
+    /// @notice Tokens the manager can set to have fees reduced/waived
+    mapping(address => Waiver) public waiverTokens;
     /// @notice Deposit fee
     uint16 public depositFee;
     /// @notice Take profit fee
@@ -81,6 +88,8 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     event WithdrawalFeeModified(uint16 newFee);
     event PerformanceFeeModified(uint16 newFee);
     event WithdrawalReserveModified(uint16 newReserve);
+    event WaiverTokenModified(address token, uint16 depositDeduction, uint16 withdrawawlDeduction, bool isERC1155);
+    event VaultClosedPermanently();
 
     modifier onlyManager {
         _onlyManager();
@@ -185,10 +194,31 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
     }
 
     /// @notice Changes the withdrawal window length
-    /// @dev Changes the withdrawalWindowLength
+    /// @dev Changes the withdrawalWindowLength in UNIX time
     /// @param _newValue new withdrawalWindowLength period
     function adjustWithdrawalWindowLength(uint256 _newValue) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
         withdrawalWindowLength = _newValue;
+    }
+
+    /// @notice Adjusts the waiver for a specific token
+    /// @dev Replaces the waiver settings for a specific token with the specific parameters
+    /// @param _token Token address of the ERC20/ERC1155 eligible for waiver
+    /// @param _depositDeduction Fee deduction against the deposit represented in % form with two decimals of precision (100.00% = 10000)
+    /// @param _withdrawalDeduction Fee deduction against the withdrawal represented in % form with two decimals of precision (100.00% = 10000)
+    /// @param _isERC1155 Boolean to determine if the token provided for the waiver is an ERC1155 or not (IMPORTANT)
+    function adjustWaiver(
+        address _token,
+        uint16 _depositDeduction,
+        uint16 _withdrawalDeduction,
+        bool _isERC1155
+    ) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
+        Waiver storage waiver = waiverTokens[_token];
+
+        waiver.depositDeduction = _depositDeduction;
+        waiver.withdrawalDeduction = _withdrawalDeduction;
+        waiver.isERC1155 = _isERC1155;
+
+        emit WaiverTokenModified(_token, _depositDeduction, _withdrawalDeduction, _isERC1155);
     }
 
     /// @notice Allows the manager to collect fees
@@ -225,6 +255,8 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
 
         closedPermanently = true;
         currentReserves = IERC20(asset).balanceOf(address(this));
+
+        emit VaultClosedPermanently();
     }
 
     function sendWithheldProtocolFees() external nonReentrant() whenNotPaused() {
