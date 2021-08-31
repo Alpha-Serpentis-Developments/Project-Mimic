@@ -20,7 +20,6 @@ import Deposit from "./Deposit";
 import styled from "styled-components";
 import { VaultToken } from "./VaultToken";
 import { ERC20 } from "./Erc20";
-import { type } from "os";
 
 const DWIndicator = styled.div`
   display: flex;
@@ -316,7 +315,7 @@ export default function VaultTokenInfo(props) {
       return;
     }
     // let amount = web3.utils.toWei(amt, dUnit);
-    let amount = web3.utils.toWei(amt, "ether");
+    let amount = amt * props.token.tDecimals;
     cVT
       .approveAsset(amount, props.acct)
       .on("transactionHash", function (hash) {
@@ -354,7 +353,7 @@ export default function VaultTokenInfo(props) {
     }
 
     // let amount = web3.utils.toWei(amt, wUnit);
-    let amount = web3.utils.toWei(amt, "ether");
+    let amount = amt * props.token.tDecimals;
     let w = cVT.withdraw(amount, props.acct);
     sendTX(w, "Withdraw");
   }
@@ -546,7 +545,7 @@ export default function VaultTokenInfo(props) {
                   } else {
                     let a = e.target.value;
                     overPcent(a);
-                    setWriteCallPcent(e.target.value);
+                    setWriteCallPcent(e.target.value * 100);
                   }
                 }
               }}
@@ -649,7 +648,7 @@ export default function VaultTokenInfo(props) {
                   } else {
                     let a = e.target.value;
                     overPcent(a);
-                    setWriteSellOptionPcent(e.target.value);
+                    setWriteSellOptionPcent(e.target.value * 100);
                   }
                 }
               }}
