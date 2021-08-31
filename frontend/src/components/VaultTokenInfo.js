@@ -545,7 +545,11 @@ export default function VaultTokenInfo(props) {
                   } else {
                     let a = e.target.value;
                     overPcent(a);
+<<<<<<< HEAD
                     setWriteCallPcent(e.target.value * 100);
+=======
+                    setWriteCallPcent(e.target.value);
+>>>>>>> upstream/frontend-v0.2
                   }
                 }
               }}
@@ -648,7 +652,11 @@ export default function VaultTokenInfo(props) {
                   } else {
                     let a = e.target.value;
                     overPcent(a);
+<<<<<<< HEAD
                     setWriteSellOptionPcent(e.target.value * 100);
+=======
+                    setWriteSellOptionPcent(e.target.value);
+>>>>>>> upstream/frontend-v0.2
                   }
                 }
               }}
