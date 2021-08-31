@@ -396,7 +396,7 @@ export default function VaultTokenInfo(props) {
   function comfirmWriteSellOptionsPcent(e) {
     startTX();
     e.preventDefault();
-    if (writeCallAmt === 0 || oTokenAddress === "") {
+    if (writeSellOptionAmt === 0 || txHash === "") {
       setSM("Error", "Form input Error", true, true);
       setIconStatus("error");
 
@@ -408,7 +408,7 @@ export default function VaultTokenInfo(props) {
   function comfirmWriteSellOptionsAmt(e) {
     startTX();
     e.preventDefault();
-    if (writeCallAmt === 0 || oTokenAddress === "") {
+    if (writeSellOptionPcent === 0 || txHash === "") {
       setSM("Error", "Form input Error", true, true);
       setIconStatus("error");
 
