@@ -26,12 +26,6 @@ export class VaultToken extends ERC20 {
     this.twitterHandle = "";
     this.vtStrategy = "";
   }
-  // return the manager address
-
-  // let ad = events[i].returnValues.vaultToken;
-  // web3.eth.getStorageAt(ad, 2).then((result) => {
-  //   console.log(result);
-  // });
 
   async getManager() {
     return this.vt.methods.manager().call();
@@ -40,12 +34,6 @@ export class VaultToken extends ERC20 {
   setManager(a) {
     this.manager = a;
   }
-
-  // async symbol() {
-  //   return this.vt.methods.symbol().call();
-  // }
-
-  // asset is the contract address of an ERC20 token that can be used to buy or sell this vault token
 
   async getAsset() {
     return this.vt.methods.asset().call();
@@ -87,20 +75,9 @@ export class VaultToken extends ERC20 {
     this.vaultBalance = parseInt(amount);
   }
 
-  // initialize1(amount, f) {
-  //   this.assetObject.approve(this.address, amount, f).then((result) => {
-  //     console.log("approve result +");
-  //     console.log(result);
-  //   });
-  //   return this.vt.methods["initializeRatio"](amount).send({ from: f });
-  // }
-
   approveAsset(amount, f) {
     return this.assetObject.approve(this.address, amount, f);
   }
-  // initialize(amount, f) {
-  //   return this.vt.methods["initializeRatio"](amount).send({ from: f });
-  // }
 
   findWithdrawalWindowActivated() {
     return this.vt.getPastEvents("WithdrawalWindowActivated", {
@@ -113,46 +90,12 @@ export class VaultToken extends ERC20 {
     return this.vt.methods["settleVault"]().send({ from: f });
   }
 
-  writeCalls1(amount, otAddress, mpAddress, f) {
-    return this.vt.methods["writeCalls"](amount, otAddress, mpAddress).send({
-      from: f,
-    });
-  }
-
-  //   function displayName(param1, param2, option) {
-  //     switch(option) {
-  //        case 'JUST_NAME':
-  //            return `Hi ${param1}`;
-  //        case 'FULL_NAME':
-  //            return `Hi ${param1} ${param2}`;
-  //       default:
-  //           return 'No option provided.';
-  //      }
-  // }
-
   sell(amount, premiumAmount, otherPartyAddress, f) {
     return this.vt.methods["sellCalls"](
       amount,
       premiumAmount,
       otherPartyAddress
     ).send({ from: f });
-  }
-
-  async symbol1() {
-    let symbol = "";
-    await this.vt.methods.symbol().call(function (error, result) {
-      console.log(result);
-      symbol = result;
-    });
-    return symbol;
-  }
-
-  async getAsset1(f) {
-    let asset = "";
-    await this.vt.methods.asset().call({ from: f }, function (error, result) {
-      asset = result;
-    });
-    return asset;
   }
 
   findAllOT() {
