@@ -13,6 +13,12 @@ contract Factory is ReentrancyGuard {
     error ContractCreationFailed();
     error ZeroAddress();
 
+    struct Implementations {
+        address vaultToken;
+        address vaultActions;
+        address vaultComponents;
+    }
+
     /// @notice Protocol-level fees for deposits represented with two decimals of precision up to 50% (5000)
     uint16 public depositFee;
     /// @notice Protocol-level fees for performance (sell calls) with two decimals of precision up to 50% (5000)

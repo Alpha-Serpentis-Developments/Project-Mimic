@@ -15,6 +15,10 @@ import "../proxy/utils/Initializable.sol";
  * simply including this module, only once the modifiers are put in place.
  */
 abstract contract PausableUpgradeable is Initializable, ContextUpgradeable {
+    
+    error ContractPaused();
+    error ContractNotPaused();
+
     /**
      * @dev Emitted when the pause is triggered by `account`.
      */
@@ -54,7 +58,7 @@ abstract contract PausableUpgradeable is Initializable, ContextUpgradeable {
      * - The contract must not be paused.
      */
     modifier whenNotPaused() {
-        require(!paused(), "Pausable: paused");
+        _whenNotPaused();
         _;
     }
 
@@ -92,6 +96,16 @@ abstract contract PausableUpgradeable is Initializable, ContextUpgradeable {
     function _unpause() internal virtual whenPaused {
         _paused = false;
         emit Unpaused(_msgSender());
+    }
+
+    function _whenNotPaused() internal virtual {
+        if(_paused)
+            revert ContractPaused();
+    }
+
+    function _whenPaused() internal virtual {
+        if(!_paused)
+            revert ContractNotPaused();
     }
     uint256[49] private __gap;
 }

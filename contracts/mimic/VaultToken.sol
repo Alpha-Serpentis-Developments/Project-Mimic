@@ -1,108 +1,22 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity =0.8.4;
 
+import {VaultActions} from "./VaultActions.sol";
 import {IFactory} from "./interfaces/IFactory.sol";
 import {ISwap, Types} from "./airswap/interfaces/ISwap.sol";
 import {IAddressBook} from "./gamma/interfaces/IAddressBook.sol";
 import {IOracle} from "./gamma/interfaces/IOracle.sol";
-import {Actions, GammaTypes, IController} from "./gamma/interfaces/IController.sol";
 import {OtokenInterface} from "./gamma/interfaces/OtokenInterface.sol";
+import {Actions, GammaTypes, IController} from "./gamma/interfaces/IController.sol";
 import {ERC20Upgradeable} from "../oz/token/ERC20/ERC20Upgradeable.sol";
 import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
 import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 import {PausableUpgradeable} from "../oz/security/PausableUpgradeable.sol";
-import {ReentrancyGuardUpgradeable} from "../oz/security/ReentrancyGuardUpgradeable.sol";
 
-contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
+//import "hardhat/console.sol";
+
+contract VaultToken is ERC20Upgradeable, VaultActions {
     using SafeERC20 for IERC20;
-
-    error Unauthorized();
-    error Invalid();
-    error Invalid_StrikeTooDeepITM();
-    error NotEnoughFunds();
-    error NotEnoughFunds_ReserveViolation();
-    error NotEnoughFunds_ObligatedFees();
-    error MaximumFundsReached();
-    error WithdrawalWindowNotActive();
-    error WithdrawalWindowActive();
-    error oTokenNotCleared();
-    error SettlementNotReady();
-    error ClosedPermanently();
-
-    struct Waiver {
-        uint16 depositDeduction;
-        uint16 withdrawalDeduction;
-        bool isERC1155;
-    }
-
-    /// @notice Time in which the withdrawal window expires
-    uint256 public withdrawalWindowExpires;
-    /// @notice Length of time where the withdrawal window is active
-    uint256 public withdrawalWindowLength;
-    /// @notice Amount of collateral for the address already used for collateral
-    uint256 public collateralAmount;
-    /// @notice Amount temporarily withheld for the round by premiums
-    uint256 public premiumsWithheld;
-    /// @notice Current active vault
-    uint256 private currentVaultId;
-    /// @notice Maximum funds
-    uint256 public maximumAssets;
-    /// @notice Obligated fees to the manager
-    uint256 public obligatedFees;
-    /// @notice Current reserves
-    uint256 public currentReserves;
-    /// @notice Fees to the protocol
-    uint256 public withheldProtocolFees;
-    /// @notice Tokens the manager can set to have fees reduced/waived
-    mapping(address => Waiver) public waiverTokens;
-    /// @notice Deposit fee
-    uint16 public depositFee;
-    /// @notice Take profit fee
-    uint16 public withdrawalFee;
-    /// @notice Performance fee (taken when options are sold)
-    uint16 public performanceFee;
-    /// @notice Withdrawal reserve percentage
-    uint16 public withdrawalReserve;
-    /// @notice Address of the current oToken
-    address public oToken;
-    /// @notice Address of the AddressBook
-    IAddressBook private addressBook;
-    /// @notice Address of the underlying asset to trade
-    address public asset;
-    /// @notice Address of the manager (admin)
-    address public manager;
-    /// @notice Address of the factory
-    IFactory public factory;
-    /// @notice Determines if the vault is closed permanently
-    bool public closedPermanently;
-
-    event Deposit(uint256 assetDeposited, uint256 vaultTokensMinted);
-    event Withdrawal(uint256 assetWithdrew, uint256 vaultTokensBurned);
-    event WithdrawalWindowActivated(uint256 closesAfter);
-    event OptionsMinted(uint256 collateralDeposited, address indexed newOtoken, uint256 vaultId);
-    event OptionsBurned(uint256 oTokensBurned);
-    event OptionsSold(uint256 amountSold, uint256 premiumReceived);
-    event ReservesEstablished(uint256 allocatedReserves);
-    event MaximumAssetsModified(uint256 newAUM);
-    event DepositFeeModified(uint16 newFee);
-    event WithdrawalFeeModified(uint16 newFee);
-    event PerformanceFeeModified(uint16 newFee);
-    event WithdrawalReserveModified(uint16 newReserve);
-    event WaiverTokenModified(address token, uint16 depositDeduction, uint16 withdrawawlDeduction, bool isERC1155);
-    event VaultClosedPermanently();
-
-    modifier onlyManager {
-        _onlyManager();
-        _;
-    }
-    modifier withdrawalWindowCheck(bool _revertIfClosed) {
-        _withdrawalWindowCheck(_revertIfClosed);
-        _;
-    }
-    modifier ifNotClosed {
-        _ifNotClosed();
-        _;
-    }
 
     function initialize(
         string memory _name,
@@ -122,312 +36,27 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         withdrawalWindowLength = _withdrawalWindowLength;
         maximumAssets = _maximumAssets;
     }
-
-    /// @notice For emergency use
-    /// @dev Stops all activities on the vault (or reactivates them)
-    /// @param _val true to pause the vault, false to unpause the vault
-    function emergency(bool _val) external ifNotClosed onlyManager {
-        if(_val)
-            super._pause();
-        else
-            super._unpause();
-    }
-
-    /// @notice Changes the maximum allowed deposits under management
-    /// @dev Changes the maximumAssets to the new amount
-    /// @param _newValue new maximumAssets value
-    function adjustTheMaximumAssets(uint256 _newValue) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        if(_newValue < collateralAmount + IERC20(asset).balanceOf(address(this)))
-            revert Invalid();
-
-        maximumAssets = _newValue;
-
-        emit MaximumAssetsModified(_newValue);
-    }
-
-    /// @notice Changes the deposit fee
-    /// @dev Changes the depositFee with two decimals of precision up to 50.00% (5000)
-    /// @param _newValue new depositFee with two decimals of precision
-    function adjustDepositFee(uint16 _newValue) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        if(_newValue > 5000)
-            revert Invalid();
-
-        depositFee = _newValue;
-
-        emit DepositFeeModified(_newValue);
-    }
-
-    /// @notice Changes the withdrawal fee
-    /// @dev Changes the withdrawalFee with two decimals of precision up to 50.00% (5000)
-    /// @param _newValue new withdrawalFee with two decimals of precision
-    function adjustWithdrawalFee(uint16 _newValue) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        if(_newValue > 5000)
-            revert Invalid();
-
-        withdrawalFee = _newValue;
-
-        emit WithdrawalFeeModified(_newValue);
-    }
-    
-    /// @notice Changes the performance fee
-    /// @dev Changes the performanceFee with two decimals of precision up to 50.00% (5000)
-    /// @param _newValue new performanceFee with two decimals of precision
-    function adjustPerformanceFee(uint16 _newValue) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        if(_newValue > 5000)
-            revert Invalid();
-            
-        performanceFee = _newValue;
-        
-        emit PerformanceFeeModified(_newValue);
-    }
-
-    /// @notice Changes the withdrawal reserve percentage
-    /// @dev Changes the withdrawalReserve with two decimals of precision up to 50.00% (5000)
-    /// @param _newValue new withdrawalReserve with two decimals of precision
-    function adjustWithdrawalReserve(uint16 _newValue) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        if(_newValue > 5000)
-            revert Invalid();
-
-        withdrawalReserve = _newValue;
-
-        emit WithdrawalReserveModified(_newValue);
-    }
-
-    /// @notice Changes the withdrawal window length
-    /// @dev Changes the withdrawalWindowLength in UNIX time
-    /// @param _newValue new withdrawalWindowLength period
-    function adjustWithdrawalWindowLength(uint256 _newValue) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        withdrawalWindowLength = _newValue;
-    }
-
-    /// @notice Adjusts the waiver for a specific token
-    /// @dev Replaces the waiver settings for a specific token with the specific parameters
-    /// @param _token Token address of the ERC20/ERC1155 eligible for waiver
-    /// @param _depositDeduction Fee deduction against the deposit represented in % form with two decimals of precision (100.00% = 10000)
-    /// @param _withdrawalDeduction Fee deduction against the withdrawal represented in % form with two decimals of precision (100.00% = 10000)
-    /// @param _isERC1155 Boolean to determine if the token provided for the waiver is an ERC1155 or not (IMPORTANT)
-    function adjustWaiver(
-        address _token,
-        uint16 _depositDeduction,
-        uint16 _withdrawalDeduction,
-        bool _isERC1155
-    ) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        Waiver storage waiver = waiverTokens[_token];
-
-        waiver.depositDeduction = _depositDeduction;
-        waiver.withdrawalDeduction = _withdrawalDeduction;
-        waiver.isERC1155 = _isERC1155;
-
-        emit WaiverTokenModified(_token, _depositDeduction, _withdrawalDeduction, _isERC1155);
-    }
-
-    /// @notice Allows the manager to collect fees
-    /// @dev Transfers all of the obligatedFees to the manager and sets it to zero
-    function sweepFees() external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        IERC20(asset).safeTransfer(msg.sender, obligatedFees);
-        obligatedFees = 0;
-    }
-
-    /// @notice Allows the manager to collect random tokens sent to the contract
-    /// @dev Transfers all of the unrelated tokens to the manager
-    /// @param _token Address of the unrelated token that is not the oToken or the asset token
-    function sweepUnrelatedTokens(address _token) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        if(_token == oToken || _token == asset)
-            revert Invalid();
-
-        IERC20 unrelated = IERC20(_token);
-
-        unrelated.safeTransfer(msg.sender, unrelated.balanceOf(address(this)));
-    }
-
-    /// @notice Allows the manager to disperse obligatedFees to the depositors
-    /// @dev Transfers _amount to the vault and deducts against obligatedFees
-    function disperseFees(uint256 _amount) external onlyManager nonReentrant() whenNotPaused() {
-        if(_amount > obligatedFees)
-            revert NotEnoughFunds_ObligatedFees();
-
-        obligatedFees -= _amount;
-    }
-
-    function closeVaultPermanently() external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        if(oToken != address(0))
-            revert oTokenNotCleared();
-
-        closedPermanently = true;
-        currentReserves = IERC20(asset).balanceOf(address(this));
-
-        emit VaultClosedPermanently();
-    }
-
-    function sendWithheldProtocolFees() external nonReentrant() whenNotPaused() {
-        IERC20(asset).safeTransfer(factory.admin(), withheldProtocolFees);
-        withheldProtocolFees = 0;
-    }
     
     /// @notice Deposit assets and receive vault tokens to represent a share
     /// @dev Deposits an amount of assets specified then mints vault tokens to the msg.sender
     /// @param _amount amount to deposit of ASSET
     function deposit(uint256 _amount) external ifNotClosed nonReentrant() whenNotPaused() {
-        if(_amount == 0)
-            revert Invalid();
-        
-        uint256 adjustedBal;
-        uint256 vaultMint;
-        uint256 protocolFees;
-        uint256 vaultFees;
-        
-        uint16 factoryFee = factory.depositFee();
+        _deposit(_amount, address(0));
+    }
 
-        // Calculate protocol-level fees
-        if(factoryFee != 0) {
-            protocolFees = _percentMultiply(_amount, factoryFee);
-        }
-
-        // Calculate vault-level fees
-        if(depositFee != 0) {
-            vaultFees = _percentMultiply(_amount, depositFee);
-        }
-
-        // Check if the total supply is zero
-        if(totalSupply() == 0) {
-            vaultMint = _normalize(_amount - protocolFees - vaultFees, ERC20(asset).decimals(), decimals());
-            if(_amount - obligatedFees - withheldProtocolFees > maximumAssets)
-                revert MaximumFundsReached();
-
-            withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
-        } else {
-            adjustedBal = collateralAmount + IERC20(asset).balanceOf(address(this)) - obligatedFees - withheldProtocolFees;
-
-            if(adjustedBal + _amount > maximumAssets)
-                revert MaximumFundsReached();
-
-            vaultMint = totalSupply() * (_amount - protocolFees - vaultFees) / (adjustedBal);
-        }
-
-        if(vaultMint == 0) // Safety check for rounding errors
-            revert Invalid();
-        if(protocolFees > 0) {
-            withheldProtocolFees += protocolFees;
-        }
-        if(vaultFees > 0) {
-            obligatedFees += vaultFees;
-        }
-        IERC20(asset).safeTransferFrom(msg.sender, address(this), _amount);
-        _mint(msg.sender, vaultMint);
-
-        emit Deposit(_amount, vaultMint);
+    function discountDeposit(uint256 _amount, address _waiver) external ifNotClosed nonReentrant() whenNotPaused() {
+        _deposit(_amount, _waiver);
     }
 
     /// @notice Redeem vault tokens for assets
     /// @dev Burns vault tokens in redemption for the assets to msg.sender
     /// @param _amount amount of VAULT TOKENS to burn
     function withdraw(uint256 _amount) external nonReentrant() whenNotPaused() {
-        if(_amount == 0)
-            revert Invalid();
-
-        uint256 assetAmount = _amount * (IERC20(asset).balanceOf(address(this)) + collateralAmount - premiumsWithheld - obligatedFees - withheldProtocolFees) / totalSupply();
-        uint256 protocolFee;
-        uint256 vaultFee;
-        
-        uint16 factoryFee = factory.withdrawalFee();
-        
-        if(factoryFee > 0) {
-            protocolFee = _percentMultiply(assetAmount, factoryFee);
-            withheldProtocolFees += protocolFee;
-        }
-        if(withdrawalFee > 0) {
-            vaultFee = _percentMultiply(assetAmount, withdrawalFee);
-            obligatedFees += vaultFee;
-        }
-        assetAmount = _calculatePenalty(assetAmount);
-
-        assetAmount -= (protocolFee + vaultFee);
-
-        // Safety check
-        if(assetAmount == 0)
-            revert Invalid();
-
-        // (Reserve) safety check
-        if(_withdrawalWindowCheck(false) && oToken != address(0)) {
-            if(assetAmount > currentReserves)
-                revert NotEnoughFunds_ReserveViolation();
-            else
-                currentReserves -= assetAmount;
-        }
-
-        IERC20(asset).safeTransfer(msg.sender, assetAmount); // Vault Token Amount to Burn * Balance of Vault for Asset  / Total Vault Token Supply
-        _burn(address(msg.sender), _amount);
-
-        emit Withdrawal(assetAmount, _amount);
+        _withdraw(_amount, address(0));
     }
 
-    /// @notice Allows anyone to call it in the event the withdrawal window is closed, but no action has occurred within 1 day
-    /// @dev Reopens the withdrawal window for a minimum of one day, whichever is greater
-    function reactivateWithdrawalWindow() external ifNotClosed nonReentrant() whenNotPaused() {
-        if(block.timestamp < withdrawalWindowExpires + 1 days || oToken != address(0))
-            revert Invalid();
-        
-        if(withdrawalWindowLength > 1 days)
-            withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
-        else
-            withdrawalWindowExpires = block.timestamp + 1 days;
-
-        emit WithdrawalWindowActivated(withdrawalWindowExpires);
-    }
-
-    /// @notice Burns away the oTokens to redeem the asset collateral
-    /// @dev Operation to burn away the oTOkens in redemption of the asset collateral
-    /// @param _amount Amount of options to burn
-    function burnOptions(uint256 _amount) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        if(!_withdrawalWindowCheck(false))
-            revert WithdrawalWindowActive();
-        if(_amount > IERC20(oToken).balanceOf(address(this)))
-            revert Invalid();
-
-        Actions.ActionArgs[] memory actions = new Actions.ActionArgs[](2);
-        uint256 normalizedAmount;
-        
-        if(OtokenInterface(oToken).isPut()) {
-            normalizedAmount = _normalize(_amount * OtokenInterface(oToken).strikePrice(), 16, ERC20(asset).decimals());
-        } else {
-           normalizedAmount = _normalize(_amount, 8, 18);
-        }
-
-        actions[0] = Actions.ActionArgs(
-            Actions.ActionType.BurnShortOption,
-            address(this),
-            address(this),
-            oToken,
-            currentVaultId,
-            _amount,
-            0,
-            ""
-        );
-        actions[1] = Actions.ActionArgs(
-            Actions.ActionType.WithdrawCollateral,
-            address(this),
-            address(this),
-            asset,
-            currentVaultId,
-            normalizedAmount,
-            0,
-            ""
-        );
-
-        IController controller = IController(addressBook.getController());
-
-        controller.operate(actions);
-        collateralAmount -= normalizedAmount;
-
-        if(collateralAmount == 0 && IERC20(oToken).balanceOf(address(this)) == 0) {
-            // Withdrawal window reopens
-            withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
-            oToken = address(0);
-
-            emit WithdrawalWindowActivated(withdrawalWindowExpires);
-        }
-
-        emit OptionsBurned(_amount);
+    function discountWithdraw(uint256 _amount, address _waiver) external ifNotClosed nonReentrant() whenNotPaused() {
+        _withdraw(_amount, _waiver);
     }
 
     /// @notice Write options for an _amount of asset for the specified oToken
@@ -504,43 +133,6 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
             _oToken
         );
         _sellOptions(_order);
-    }
-
-    /// @notice Operation to settle the vault
-    /// @dev Settles the currently open vault and opens the withdrawal window
-    function settleVault() external ifNotClosed nonReentrant() whenNotPaused() {
-        if(!_withdrawalWindowCheck(false))
-            revert WithdrawalWindowActive();
-
-        IController controller = IController(addressBook.getController());
-
-        // Check if ready to settle otherwise revert
-        if(!controller.isSettlementAllowed(oToken))
-            revert SettlementNotReady();
-
-        // Settle the vault if ready
-        Actions.ActionArgs[] memory action = new Actions.ActionArgs[](1);
-        action[0] = Actions.ActionArgs(
-            Actions.ActionType.SettleVault,
-            address(this),
-            address(this),
-            address(0),
-            currentVaultId,
-            IERC20(oToken).balanceOf(address(this)),
-            0,
-            ""
-        );
-
-        controller.operate(action);
-
-        // Withdrawal window opens
-        withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
-        collateralAmount = 0;
-        oToken = address(0);
-        currentReserves = 0;
-        premiumsWithheld = 0;
-        
-        emit WithdrawalWindowActivated(withdrawalWindowExpires);
     }
 
     function _writeOptions(uint256 _amount, address _oToken) internal {
@@ -649,92 +241,83 @@ contract VaultToken is ERC20Upgradeable, PausableUpgradeable, ReentrancyGuardUpg
         emit OptionsMinted(_amount, oToken, controller.getAccountVaultCounter(address(this)));
     }
 
-    function _sellOptions(Types.Order memory _order) internal {
-        if(!_withdrawalWindowCheck(false))
-            revert WithdrawalWindowActive();
-        if(_order.sender.amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
+    function _deposit(uint256 _amount, address _waiver) internal {
+        if(_amount == 0)
+            revert Invalid();
+        
+        uint256 adjustedBal;
+        uint256 vaultMint;
+
+        (uint256 protocolFees, uint256 vaultFees) = _calculateFees(_amount, factory.depositFee(), depositFee, _waiver, true);
+
+        // Check if the total supply is zero
+        if(totalSupply() == 0) {
+            vaultMint = _normalize(_amount - protocolFees - vaultFees, ERC20(asset).decimals(), decimals());
+            if(_amount - obligatedFees - withheldProtocolFees > maximumAssets)
+                revert MaximumFundsReached();
+
+            withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
+        } else {
+            adjustedBal = collateralAmount + IERC20(asset).balanceOf(address(this)) - obligatedFees - withheldProtocolFees;
+
+            if(adjustedBal + _amount > maximumAssets)
+                revert MaximumFundsReached();
+
+            vaultMint = totalSupply() * (_amount - protocolFees - vaultFees) / (adjustedBal);
+        }
+
+        if(vaultMint == 0) // Safety check for rounding errors
+            revert Invalid();
+        if(protocolFees > 0) {
+            withheldProtocolFees += protocolFees;
+        }
+        if(vaultFees > 0) {
+            obligatedFees += vaultFees;
+        }
+        IERC20(asset).safeTransferFrom(msg.sender, address(this), _amount);
+        _mint(msg.sender, vaultMint);
+
+        emit Deposit(_amount, vaultMint);
+    }
+
+    function _withdraw(uint256 _amount, address _waiver) internal {
+        if(_amount == 0)
             revert Invalid();
 
-        address airswap = factory.airswapExchange();
+        uint256 assetAmount = _amount * (IERC20(asset).balanceOf(address(this)) + collateralAmount - premiumsWithheld - obligatedFees - withheldProtocolFees) / totalSupply();
+        (uint256 protocolFee, uint256 vaultFee) = _calculateFees(_amount, factory.withdrawalFee(), withdrawalFee, _waiver, false);
+        
+        withheldProtocolFees += protocolFee;
+        obligatedFees += vaultFee;
 
-        // Approve
-        IERC20(oToken).approve(airswap, _order.sender.amount);
+        assetAmount = _calculatePenalty(assetAmount);
 
-        // Submit the order
-        ISwap(airswap).swap(_order);
+        // console.log(assetAmount);
+        // console.log(protocolFee);
+        // console.log(vaultFee);
 
-        // Fee calculation + withheldProtocolFees 
-        obligatedFees += _percentMultiply(_order.signer.amount, performanceFee);
-        IERC20(asset).transfer(address(factory), _percentMultiply(_order.signer.amount + withheldProtocolFees, factory.performanceFee()));
-        withheldProtocolFees = 0;
+        assetAmount -= (protocolFee + vaultFee);
 
-        // Withhold premiums temporarily
-        premiumsWithheld = _order.signer.amount;
+        // Safety check
+        if(assetAmount == 0)
+            revert Invalid();
 
-        emit OptionsSold(_order.sender.amount, _order.signer.amount);
+        // (Reserve) safety check
+        if(_withdrawalWindowCheck(false) && oToken != address(0)) {
+            if(assetAmount > currentReserves)
+                revert NotEnoughFunds_ReserveViolation();
+            else
+                currentReserves -= assetAmount;
+        }
+
+        IERC20(asset).safeTransfer(msg.sender, assetAmount); // Vault Token Amount to Burn * Balance of Vault for Asset  / Total Vault Token Supply
+        _burn(address(msg.sender), _amount);
+
+        emit Withdrawal(assetAmount, _amount);
     }
 
     function _calculateAndSetReserves() internal {
         currentReserves = _percentMultiply(IERC20(asset).balanceOf(address(this)) - obligatedFees, withdrawalReserve);
     }
 
-    function _calculatePenalty(uint256 _assetAmount) internal view returns(uint256 adjustedBal) {
-        if(oToken == address(0))
-            return _assetAmount;
-        
-        uint256 strikePrice = OtokenInterface(oToken).strikePrice();
-        uint256 oraclePrice = IOracle(addressBook.getOracle()).getPrice(OtokenInterface(oToken).underlyingAsset());
-        uint16 percentageForUser;
-
-        if(OtokenInterface(oToken).isPut() && strikePrice > oraclePrice) {
-            percentageForUser = uint16(
-                (10e22 * oraclePrice / strikePrice)/10e18
-            );
-            adjustedBal = _percentMultiply(_assetAmount, percentageForUser);
-        } else if(oraclePrice > strikePrice) {
-            percentageForUser = uint16(
-                (10e22 * strikePrice / oraclePrice)/10e18
-            );
-            adjustedBal = _percentMultiply(_assetAmount, percentageForUser);
-        } else {
-            adjustedBal = _assetAmount;
-        }
-    }
-
-    function _onlyManager() internal view {
-        if(msg.sender != manager)
-            revert Unauthorized();
-    }
-    
-    function _normalize(
-        uint256 _valueToNormalize,
-        uint256 _valueDecimal,
-        uint256 _normalDecimals
-    ) internal pure returns (uint256) {
-        int256 decimalDiff = int256(_valueDecimal) - int256(_normalDecimals);
-
-        if(decimalDiff > 0) {
-            return _valueToNormalize / (10**uint256(decimalDiff));
-        } else if(decimalDiff < 0) {
-            return _valueToNormalize * 10**uint256(-decimalDiff);
-        } else {
-            return _valueToNormalize;
-        }
-    }
-
-    function _withdrawalWindowCheck(bool _revertIfClosed) internal view returns(bool isActive) {
-        if(block.timestamp > withdrawalWindowExpires && _revertIfClosed)
-            revert WithdrawalWindowNotActive();
-        
-        return block.timestamp > withdrawalWindowExpires;
-    }
-
-    function _ifNotClosed() internal view {
-        if(closedPermanently)
-            revert ClosedPermanently();
-    }
-
-    function _percentMultiply(uint256 _val, uint16 _percent) internal pure returns(uint256) {
-        return _val * _percent / 10000;
-    }
 }

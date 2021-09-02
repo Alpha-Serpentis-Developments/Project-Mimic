@@ -3,6 +3,7 @@
  */
 require('@nomiclabs/hardhat-waffle');
 require("@nomiclabs/hardhat-etherscan");
+require('hardhat-contract-sizer');
 
 const INFURA_URL = '';
 const PRIVATE_KEY = '';
@@ -19,6 +20,9 @@ module.exports = {
           optimizer: {
             enabled: true,
             runs: 200
+          },
+          metadata: {
+            bytecodeHash: 'none'
           }
         }
       },

@@ -20,6 +20,9 @@ import "../proxy/utils/Initializable.sol";
  * https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul].
  */
 abstract contract ReentrancyGuardUpgradeable is Initializable {
+    
+    error ReentrantCall();
+
     // Booleans are more expensive than uint256 or any type that takes up a full
     // word because each write operation emits an extra SLOAD to first read the
     // slot's contents, replace the bits taken up by the boolean, and then write
@@ -52,11 +55,8 @@ abstract contract ReentrancyGuardUpgradeable is Initializable {
      * `private` function that does the actual work.
      */
     modifier nonReentrant() {
-        // On the first call to nonReentrant, _notEntered will be true
-        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
 
-        // Any calls to nonReentrant after this point will fail
-        _status = _ENTERED;
+        _nonReentrant();
 
         _;
 
@@ -64,5 +64,15 @@ abstract contract ReentrancyGuardUpgradeable is Initializable {
         // https://eips.ethereum.org/EIPS/eip-2200)
         _status = _NOT_ENTERED;
     }
+
+    function _nonReentrant() internal {
+        // On the first call to nonReentrant, _notEntered will be true
+        if(_status == _ENTERED)
+            revert ReentrantCall();
+
+        // Any calls to nonReentrant after this point will fail
+        _status = _ENTERED;
+    }
+
     uint256[49] private __gap;
 }
