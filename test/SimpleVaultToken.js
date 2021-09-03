@@ -393,13 +393,13 @@ describe('VaultToken contract (simple test)', () => {
         it('Should not allow anything to occur', async () => {
             await expect(
                 vaultToken.connect(depositor).deposit(1e6)
-            ).to.be.revertedWith("Pausable: paused");
+            ).to.be.revertedWith("ContractPaused()");
             await expect(
                 vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('1', 18))
-            ).to.be.revertedWith("Pausable: paused");
+            ).to.be.revertedWith("ContractPaused()");
             await expect(
                 vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18))
-            ).to.be.revertedWith("Pausable: paused");
+            ).to.be.revertedWith("ContractPaused()");
         });
         it('Should allow something to occur', async () => {
             await vaultToken.connect(manager).emergency(false);

@@ -13,7 +13,7 @@ import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
 import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 import {PausableUpgradeable} from "../oz/security/PausableUpgradeable.sol";
 
-//import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract VaultToken is ERC20Upgradeable, VaultActions {
     using SafeERC20 for IERC20;
@@ -285,16 +285,16 @@ contract VaultToken is ERC20Upgradeable, VaultActions {
             revert Invalid();
 
         uint256 assetAmount = _amount * (IERC20(asset).balanceOf(address(this)) + collateralAmount - premiumsWithheld - obligatedFees - withheldProtocolFees) / totalSupply();
-        (uint256 protocolFee, uint256 vaultFee) = _calculateFees(_amount, factory.withdrawalFee(), withdrawalFee, _waiver, false);
+        (uint256 protocolFee, uint256 vaultFee) = _calculateFees(assetAmount, factory.withdrawalFee(), withdrawalFee, _waiver, false);
         
         withheldProtocolFees += protocolFee;
         obligatedFees += vaultFee;
 
         assetAmount = _calculatePenalty(assetAmount);
 
-        // console.log(assetAmount);
-        // console.log(protocolFee);
-        // console.log(vaultFee);
+        console.log(assetAmount);
+        console.log(protocolFee);
+        console.log(vaultFee);
 
         assetAmount -= (protocolFee + vaultFee);
 

@@ -100,10 +100,16 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
         _ifNotClosed();
         _;
     }
-    // modifier whenNotPaused() override {
-    //     _ifPaused();
-    //     _;
-    // }
+
+    /// @notice For emergency use
+    /// @dev Stops all activities on the vault (or reactivates them)
+    /// @param _val true to pause the vault, false to unpause the vault
+    function emergency(bool _val) external ifNotClosed onlyManager {
+        if(_val)
+            super._pause();
+        else
+            super._unpause();
+    }
 
     /// @notice Changes the maximum allowed deposits under management
     /// @dev Changes the maximumAssets to the new amount
