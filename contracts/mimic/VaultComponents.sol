@@ -359,27 +359,23 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
         if(_waiver != address(0)) {
             Waiver storage waiver = waiverTokens[_waiver];
 
-            if(waiver.isValidID[_idERC1155]) {
+            uint16 whichDeduction;
+            if(_isDeposit)
+                whichDeduction = waiver.depositDeduction;
+            else
+                whichDeduction = waiver.withdrawalDeduction;
 
-                uint16 whichDeduction;
-                if(_isDeposit)
-                    whichDeduction = waiver.depositDeduction;
-                else
-                    whichDeduction = waiver.withdrawalDeduction;
+            if(whichDeduction > _vaultFee) // prevent underflow
+                whichDeduction = _vaultFee;
 
-                if(whichDeduction > _vaultFee) // prevent underflow
-                    whichDeduction = _vaultFee;
-
-                if(waiver.standard == WaiverType.ERC20 || waiver.standard == WaiverType.ERC721) {
-                    if(IERC20(_waiver).balanceOf(msg.sender) >= waiver.minimumAmount) {
-                        _vaultFee -= whichDeduction;
-                    }
-                } else if(waiver.standard == WaiverType.ERC1155 && waiver.isValidID[_idERC1155]) {
-                    if(IERC1155(_waiver).balanceOf(msg.sender, _idERC1155) >= waiver.minimumAmount) {
-                        _vaultFee -= whichDeduction;
-                    }
+            if(waiver.standard != WaiverType.ERC1155) {
+                if(IERC20(_waiver).balanceOf(msg.sender) >= waiver.minimumAmount) {
+                    _vaultFee -= whichDeduction;
                 }
-
+            } else if(waiver.standard == WaiverType.ERC1155 && waiver.isValidID[_idERC1155]) {
+                if(IERC1155(_waiver).balanceOf(msg.sender, _idERC1155) >= waiver.minimumAmount) {
+                    _vaultFee -= whichDeduction;
+                }
             }
             
         }
