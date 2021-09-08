@@ -216,6 +216,9 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
         WaiverType _standard,
         uint256 _idERC1155
     ) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
+        if(_token == address(0))
+            revert Invalid();
+
         Waiver storage waiver = waiverTokens[_token];
 
         waiver.standard = _standard;
