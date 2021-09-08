@@ -2,10 +2,11 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe('VaultToken contract (simple test)', () => {
-    let VaultToken, TestToken, Factory, vaultToken, testToken, manager, depositor, fake_addressBook, fake_controller, fake_airswap;
+    let VaultToken, TestToken, TestWaiver, Factory, vaultToken, testToken, testWaiver, manager, depositor, fake_addressBook, fake_controller, fake_airswap;
 
     before(async () => {
         TestToken = await ethers.getContractFactory('TestToken');
+        TestWaiver = await ethers.getContractFactory('TestWaiver');
         Factory = await ethers.getContractFactory('Factory');
         VaultToken = await ethers.getContractFactory('VaultToken');
         [deployer, manager, depositor, fake_addressBook, fake_controller, fake_airswap] = await ethers.getSigners();
@@ -29,6 +30,7 @@ describe('VaultToken contract (simple test)', () => {
             6,
             100000e6
         );
+        testWaiver = await TestWaiver.connect(manager).deploy();
         factory = await Factory.connect(deployer).deploy(
             fake_airswap.address,
             fake_addressBook.address,
@@ -66,6 +68,10 @@ describe('VaultToken contract (simple test)', () => {
             await testToken.connect(depositor).transfer(manager.address, 1e6);
             const managerBalance = await testToken.balanceOf(manager.address);
             expect(managerBalance).to.equal(1e6);
+        });
+        it('Depositor should have one waiver of ID 0', async () => {
+            await testWaiver.connect(manager).mint(depositor.address, 0);
+            expect(await testWaiver.balanceOf(depositor.address, 0)).to.equal(1);
         });
     });
 
@@ -131,16 +137,36 @@ describe('VaultToken contract (simple test)', () => {
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(20e6);
             expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('19', 6));
         });
+        it('Should receive 1e18 vault tokens for 1e6 test tokens (10% vault deposit fee - 10% waiver)', async () => {
+            await factory.connect(deployer).changeWithdrawalFee(0);
+            await factory.connect(deployer).changeDepositFee(0);
+            await vaultToken.connect(manager).adjustDepositFee(1000);
+            await vaultToken.connect(manager).adjustWaiver(testWaiver.address, 1, 1000, 1000, 2, 0);
+
+            await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 6));
+            await vaultToken.connect(depositor).discountDeposit(ethers.utils.parseUnits('1', 6), testWaiver.address, 0);
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(ethers.utils.parseUnits('1', 18));
+        });
+        it('Should receive 1e6 test tokens for 1e18 vault tokens (10% vault withdrawalFee - 10% waiver)', async () => {
+            await vaultToken.connect(depositor).discountWithdraw(ethers.utils.parseUnits('1', 18), testWaiver.address, 0);
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(20e6);
+        });
     });
 
     describe("Depositor interaction (1:2 ratio)", () => {
         before(async () => {
             await factory.connect(deployer).changeDepositFee(0);
             await factory.connect(deployer).changeWithdrawalFee(0);
+            await vaultToken.connect(manager).adjustDepositFee(0);
+            await vaultToken.connect(manager).adjustWithdrawalFee(0);
             await vaultToken.sendWithheldProtocolFees();
             await testToken.connect(depositor).rugPull(0.5e6, vaultToken.address);
         });
         it('Should receive 1e18 vault tokens for 0.5e6 test tokens', async () => {
+            console.log(await testToken.balanceOf(vaultToken.address));
             await testToken.connect(depositor).approve(vaultToken.address, 0.5e6);
             await vaultToken.connect(depositor).deposit(0.5e6);
 
@@ -209,12 +235,31 @@ describe('VaultToken contract (simple test)', () => {
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(21e6);
             expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('19', 6));
         });
+        it('Should receive 1e18 vault tokens for 1e6 test tokens (10% vault deposit fee - 10% waiver)', async () => {
+            await factory.connect(deployer).changeWithdrawalFee(0);
+            await factory.connect(deployer).changeDepositFee(0);
+            await vaultToken.connect(manager).adjustDepositFee(1000);
+            await vaultToken.connect(manager).adjustWaiver(testWaiver.address, 1, 1000, 1000, 2, 0);
+
+            await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('2', 6));
+            await vaultToken.connect(depositor).discountDeposit(ethers.utils.parseUnits('2', 6), testWaiver.address, 0);
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(ethers.utils.parseUnits('1', 18));
+        });
+        it('Should receive 1e6 test tokens for 1e18 vault tokens (10% vault withdrawalFee - 10% waiver)', async () => {
+            await vaultToken.connect(depositor).discountWithdraw(ethers.utils.parseUnits('1', 18), testWaiver.address, 0);
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(21e6);
+        });
     });
 
     describe("Depositor interaction (1:4 ratio)", () => {
         before(async () => {
             await factory.connect(deployer).changeDepositFee(0);
             await factory.connect(deployer).changeWithdrawalFee(0);
+            await vaultToken.connect(manager).adjustDepositFee(0);
+            await vaultToken.connect(manager).adjustWithdrawalFee(0);
             await vaultToken.sendWithheldProtocolFees();
             await testToken.connect(depositor).rugPull(1.75e6, vaultToken.address);
         });
@@ -409,6 +454,10 @@ describe('VaultToken contract (simple test)', () => {
                 vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18))
             ).to.not.be.reverted;
         });
+    });
+
+    describe("ERC20/721/1155 standard tests for waivers", () => {
+
     });
 
 });

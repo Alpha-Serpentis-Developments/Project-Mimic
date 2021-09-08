@@ -13,8 +13,6 @@ import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
 import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 import {PausableUpgradeable} from "../oz/security/PausableUpgradeable.sol";
 
-import "hardhat/console.sol";
-
 contract VaultToken is ERC20Upgradeable, VaultActions {
     using SafeERC20 for IERC20;
 
@@ -41,22 +39,22 @@ contract VaultToken is ERC20Upgradeable, VaultActions {
     /// @dev Deposits an amount of assets specified then mints vault tokens to the msg.sender
     /// @param _amount amount to deposit of ASSET
     function deposit(uint256 _amount) external ifNotClosed nonReentrant() whenNotPaused() {
-        _deposit(_amount, address(0));
+        _deposit(_amount, address(0), 0);
     }
 
-    function discountDeposit(uint256 _amount, address _waiver) external ifNotClosed nonReentrant() whenNotPaused() {
-        _deposit(_amount, _waiver);
+    function discountDeposit(uint256 _amount, address _waiver, uint256 _waiverId) external ifNotClosed nonReentrant() whenNotPaused() {
+        _deposit(_amount, _waiver, _waiverId);
     }
 
     /// @notice Redeem vault tokens for assets
     /// @dev Burns vault tokens in redemption for the assets to msg.sender
     /// @param _amount amount of VAULT TOKENS to burn
     function withdraw(uint256 _amount) external nonReentrant() whenNotPaused() {
-        _withdraw(_amount, address(0));
+        _withdraw(_amount, address(0), 0);
     }
 
-    function discountWithdraw(uint256 _amount, address _waiver) external ifNotClosed nonReentrant() whenNotPaused() {
-        _withdraw(_amount, _waiver);
+    function discountWithdraw(uint256 _amount, address _waiver, uint256 _waiverId) external ifNotClosed nonReentrant() whenNotPaused() {
+        _withdraw(_amount, _waiver, _waiverId);
     }
 
     /// @notice Write options for an _amount of asset for the specified oToken
@@ -241,14 +239,14 @@ contract VaultToken is ERC20Upgradeable, VaultActions {
         emit OptionsMinted(_amount, oToken, controller.getAccountVaultCounter(address(this)));
     }
 
-    function _deposit(uint256 _amount, address _waiver) internal {
+    function _deposit(uint256 _amount, address _waiver, uint256 _waiverId) internal {
         if(_amount == 0)
             revert Invalid();
         
         uint256 adjustedBal;
         uint256 vaultMint;
 
-        (uint256 protocolFees, uint256 vaultFees) = _calculateFees(_amount, factory.depositFee(), depositFee, _waiver, true);
+        (uint256 protocolFees, uint256 vaultFees) = _calculateFees(_amount, factory.depositFee(), depositFee, _waiver, _waiverId, true);
 
         // Check if the total supply is zero
         if(totalSupply() == 0) {
@@ -280,21 +278,17 @@ contract VaultToken is ERC20Upgradeable, VaultActions {
         emit Deposit(_amount, vaultMint);
     }
 
-    function _withdraw(uint256 _amount, address _waiver) internal {
+    function _withdraw(uint256 _amount, address _waiver, uint256 _waiverId) internal {
         if(_amount == 0)
             revert Invalid();
 
         uint256 assetAmount = _amount * (IERC20(asset).balanceOf(address(this)) + collateralAmount - premiumsWithheld - obligatedFees - withheldProtocolFees) / totalSupply();
-        (uint256 protocolFee, uint256 vaultFee) = _calculateFees(assetAmount, factory.withdrawalFee(), withdrawalFee, _waiver, false);
+        (uint256 protocolFee, uint256 vaultFee) = _calculateFees(assetAmount, factory.withdrawalFee(), withdrawalFee, _waiver, _waiverId, false);
         
         withheldProtocolFees += protocolFee;
         obligatedFees += vaultFee;
 
         assetAmount = _calculatePenalty(assetAmount);
-
-        console.log(assetAmount);
-        console.log(protocolFee);
-        console.log(vaultFee);
 
         assetAmount -= (protocolFee + vaultFee);
 

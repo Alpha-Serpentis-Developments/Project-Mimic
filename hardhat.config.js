@@ -4,6 +4,7 @@
 require('@nomiclabs/hardhat-waffle');
 require("@nomiclabs/hardhat-etherscan");
 require('hardhat-contract-sizer');
+require("hardhat-gas-reporter");
 
 const INFURA_URL = '';
 const PRIVATE_KEY = '';

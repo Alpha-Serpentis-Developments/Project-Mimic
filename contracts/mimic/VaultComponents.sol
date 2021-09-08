@@ -9,6 +9,7 @@ import {IFactory} from "./interfaces/IFactory.sol";
 
 
 import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
+import {IERC1155} from "../oz/token/ERC1155/IERC1155.sol";
 import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 import {PausableUpgradeable} from "../oz/security/PausableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "../oz/security/ReentrancyGuardUpgradeable.sol";
@@ -29,11 +30,18 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     error MaximumFundsReached();
     error SettlementNotReady();
 
+    enum WaiverType {
+        ERC20,
+        ERC721,
+        ERC1155
+    }
+
     struct Waiver {
-        uint256 idERC1155;
+        mapping(uint256 => bool) isValidID;
+        uint256 minimumAmount;
+        WaiverType standard;
         uint16 depositDeduction;
         uint16 withdrawalDeduction;
-        bool isERC1155;
     }
 
     /// @notice Tokens the manager can set to have fees reduced/waived
@@ -89,7 +97,7 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     event WithdrawalFeeModified(uint16 newFee);
     event PerformanceFeeModified(uint16 newFee);
     event WithdrawalReserveModified(uint16 newReserve);
-    event WaiverTokenModified(address token, uint16 depositDeduction, uint16 withdrawawlDeduction, bool isERC1155);
+    event WaiverTokenModified(address token, uint16 depositDeduction, uint16 withdrawawlDeduction);
     event VaultClosedPermanently();
 
     modifier onlyManager {
@@ -198,20 +206,28 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     /// @param _token Token address of the ERC20/ERC1155 eligible for waiver
     /// @param _depositDeduction Fee deduction against the deposit represented in % form with two decimals of precision (100.00% = 10000)
     /// @param _withdrawalDeduction Fee deduction against the withdrawal represented in % form with two decimals of precision (100.00% = 10000)
-    /// @param _isERC1155 Boolean to determine if the token provided for the waiver is an ERC1155 or not (IMPORTANT)
+    /// @param _standard WaiverType enum determining what ERC standard the waiver is (IMPORTANT)
+    /// @param _idERC1155 If the standard is ERC1155, use this parameter to determine the ID necessary for the eligible waiver
     function adjustWaiver(
         address _token,
+        uint256 _minimumAmount,
         uint16 _depositDeduction,
         uint16 _withdrawalDeduction,
-        bool _isERC1155
+        WaiverType _standard,
+        uint256 _idERC1155
     ) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
         Waiver storage waiver = waiverTokens[_token];
 
+        waiver.standard = _standard;
+        waiver.minimumAmount = _minimumAmount;
         waiver.depositDeduction = _depositDeduction;
         waiver.withdrawalDeduction = _withdrawalDeduction;
-        waiver.isERC1155 = _isERC1155;
 
-        emit WaiverTokenModified(_token, _depositDeduction, _withdrawalDeduction, _isERC1155);
+        if(_standard == WaiverType.ERC1155) {
+            waiver.isValidID[_idERC1155] = true;
+        }
+
+        emit WaiverTokenModified(_token, _depositDeduction, _withdrawalDeduction);
     }
 
     /// @notice Allows the manager to collect fees
@@ -337,30 +353,35 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
         uint16 _protocolFee,
         uint16 _vaultFee,
         address _waiver,
+        uint256 _idERC1155,
         bool _isDeposit
     ) internal view returns(uint256 protocolFees, uint256 vaultFees) {
         if(_waiver != address(0)) {
-            Waiver memory waiver = waiverTokens[_waiver];
+            Waiver storage waiver = waiverTokens[_waiver];
 
-            uint16 whichDeduction;
-            if(_isDeposit)
-                whichDeduction = waiver.depositDeduction;
-            else
-                whichDeduction = waiver.withdrawalDeduction;
+            if(waiver.isValidID[_idERC1155]) {
 
-            if(waiver.isERC1155) { // applies to ERC1155
+                uint16 whichDeduction;
+                if(_isDeposit)
+                    whichDeduction = waiver.depositDeduction;
+                else
+                    whichDeduction = waiver.withdrawalDeduction;
 
-            } else { // applies to ERC20/721
-                try ERC20(_waiver).decimals() {
-                    if(IERC20(_waiver).balanceOf(msg.sender) >= 10**ERC20(_waiver).decimals()) {
+                if(whichDeduction > _vaultFee) // prevent underflow
+                    whichDeduction = _vaultFee;
+
+                if(waiver.standard == WaiverType.ERC20 || waiver.standard == WaiverType.ERC721) {
+                    if(IERC20(_waiver).balanceOf(msg.sender) >= waiver.minimumAmount) {
                         _vaultFee -= whichDeduction;
                     }
-                } catch {
-                    if(IERC20(_waiver).balanceOf(msg.sender) >= 1) {
+                } else if(waiver.standard == WaiverType.ERC1155 && waiver.isValidID[_idERC1155]) {
+                    if(IERC1155(_waiver).balanceOf(msg.sender, _idERC1155) >= waiver.minimumAmount) {
                         _vaultFee -= whichDeduction;
                     }
                 }
+
             }
+            
         }
 
         protocolFees = _percentMultiply(_amount, _protocolFee);
