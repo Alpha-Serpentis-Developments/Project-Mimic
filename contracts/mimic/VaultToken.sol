@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity =0.8.4;
 
-import {VaultActions} from "./VaultActions.sol";
+import {VaultComponents} from "./VaultComponents.sol";
 import {IFactory} from "./interfaces/IFactory.sol";
 import {ISwap, Types} from "./airswap/interfaces/ISwap.sol";
 import {IAddressBook} from "./gamma/interfaces/IAddressBook.sol";
@@ -13,7 +13,7 @@ import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
 import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
 import {PausableUpgradeable} from "../oz/security/PausableUpgradeable.sol";
 
-contract VaultToken is ERC20Upgradeable, VaultActions {
+contract VaultToken is ERC20Upgradeable, VaultComponents {
     using SafeERC20 for IERC20;
 
     function initialize(
@@ -42,6 +42,11 @@ contract VaultToken is ERC20Upgradeable, VaultActions {
         _deposit(_amount, address(0), 0);
     }
 
+    /// @notice Deposit assets and receive vault tokents to represent a share with waiver discount
+    /// @dev Deposits an amount of assets specified then mints vault tokens to the msg.sender with waiver parameters
+    /// @param _amount amount to deposit of ASSET
+    /// @param _waiver address of the waiver token msg.sender is trying to redeem
+    /// @param _waiverId if the waiver is an ERC1155, the ID of the ERC1155
     function discountDeposit(uint256 _amount, address _waiver, uint256 _waiverId) external ifNotClosed nonReentrant() whenNotPaused() {
         _deposit(_amount, _waiver, _waiverId);
     }
@@ -53,8 +58,119 @@ contract VaultToken is ERC20Upgradeable, VaultActions {
         _withdraw(_amount, address(0), 0);
     }
 
+    /// @notice Redeem vault tokens for assets with waiver discount
+    /// @dev Burns vault tokens in redemption for the assets to msg.sender with waiver parameters
+    /// @param _amount amount of VAULT TOKENS to burn
+    /// @param _waiver address of the waiver token msg.sender is trying to redeem
+    /// @param _waiverId if the waiver is an ERC1155, the ID of the ERC1155
     function discountWithdraw(uint256 _amount, address _waiver, uint256 _waiverId) external ifNotClosed nonReentrant() whenNotPaused() {
         _withdraw(_amount, _waiver, _waiverId);
+    }
+
+    /// @notice Allows anyone to call it in the event the withdrawal window is closed, but no action has occurred within 1 day
+    /// @dev Reopens the withdrawal window for a minimum of one day, whichever is greater
+    function reactivateWithdrawalWindow() external ifNotClosed nonReentrant() whenNotPaused() {
+        if(block.timestamp < withdrawalWindowExpires + 1 days || oToken != address(0))
+            revert Invalid();
+        
+        if(withdrawalWindowLength > 1 days)
+            withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
+        else
+            withdrawalWindowExpires = block.timestamp + 1 days;
+
+        emit WithdrawalWindowActivated(withdrawalWindowExpires);
+    }
+
+    /// @notice Burns away the oTokens to redeem the asset collateral
+    /// @dev Operation to burn away the oTOkens in redemption of the asset collateral
+    /// @param _amount Amount of options to burn
+    function burnOptions(uint256 _amount) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
+        if(!_withdrawalWindowCheck(false))
+            revert WithdrawalWindowActive();
+        if(_amount > IERC20(oToken).balanceOf(address(this)))
+            revert Invalid();
+
+        Actions.ActionArgs[] memory actions = new Actions.ActionArgs[](2);
+        uint256 normalizedAmount;
+        
+        if(OtokenInterface(oToken).isPut()) {
+            normalizedAmount = _normalize(_amount * OtokenInterface(oToken).strikePrice(), 16, ERC20(asset).decimals());
+        } else {
+           normalizedAmount = _normalize(_amount, 8, 18);
+        }
+
+        actions[0] = Actions.ActionArgs(
+            Actions.ActionType.BurnShortOption,
+            address(this),
+            address(this),
+            oToken,
+            currentVaultId,
+            _amount,
+            0,
+            ""
+        );
+        actions[1] = Actions.ActionArgs(
+            Actions.ActionType.WithdrawCollateral,
+            address(this),
+            address(this),
+            asset,
+            currentVaultId,
+            normalizedAmount,
+            0,
+            ""
+        );
+
+        IController controller = IController(addressBook.getController());
+
+        controller.operate(actions);
+        collateralAmount -= normalizedAmount;
+
+        if(collateralAmount == 0 && IERC20(oToken).balanceOf(address(this)) == 0) {
+            // Withdrawal window reopens
+            withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
+            oToken = address(0);
+
+            emit WithdrawalWindowActivated(withdrawalWindowExpires);
+        }
+
+        emit OptionsBurned(_amount);
+    }
+
+    /// @notice Operation to settle the vault
+    /// @dev Settles the currently open vault and opens the withdrawal window
+    function settleVault() external ifNotClosed nonReentrant() whenNotPaused() {
+        if(!_withdrawalWindowCheck(false))
+            revert WithdrawalWindowActive();
+
+        IController controller = IController(addressBook.getController());
+
+        // Check if ready to settle otherwise revert
+        if(!controller.isSettlementAllowed(oToken))
+            revert SettlementNotReady();
+
+        // Settle the vault if ready
+        Actions.ActionArgs[] memory action = new Actions.ActionArgs[](1);
+        action[0] = Actions.ActionArgs(
+            Actions.ActionType.SettleVault,
+            address(this),
+            address(this),
+            address(0),
+            currentVaultId,
+            IERC20(oToken).balanceOf(address(this)),
+            0,
+            ""
+        );
+
+        controller.operate(action);
+
+        // Withdrawal window opens
+        withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
+        collateralAmount = 0;
+        oToken = address(0);
+        currentReserves = 0;
+        premiumsWithheld = 0;
+        
+        emit WithdrawalWindowActivated(withdrawalWindowExpires);
     }
 
     /// @notice Write options for an _amount of asset for the specified oToken
@@ -133,6 +249,10 @@ contract VaultToken is ERC20Upgradeable, VaultActions {
         _sellOptions(_order);
     }
 
+    /// @notice Write oTokens provided the amount and selected oToken
+    /// @dev Writes oTokens based on the amount of the asset token and the chosen address for the oToken
+    /// @param _amount Amount of the asset to collateralize (no margin) for the oToken
+    /// @param _oToken Address of the oToken to write with
     function _writeOptions(uint256 _amount, address _oToken) internal {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
@@ -239,6 +359,11 @@ contract VaultToken is ERC20Upgradeable, VaultActions {
         emit OptionsMinted(_amount, oToken, controller.getAccountVaultCounter(address(this)));
     }
 
+    /// @notice Handles the deposit function
+    /// @dev Internal function to handle the deposit functions and agnostic to using waivers or not
+    /// @param _amount Amount of the asset to deposit to the vault
+    /// @param _waiver Address of the waiver
+    /// @param _waiverId If the waiver is an ERC1155, an ID must be passed to properly verify msg.sender's balance
     function _deposit(uint256 _amount, address _waiver, uint256 _waiverId) internal {
         if(_amount == 0)
             revert Invalid();
@@ -278,6 +403,11 @@ contract VaultToken is ERC20Upgradeable, VaultActions {
         emit Deposit(_amount, vaultMint);
     }
 
+    /// @notice Handles the withdraw function
+    /// @dev Internal function for handling the withdraw function and agnostic to waivers or not
+    /// @param _amount Amount of the vault tokens to burn
+    /// @param _waiver Address of the waiver
+    /// @param _waiverId If the waiver is an ERC1155, an ID must be passed to properly verify msg.sender's balance
     function _withdraw(uint256 _amount, address _waiver, uint256 _waiverId) internal {
         if(_amount == 0)
             revert Invalid();
@@ -310,6 +440,8 @@ contract VaultToken is ERC20Upgradeable, VaultActions {
         emit Withdrawal(assetAmount, _amount);
     }
 
+    /// @notice Calculates and sets the reserves
+    /// @dev Perform a calculation to determine how much of the reserves to be used (if any) and set them
     function _calculateAndSetReserves() internal {
         currentReserves = _percentMultiply(IERC20(asset).balanceOf(address(this)) - obligatedFees, withdrawalReserve);
     }

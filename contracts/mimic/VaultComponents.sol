@@ -131,6 +131,8 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
         emit MaximumAssetsModified(_newValue);
     }
 
+    /// @notice Close the vault permanently
+    /// @dev Manager closes the vault permanently, preventing new deposits and use of the vault
     function closeVaultPermanently() external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
         if(oToken != address(0))
             revert oTokenNotCleared();
@@ -141,6 +143,8 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
         emit VaultClosedPermanently();
     }
 
+    /// @notice Send withheld protocol fees to the factory's admin
+    /// @dev Any obligated fees for the protocol is sent to the factory's admin
     function sendWithheldProtocolFees() external nonReentrant() whenNotPaused() {
         IERC20(asset).safeTransfer(factory.admin(), withheldProtocolFees);
         withheldProtocolFees = 0;
@@ -204,6 +208,7 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     /// @notice Adjusts the waiver for a specific token
     /// @dev Replaces the waiver settings for a specific token with the specific parameters
     /// @param _token Token address of the ERC20/ERC1155 eligible for waiver
+    /// @param _minimumAmount the minimum amount the user needs to hold in order for the waiver to be active
     /// @param _depositDeduction Fee deduction against the deposit represented in % form with two decimals of precision (100.00% = 10000)
     /// @param _withdrawalDeduction Fee deduction against the withdrawal represented in % form with two decimals of precision (100.00% = 10000)
     /// @param _standard WaiverType enum determining what ERC standard the waiver is (IMPORTANT)
@@ -254,6 +259,7 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
 
     /// @notice Allows the manager to disperse obligatedFees to the depositors
     /// @dev Transfers _amount to the vault and deducts against obligatedFees
+    /// @param _amount amount of the obligated fees (for the vault) to disperse to the vault itself
     function disperseFees(uint256 _amount) external onlyManager nonReentrant() whenNotPaused() {
         if(_amount > obligatedFees)
             revert NotEnoughFunds_ObligatedFees();
@@ -261,6 +267,9 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
         obligatedFees -= _amount;
     }
 
+    /// @notice Sells options via AirSwap
+    /// @dev Performs a full RFQ trade via AirSwap
+    /// @param _order A Types.Order struct that defines the AirSwap order (requires signature)
     function _sellOptions(Types.Order memory _order) internal {
         if(!_withdrawalWindowCheck(false))
             revert WithdrawalWindowActive();
@@ -286,21 +295,24 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
         emit OptionsSold(_order.sender.amount, _order.signer.amount);
     }
 
+    /// @notice Checks if the vault is NOT closed permanently
+    /// @dev A modifier function to check the vault's closed status
     function _ifNotClosed() internal view {
         if(closedPermanently)
             revert ClosedPermanently();
     }
 
-    function _ifPaused() internal view {
-        if(paused())
-            revert ContractPaused();
-    }
-
+    /// @notice Checks if the msg.sender is the manager of the vault
+    /// @dev A modifier function to check if msg.sender == manager
     function _onlyManager() internal view {
         if(msg.sender != manager)
             revert Unauthorized();
     }
 
+    /// @notice Calculates the ITM penalty for withdrawing early
+    /// @dev Internal function that calculates the penalty of an ITM withdrawal and penalizes against the user
+    /// @param _assetAmount is the 
+    /// @return adjustedBal is the balance after penalizing the user for an ITM withdrawal
     function _calculatePenalty(uint256 _assetAmount) internal view returns(uint256 adjustedBal) {
         if(oToken == address(0))
             return _assetAmount;
@@ -324,6 +336,12 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
         }
     }
     
+    /// @notice Normalizes a value to the requested decimals
+    /// @dev Normalizes a value from its current decimal to the requested amount of decimals
+    /// @param _valueToNormalize the value to normalize
+    /// @param _valueDecimal the value's current amount of decimals
+    /// @param _normalDecimals the new value's amount of decimals
+    /// @return Normalized value
     function _normalize(
         uint256 _valueToNormalize,
         uint256 _valueDecimal,
@@ -335,11 +353,15 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
             return _valueToNormalize / (10**uint256(decimalDiff));
         } else if(decimalDiff < 0) {
             return _valueToNormalize * 10**uint256(-decimalDiff);
-        } else {
-            return _valueToNormalize;
         }
+            
+        return _valueToNormalize;
     }
 
+    /// @notice Checks if the withdrawal window is active
+    /// @dev A withdrawal window check that may either revert or return the status without revert
+    /// @param _revertIfClosed a boolean to determine if the transaction should revert or not if closed
+    /// @return isActive true if the withdrawal window is open, otherwise false
     function _withdrawalWindowCheck(bool _revertIfClosed) internal view returns(bool isActive) {
         if(block.timestamp > withdrawalWindowExpires && _revertIfClosed)
             revert WithdrawalWindowNotActive();
@@ -347,10 +369,25 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
         return block.timestamp > withdrawalWindowExpires;
     }
 
+    /// @notice Multiplies a value by a percentage
+    /// @dev A pure function to multiply a value by a percentage
+    /// @param _val value to multiply against the percentage
+    /// @param _percent uint16 with two decimals of precision representing the percentage
+    /// @return The product of the value * percentage
     function _percentMultiply(uint256 _val, uint16 _percent) internal pure returns(uint256) {
         return _val * _percent / 10000;
     }
 
+    /// @notice Calculates the fees with waiver
+    /// @dev Calculation for fees and determining if a waiver is active/eligible
+    /// @param _amount Amount passed to determine the fees for the protocol and or vault
+    /// @param _protocolFee Percentage with two decimals of precision for the protocol fee
+    /// @param _vaultFee Percentage with two decimals of precision for the vault fees
+    /// @param _waiver Address of the waiver (if msg.sender is attempting to discount)
+    /// @param _idERC1155 If the waiver is an ERC1155, an ID must be passed to properly grab msg.sender's balance
+    /// @param _isDeposit Boolean to determine which fee to use to assist with the deduction
+    /// @return protocolFees The protocol fees
+    /// @return vaultFees The vault fees
     function _calculateFees(
         uint256 _amount,
         uint16 _protocolFee,
