@@ -7,7 +7,6 @@ import {OtokenInterface} from "./gamma/interfaces/OtokenInterface.sol";
 import {ISwap, Types} from "./airswap/interfaces/ISwap.sol";
 import {IFactory} from "./interfaces/IFactory.sol";
 
-
 import {ERC20, IERC20} from "../oz/token/ERC20/ERC20.sol";
 import {IERC1155} from "../oz/token/ERC1155/IERC1155.sol";
 import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";

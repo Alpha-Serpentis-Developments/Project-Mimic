@@ -166,7 +166,6 @@ describe('VaultToken contract (simple test)', () => {
             await testToken.connect(depositor).rugPull(0.5e6, vaultToken.address);
         });
         it('Should receive 1e18 vault tokens for 0.5e6 test tokens', async () => {
-            console.log(await testToken.balanceOf(vaultToken.address));
             await testToken.connect(depositor).approve(vaultToken.address, 0.5e6);
             await vaultToken.connect(depositor).deposit(0.5e6);
 
@@ -431,6 +430,45 @@ describe('VaultToken contract (simple test)', () => {
         });
     });
 
+    describe("ERC20/721 standard tests for waivers", () => { // previous tests were ERC1155
+        before(async () => {
+            await factory.connect(deployer).changeDepositFee(0);
+            await factory.connect(deployer).changeWithdrawalFee(0);
+            await vaultToken.sendWithheldProtocolFees();
+
+            testWaiver = await TestToken.connect(depositor).deploy(
+                "ERC20 Test Waiver",
+                "ERC20",
+                8,
+                1e8
+            );
+
+            await vaultToken.connect(manager).adjustWaiver(
+                testWaiver.address,
+                ethers.utils.parseUnits('1', 8),
+                1000,
+                1000,
+                0,
+                0
+            );
+
+        });
+        it('Should receive 1e18 vault tokens for 1e6 test tokens (10% deposit fee - 10% waiver)', async () => {
+            const vtBalOfDepositor = await vaultToken.balanceOf(depositor.address);
+            const tokenBalOfVault = await testToken.balanceOf(vaultToken.address);
+
+            await vaultToken.connect(manager).adjustDepositFee(1000);
+            await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
+            await vaultToken.connect(depositor).discountDeposit(ethers.utils.parseUnits('1', 18), testWaiver.address, 0);
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(vtBalOfDepositor.add(ethers.utils.parseUnits('1', 18)));
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(tokenBalOfVault.add(ethers.utils.parseUnits('1', 18)));
+        });
+        it('Should receive 1e18 test tokens for 1e18 vault tokens (10% withdrawal fee - 10% waiver)', async () => {
+
+        });
+    });
+
     describe("Pausable test", () => {
         before(async () => {
             await vaultToken.connect(manager).emergency(true);
@@ -454,10 +492,6 @@ describe('VaultToken contract (simple test)', () => {
                 vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18))
             ).to.not.be.reverted;
         });
-    });
-
-    describe("ERC20/721/1155 standard tests for waivers", () => {
-
     });
 
 });
