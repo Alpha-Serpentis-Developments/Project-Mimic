@@ -465,7 +465,14 @@ describe('VaultToken contract (simple test)', () => {
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(tokenBalOfVault.add(ethers.utils.parseUnits('1', 18)));
         });
         it('Should receive 1e18 test tokens for 1e18 vault tokens (10% withdrawal fee - 10% waiver)', async () => {
+            const vtBalOfDepositor = await vaultToken.balanceOf(depositor.address);
+            const tokenBalOfVault = await testToken.balanceOf(vaultToken.address);
 
+            await vaultToken.connect(manager).adjustWithdrawalFee(1000);
+            await vaultToken.connect(depositor).discountWithdraw(ethers.utils.parseUnits('1', 18), testWaiver.address, 0);
+
+            expect(await vaultToken.balanceOf(depositor.address)).to.equal(vtBalOfDepositor.sub(ethers.utils.parseUnits('1', 18)));
+            expect(await testToken.balanceOf(vaultToken.address)).to.equal(tokenBalOfVault.sub(ethers.utils.parseUnits('1', 18)));
         });
     });
 
