@@ -310,7 +310,7 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
 
     /// @notice Calculates the ITM penalty for withdrawing early
     /// @dev Internal function that calculates the penalty of an ITM withdrawal and penalizes against the user
-    /// @param _assetAmount is the 
+    /// @param _assetAmount is the amount of asset tokens being potentially withdrawn
     /// @return adjustedBal is the balance after penalizing the user for an ITM withdrawal
     function _calculatePenalty(uint256 _assetAmount) internal view returns(uint256 adjustedBal) {
         if(oToken == address(0))
