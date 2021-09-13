@@ -206,16 +206,16 @@ export default function VaultTokenInfo(props) {
   }
 
   async function getTypeHash() {
-    const typeUrlPrefix = await "https://dweb.link/ipfs/";
-    const typeUrl = await (typeUrlPrefix + typeHash);
+    const typeUrlPrefix = "https://dweb.link/ipfs/";
+    const typeUrl = (typeUrlPrefix + typeHash);
     console.log(typeUrl);
     fetch(typeUrl)
-      .then((response) => {
-        response.json();
-      })
-      .then((result) => {
-        setASHash(result);
-      })
+      .then((response) => 
+        response.json()
+      )
+      .then((result) => 
+        setASHash(result)
+      )
       .catch((error) => {
         console.error("Error:", error);
       });
@@ -223,7 +223,7 @@ export default function VaultTokenInfo(props) {
 
   function sellOptions(e) {
     if (typeHash === "") {
-      setSM("Error", "Form input Error", true, true);
+      setSM("Error", "Form Input Error", true, true);
       setIconStatus("error");
       return;
     }
@@ -232,13 +232,14 @@ export default function VaultTokenInfo(props) {
     getTypeHash();
     startTX();
     e.preventDefault();
-    let s = cVT.sellOptions(asHash);
-    sendTX(s, "Settle Vault");
+    console.log("HERE: \n" + asHash);
+    let s = cVT.sellOptions(asHash, props.acct);
+    sendTX(s, "Sold Options");
   }
 
   function ethInputAmt(event) {
     if (event.target.value > props.ethBal) {
-      setSM("Error", "Not enough ether", true, true);
+      setSM("Error", "Not Enough ether", true, true);
       setIconStatus("error");
       return;
     }
@@ -247,7 +248,7 @@ export default function VaultTokenInfo(props) {
 
   function ethToWeth(a) {
     if (a === 0) {
-      setSM("Error", "Form input Error", true, true);
+      setSM("Error", "Form Input Error", true, true);
       setIconStatus("error");
       return;
     }
@@ -313,7 +314,7 @@ export default function VaultTokenInfo(props) {
     console.log(props);
     startTX();
     if (amt === 0 || isNaN(amt)) {
-      setSM("Error", "Form input Error", true, true);
+      setSM("Error", "Form Input Error", true, true);
       setIconStatus("error");
       return;
     }
@@ -349,7 +350,7 @@ export default function VaultTokenInfo(props) {
     startTX();
 
     if (amt === 0 || isNaN(amt)) {
-      setSM("Error", "Form input Error", true, true);
+      setSM("Error", "Form Input Error", true, true);
       setIconStatus("error");
       return;
     }
@@ -399,7 +400,7 @@ export default function VaultTokenInfo(props) {
     startTX();
     e.preventDefault();
     if (writeSellOptionAmt === 0 || txHash === "") {
-      setSM("Error", "Form input Error", true, true);
+      setSM("Error", "Form Input Error", true, true);
       setIconStatus("error");
 
       return;
@@ -411,7 +412,7 @@ export default function VaultTokenInfo(props) {
     startTX();
     e.preventDefault();
     if (writeSellOptionPcent === 0 || txHash === "") {
-      setSM("Error", "Form input Error", true, true);
+      setSM("Error", "Form Input Error", true, true);
       setIconStatus("error");
 
       return;
@@ -424,7 +425,7 @@ export default function VaultTokenInfo(props) {
     startTX();
     e.preventDefault();
     if (writeCallAmt === 0 || oTokenAddress === "") {
-      setSM("Error", "Form input Error", true, true);
+      setSM("Error", "Form Input Error", true, true);
       setIconStatus("error");
 
       return;
@@ -436,7 +437,7 @@ export default function VaultTokenInfo(props) {
     startTX();
     e.preventDefault();
     if (writeCallPcent === 0 || oTokenAddress === "") {
-      setSM("Error", "Form input Error", true, true);
+      setSM("Error", "Form Input Error", true, true);
       setIconStatus("error");
 
       return;
@@ -474,7 +475,7 @@ export default function VaultTokenInfo(props) {
   function adjustMaxAsset() {
     startTX();
     if (maxAsset <= 0 || isNaN(maxAsset)) {
-      setSM("Error", "Form input Error", true, true);
+      setSM("Error", "Form Input Error", true, true);
       setIconStatus("error");
 
       return;
@@ -491,7 +492,7 @@ export default function VaultTokenInfo(props) {
     startTX();
 
     if (depositFee === 0) {
-      setSM("Error", "Form input Error", true, true);
+      setSM("Error", "Form Input Error", true, true);
       setIconStatus("error");
 
       return;
@@ -509,7 +510,7 @@ export default function VaultTokenInfo(props) {
     startTX();
 
     if (withdrawFee === 0) {
-      setSM("Error", "Form input Error", true, true);
+      setSM("Error", "Form Input Error", true, true);
       setIconStatus("error");
 
       return;
@@ -727,7 +728,7 @@ export default function VaultTokenInfo(props) {
           <Form.Field
             style={{ width: "90%", marginRight: "auto", marginLeft: "auto" }}
           >
-            <label>TX Hash</label>
+            <label>AirSwap Hash</label>
             <input
               value={typeHash}
               onChange={(e) => setTypeHash(e.target.value)}
@@ -761,7 +762,7 @@ export default function VaultTokenInfo(props) {
           <Form.Field
             style={{ width: "90%", marginRight: "auto", marginLeft: "auto" }}
           >
-            <label>TX Hash</label>
+            <label>AirSwap Hash</label>
             <input
               value={typeHash}
               onChange={(e) => setTypeHash(e.target.value)}
