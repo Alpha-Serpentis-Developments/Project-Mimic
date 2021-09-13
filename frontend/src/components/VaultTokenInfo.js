@@ -10,7 +10,7 @@ import {
   Icon,
   Form,
   Accordion,
-  Menu,
+  Input,
   Dropdown,
 } from "semantic-ui-react";
 import { web3 } from "./Web3Handler";
@@ -190,6 +190,9 @@ export default function VaultTokenInfo(props) {
   const [showD, setShowD] = useState(false);
   const [showW, setShowW] = useState(true);
   const [onAmt, setOnAmt] = useState(1);
+  const [maxAsset, setMaxAsset] = useState(0);
+  const [depositFee, setDepositFee] = useState(0);
+  const [withdrawFee, setWithdrawFee] = useState(0);
 
   useEffect(() => {
     createVT(ctAddr, ctAddr);
@@ -317,7 +320,6 @@ export default function VaultTokenInfo(props) {
     // let amount = web3.utils.toWei(amt, dUnit);
     let amount = amt * props.token.tDecimals;
     cVT
-      .approveAsset(amount, props.acct)
       .on("transactionHash", function (hash) {
         setTxHash(hash);
         setSM("TX Hash Received", hash, true, false);
@@ -463,6 +465,60 @@ export default function VaultTokenInfo(props) {
     setActiveIndex(newIndex);
   }
 
+  function updateMaxAssetNum(e) {
+    let n = e.target.value * 10 ** props.token.assetObject.tDecimals;
+    let a = web3.utils.toBN(n).toString();
+    setMaxAsset(a);
+  }
+
+  function adjustMaxAsset() {
+    startTX();
+    if (maxAsset <= 0 || isNaN(maxAsset)) {
+      setSM("Error", "Form input Error", true, true);
+      setIconStatus("error");
+
+      return;
+    }
+    let wc = cVT.adjustTheMaxAssets(maxAsset, props.acct);
+    sendTX(wc, "Adjust Max Asset");
+  }
+
+  function updateDepositFee(e) {
+    setDepositFee(e.target.value * 100);
+  }
+
+  function adjustDepositFee() {
+    startTX();
+
+    if (depositFee === 0) {
+      setSM("Error", "Form input Error", true, true);
+      setIconStatus("error");
+
+      return;
+    }
+
+    let wc = cVT.adjustDepositFee(depositFee, props.acct);
+    sendTX(wc, "Deposit Fee Adjusted");
+  }
+
+  function updateWithdrawFee(e) {
+    setWithdrawFee(e.target.value * 100);
+  }
+
+  function adjustWithdrawFee() {
+    startTX();
+
+    if (withdrawFee === 0) {
+      setSM("Error", "Form input Error", true, true);
+      setIconStatus("error");
+
+      return;
+    }
+
+    let wc = cVT.adjustWithdrawalFee(withdrawFee, props.acct);
+    sendTX(wc, "Withdraw Fee Adjusted");
+  }
+
   function overPcent(a) {
     if (a > 100) {
       setSM("Error", "You cannot enter number over 100", true, true);
@@ -589,7 +645,7 @@ export default function VaultTokenInfo(props) {
               }
               disabled={btnDisabled}
             >
-              Write Call
+              Write Option
             </Button>
             <Button
               style={{ width: "40%" }}
@@ -726,7 +782,78 @@ export default function VaultTokenInfo(props) {
       </MgmrCallForm>
     );
   }
+  function renderAdjustMaxAsset() {
+    return (
+      <Form>
+        <Form.Field>
+          <label>Adjust Max Asset</label>
+          <input placeholder="Amt" onChange={updateMaxAssetNum} />
+        </Form.Field>
 
+        <Button type="submit" onClick={adjustMaxAsset}>
+          Confirm
+        </Button>
+      </Form>
+    );
+  }
+  function renderAdujstDepositFee() {
+    return (
+      <Form>
+        <Form.Field>
+          <label>Adjust Deposit Fee</label>
+          <Input
+            placeholder="Percentage"
+            onChange={updateDepositFee}
+            style={{ width: "100px" }}
+            label={{ content: "%" }}
+            labelPosition="right"
+          />
+        </Form.Field>
+
+        <Button type="submit" onClick={adjustDepositFee}>
+          Confirm
+        </Button>
+      </Form>
+    );
+  }
+  function renderAdjustWithdrawFee() {
+    return (
+      <Form>
+        <Form.Field>
+          {" "}
+          <label>Adjust Withdraw Fee</label>
+          <Input
+            placeholder="percentage"
+            onChange={updateWithdrawFee}
+            style={{ width: "100px" }}
+            label={{ content: "%" }}
+            labelPosition="right"
+          />
+        </Form.Field>
+        <Button type="submit" onClick={adjustWithdrawFee}>
+          Confirm
+        </Button>
+      </Form>
+    );
+  }
+  function renderAdjustMaxAsset() {
+    return (
+      <Form>
+        <Form.Field>
+          <label>Adjust Max Asset</label>
+          <Input
+            placeholder="Amt"
+            onChange={updateMaxAssetNum}
+            style={{ width: "100px" }}
+          />
+        </Form.Field>
+
+        <Button type="submit" onClick={adjustMaxAsset}>
+          Confirm
+        </Button>
+      </Form>
+    );
+  }
   function managerMenu() {
     return (
       <div>
@@ -747,7 +874,7 @@ export default function VaultTokenInfo(props) {
             }}
             disabled={btnDisabled}
           >
-            Write Call
+            Write Option
           </WriteBtn>
 
           <SellCallBtn
@@ -790,10 +917,14 @@ export default function VaultTokenInfo(props) {
             Settle Vault
           </SettleVaultBtn>
         </MagmrCallsIndicator>
-
         {showWriteCall && writeCallRender()}
         {showSellCall && renderSellCall()}
         {showWriteSellOption && renderWriteSellOptions()}
+        <div> {renderAdjustMaxAsset()}</div>
+        <br />
+        <div> {renderAdujstDepositFee()}</div>
+        <br />
+        <div> {renderAdjustWithdrawFee()}</div>
       </div>
     );
   }

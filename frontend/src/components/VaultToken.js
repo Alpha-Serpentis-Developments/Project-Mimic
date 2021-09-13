@@ -138,12 +138,12 @@ export class VaultToken extends ERC20 {
   }
 
   writeOptionsAmt(amount, otAddress, f) {
-    return this.vt.methods["writeCalls"](amount, otAddress).send({
+    return this.vt.methods["writeOptions"](amount, otAddress).send({
       from: f,
     });
   }
   writeOptionsPcent(pcent, otAddress, f) {
-    return this.vt.methods["writeCalls"](pcent, otAddress).send({
+    return this.vt.methods["writeOptions"](pcent, otAddress).send({
       from: f,
     });
   }
@@ -158,6 +158,23 @@ export class VaultToken extends ERC20 {
   }
   writeAndSellOptionsPcent(pcent, otAddress, a, f) {
     return this.vt.methods["writeAndSellOptions"](pcent, otAddress, a).send({
+      from: f,
+    });
+  }
+
+  adjustTheMaxAssets(v, f) {
+    console.log(this.vt);
+    return this.vt.methods["adjustTheMaximumAssets"](v).send({
+      from: f,
+    });
+  }
+  adjustDepositFee(pcent, f) {
+    return this.vt.methods["adjustDepositFee"](pcent).send({
+      from: f,
+    });
+  }
+  adjustWithdrawalFee(pcent, f) {
+    return this.vt.methods["adjustWithdrawalFee"](pcent).send({
       from: f,
     });
   }
