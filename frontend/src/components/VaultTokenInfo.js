@@ -197,13 +197,16 @@ export default function VaultTokenInfo(props) {
   const [withdrawFee, setWithdrawFee] = useState(0);
 
   useEffect(() => {
-    createVT(ctAddr, ctAddr);
+    createVT(ctAddr);
   }, []);
 
-  function createVT(va, aa) {
+  async function createVT(va) {
     let t = new VaultToken(web3, va);
-    let a = new ERC20(web3, aa);
+    let a = new ERC20(web3, await t.getAsset());
+    await t.setName(t.getName());
+    await t.setSymbol(t.getSymbol());
     t.assetObject = a;
+    // console.log(t);
     setcVT(t);
   }
 
@@ -320,10 +323,10 @@ export default function VaultTokenInfo(props) {
       setIconStatus("error");
       return;
     }
-    checkApprovalAmount(amt);
     // let amount = web3.utils.toWei(amt, dUnit);
-    let amount = amt * props.token.tDecimals;
+    let amount = amt * `1e${props.token.tDecimals}`;
     cVT
+      .deposit(amount, props.acct)
       .on("transactionHash", function (hash) {
         setTxHash(hash);
         setSM("TX Hash Received", hash, true, false);
@@ -531,8 +534,10 @@ export default function VaultTokenInfo(props) {
     }
   }
 
-  function checkApprovalAmount() {
-    let currentApprovalAmt = cVT.allowanceAsset(props.acct);
+  async function checkApprovalAmount() {
+    let currentApprovalAmt = await cVT.allowanceAsset(props.acct);
+
+    console.log("TEST: " + await cVT.allowanceAsset(props.acct));
 
     return currentApprovalAmt;
   }
@@ -943,15 +948,17 @@ export default function VaultTokenInfo(props) {
     setWithdrawAmt(e.target.value);
   }
 
-  function updateDAmt(e) {
+  async function updateDAmt(e) {
+    setDeposit(e.target.value);
     if (e.target.value > 0) {
       let a = web3.utils.toWei(e.target.value, "ether");
       overAmount(a, props.token.assetObject.myBalance, props.ethBal);
     }
-    if(checkApprovalAmount > depositAmt) {
+    if(await checkApprovalAmount() < depositAmt * `1e${props.token.assetObject.tDecimals}`) {
       setShowApproval(true);
+    } else {
+      setShowApproval(false);
     }
-    setDeposit(e.target.value);
   }
   function clickShowD() {
     setShowD(true);

@@ -79,8 +79,8 @@ export class VaultToken extends ERC20 {
     return this.assetObject.approve(this.address, amount, f);
   }
 
-  allowanceAsset(f) {
-    return this.assetObject.allowance(f, this.address);
+  async allowanceAsset(f) {
+    return await this.assetObject.allowance(f, this.address);
   }
 
   findWithdrawalWindowActivated() {

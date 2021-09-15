@@ -113,9 +113,10 @@ export class ERC20 {
   approve(c, a, f) {
     return this.erc.methods.approve(c, a).send({ from: f });
   }
-  allowance(o, s) {
-    let b = 0;
-    this.erc.methods.allowance(o, s).call(function (error, result) {
+  async allowance(o, s) {
+    let b;
+
+    await this.erc.methods.allowance(o, s).call(function (error, result) {
       b = result;
     });
     return b;

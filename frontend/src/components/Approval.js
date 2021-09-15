@@ -8,7 +8,6 @@ export default function Approval(props) {
         <div>
             <Button
                 onClick={() => {
-                    console.log(props);
                     props.token.approveAsset(sanitizedValue, props.acct)
                 }}
             >
