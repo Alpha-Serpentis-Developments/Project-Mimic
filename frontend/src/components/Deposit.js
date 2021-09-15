@@ -1,4 +1,5 @@
 import { Button, Form, Divider } from "semantic-ui-react";
+import Approval from "./Approval";
 
 export default function Deposit(props) {
   let wBalance = parseFloat(
@@ -51,8 +52,8 @@ export default function Deposit(props) {
               {props.token.assetObject.tSymbol}
             </div>
           </div>
-
-          <Button
+          {!props.showApproval ? (
+            <Button
             style={{
               width: "80%",
               display: "block",
@@ -73,6 +74,13 @@ export default function Deposit(props) {
           >
             Deposit
           </Button>
+          ) : (
+            <Approval
+              token={props.token}
+              depositAmt={props.depositAmt}
+              acct={props.acct}
+            ></Approval>
+          )}
           <Divider />
           <div
             style={{
@@ -85,7 +93,7 @@ export default function Deposit(props) {
               marginRight: "15px",
             }}
           >
-            WETH Balance: {wBalance}
+            {props.token.assetObject.tSymbol} Balance: {wBalance}
           </div>
           <Divider />
           <div

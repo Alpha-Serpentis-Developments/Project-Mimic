@@ -16,6 +16,7 @@ import {
 import { web3 } from "./Web3Handler";
 import WethWrap from "./WethWrap";
 import Withdraw from "./Withdraw";
+import Approval from "./Approval";
 import Deposit from "./Deposit";
 import styled from "styled-components";
 import { VaultToken } from "./VaultToken";
@@ -187,6 +188,7 @@ export default function VaultTokenInfo(props) {
   //=======texting for eth to weth
   const [eToWethAmt, setEToWethAmt] = useState(0);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [showApproval, setShowApproval] = useState(false);
   const [showD, setShowD] = useState(false);
   const [showW, setShowW] = useState(true);
   const [onAmt, setOnAmt] = useState(1);
@@ -318,6 +320,7 @@ export default function VaultTokenInfo(props) {
       setIconStatus("error");
       return;
     }
+    checkApprovalAmount(amt);
     // let amount = web3.utils.toWei(amt, dUnit);
     let amount = amt * props.token.tDecimals;
     cVT
@@ -526,6 +529,12 @@ export default function VaultTokenInfo(props) {
       setIconStatus("error");
       return;
     }
+  }
+
+  function checkApprovalAmount() {
+    let currentApprovalAmt = cVT.allowanceAsset(props.acct);
+
+    return currentApprovalAmt;
   }
 
   function convertForm() {
@@ -939,6 +948,9 @@ export default function VaultTokenInfo(props) {
       let a = web3.utils.toWei(e.target.value, "ether");
       overAmount(a, props.token.assetObject.myBalance, props.ethBal);
     }
+    if(checkApprovalAmount > depositAmt) {
+      setShowApproval(true);
+    }
     setDeposit(e.target.value);
   }
   function clickShowD() {
@@ -975,8 +987,10 @@ export default function VaultTokenInfo(props) {
               deposit={deposit}
               depositAmt={depositAmt}
               updateDAmt={updateDAmt}
+              showApproval={showApproval}
               managerClick={managerClick}
               btnDisabled={btnDisabled}
+              acct={props.acct}
             />
           </DWForm>
         )}
@@ -995,7 +1009,6 @@ export default function VaultTokenInfo(props) {
               txHash={txHash}
               iconStatus={iconStatus}
               resetForm={resetForm}
-              iconStatus={iconStatus}
             />
           </Grid.Column>
           {/* <Grid.Column width={2} verticalAlign="middle">
