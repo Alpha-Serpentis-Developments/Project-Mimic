@@ -5,7 +5,15 @@ export default function Approval(props) {
         props.depositAmt * `1e${props.token.assetObject.tDecimals}`
     );
     return (
-        <div>
+        <div
+            style={{
+            display: "flex",
+            flexDirection: "row",
+            marginTop: "30px",
+            marginBottom: "40px",
+            justifyContent: "center",
+          }}
+        >
             <Button
                 onClick={() => {
                     props.token.approveAsset(sanitizedValue, props.acct)

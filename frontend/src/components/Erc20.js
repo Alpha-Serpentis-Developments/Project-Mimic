@@ -14,6 +14,12 @@ export class ERC20 {
     this.erc = new web3.eth.Contract(abi, address);
   }
 
+  async updateSelf() {
+    await this.setName(this.getName());
+    await this.setSymbol(this.getSymbol());
+    await this.setDecimals(this.getDecimals());
+  }
+
   async getName(f) {
     if (!this.ercStatus) {
       return this.tName;

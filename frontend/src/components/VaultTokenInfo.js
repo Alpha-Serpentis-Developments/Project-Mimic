@@ -3,7 +3,6 @@ import StatusMessage from "./StatusMessage";
 import { nwConfig, currentChain } from "./NetworkConfig";
 
 import {
-  Header,
   Button,
   Grid,
   Divider,
@@ -16,7 +15,6 @@ import {
 import { web3 } from "./Web3Handler";
 import WethWrap from "./WethWrap";
 import Withdraw from "./Withdraw";
-import Approval from "./Approval";
 import Deposit from "./Deposit";
 import styled from "styled-components";
 import { VaultToken } from "./VaultToken";
@@ -203,10 +201,9 @@ export default function VaultTokenInfo(props) {
   async function createVT(va) {
     let t = new VaultToken(web3, va);
     let a = new ERC20(web3, await t.getAsset());
-    await t.setName(t.getName());
-    await t.setSymbol(t.getSymbol());
+    await t.updateSelf();
+    await a.updateSelf();
     t.assetObject = a;
-    // console.log(t);
     setcVT(t);
   }
 
@@ -233,11 +230,11 @@ export default function VaultTokenInfo(props) {
       return;
     }
 
-    console.log("atsell");
+    //console.log("atsell");
     getTypeHash();
     startTX();
     e.preventDefault();
-    console.log("HERE: \n" + asHash);
+    //console.log("HERE: \n" + asHash);
     let s = cVT.sellOptions(asHash, props.acct);
     sendTX(s, "Sold Options");
   }
@@ -362,7 +359,7 @@ export default function VaultTokenInfo(props) {
     }
 
     // let amount = web3.utils.toWei(amt, wUnit);
-    let amount = amt * props.token.tDecimals;
+    let amount = amt * 10 ** props.token.tDecimals;
     let w = cVT.withdraw(amount, props.acct);
     sendTX(w, "Withdraw");
   }
@@ -535,9 +532,7 @@ export default function VaultTokenInfo(props) {
   }
 
   async function checkApprovalAmount() {
-    let currentApprovalAmt = await cVT.allowanceAsset(props.acct);
-
-    console.log("TEST: " + await cVT.allowanceAsset(props.acct));
+    let currentApprovalAmt = await cVT.assetObject.allowance(props.acct, cVT.address);
 
     return currentApprovalAmt;
   }
@@ -949,12 +944,14 @@ export default function VaultTokenInfo(props) {
   }
 
   async function updateDAmt(e) {
-    setDeposit(e.target.value);
     if (e.target.value > 0) {
       let a = web3.utils.toWei(e.target.value, "ether");
       overAmount(a, props.token.assetObject.myBalance, props.ethBal);
     }
-    if(await checkApprovalAmount() < depositAmt * `1e${props.token.assetObject.tDecimals}`) {
+    setDeposit(e.target.value);
+    let apprvAmt = await checkApprovalAmount();
+
+    if(apprvAmt < e.target.value * `1e${props.token.assetObject.tDecimals}`) {
       setShowApproval(true);
     } else {
       setShowApproval(false);
@@ -969,7 +966,6 @@ export default function VaultTokenInfo(props) {
     setShowW(true);
   }
   function showTokenPair() {
-    console.log(props.token.assetObject);
     return (
       <>
         <DWIndicator>
