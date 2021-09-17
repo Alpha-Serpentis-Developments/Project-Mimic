@@ -7,6 +7,7 @@ export default function Approval(props) {
     return (
         <div
             style={{
+            fontSize: "20px",
             display: "flex",
             flexDirection: "row",
             marginTop: "30px",
@@ -16,14 +17,14 @@ export default function Approval(props) {
         >
             <Button
                 onClick={() => {
-                    props.token.approveAsset(sanitizedValue, props.acct)
+                    props.approveAsset(sanitizedValue, props.acct)
                 }}
             >
-                Approve {props.depositAmt}
+                Approve {props.depositAmt} {props.token.assetObject.tSymbol}
             </Button>
             <Button
                 onClick={() => {
-                    props.token.approveAsset(2^256 - 1, props.acct);
+                    props.approveAsset(2^256 - 1, props.acct);
                 }}
             >
                 Infinite Approval

@@ -66,7 +66,7 @@ const WIndicator = styled.div`
   }
 `;
 
-const MagmrCallsIndicator = styled.div`
+const MgmrOptionsIndicator = styled.div`
   display: flex;
   flex-direction: row;
   width: 80%;
@@ -86,7 +86,7 @@ const DWForm = styled.div`
   background-color: #9aa9ff63;
   padding-bottom: 50px;
 `;
-const MgmrCallForm = styled.div`
+const MgmrOptionForm = styled.div`
   width: 80%;
   margin-left: auto;
   margin-right: auto;
@@ -117,7 +117,7 @@ const WriteBtn = styled.div`
     background-color: purple;
   }
 `;
-const SellCallBtn = styled.div`
+const SellOptionBtn = styled.div`
   padding-top: 17px;
   cursor: pointer;
   border-radius: 0px 0px 0 0;
@@ -313,7 +313,6 @@ export default function VaultTokenInfo(props) {
   }
 
   function deposit(amt) {
-    console.log(props);
     startTX();
     if (amt === 0 || isNaN(amt)) {
       setSM("Error", "Form Input Error", true, true);
@@ -359,7 +358,7 @@ export default function VaultTokenInfo(props) {
     }
 
     // let amount = web3.utils.toWei(amt, wUnit);
-    let amount = amt * 10 ** props.token.tDecimals;
+    let amount = web3.utils.toWei(amt);
     let w = cVT.withdraw(amount, props.acct);
     sendTX(w, "Withdraw");
   }
@@ -523,6 +522,10 @@ export default function VaultTokenInfo(props) {
     sendTX(wc, "Withdraw Fee Adjusted");
   }
 
+  function approveAsset(amount, f) {
+    cVT.approveAsset(amount, f);
+  }
+
   function overPcent(a) {
     if (a > 100) {
       setSM("Error", "You cannot enter number over 100", true, true);
@@ -575,7 +578,7 @@ export default function VaultTokenInfo(props) {
 
   function writeCallRender() {
     return (
-      <MgmrCallForm>
+      <MgmrOptionForm>
         <Form>
           <Divider hidden />
 
@@ -674,13 +677,13 @@ export default function VaultTokenInfo(props) {
             </Button>
           </ConfirmCancelBtns>
         </Form>
-      </MgmrCallForm>
+      </MgmrOptionForm>
     );
   }
 
   function renderWriteSellOptions() {
     return (
-      <MgmrCallForm>
+      <MgmrOptionForm>
         <Form>
           <Divider hidden />
           <Form.Group
@@ -759,13 +762,13 @@ export default function VaultTokenInfo(props) {
             </Button>
           </ConfirmCancelBtns>
         </Form>
-      </MgmrCallForm>
+      </MgmrOptionForm>
     );
   }
 
   function renderSellCall() {
     return (
-      <MgmrCallForm>
+      <MgmrOptionForm>
         <Form>
           <Divider hidden />
           <Form.Field
@@ -789,7 +792,7 @@ export default function VaultTokenInfo(props) {
             </Button>
           </ConfirmCancelBtns>
         </Form>
-      </MgmrCallForm>
+      </MgmrOptionForm>
     );
   }
   function renderAdjustMaxAsset() {
@@ -868,7 +871,7 @@ export default function VaultTokenInfo(props) {
     return (
       <div>
         <Divider hidden />
-        <MagmrCallsIndicator>
+        <MgmrOptionsIndicator>
           <WriteBtn
             labelPosition="right"
             color={writeColor}
@@ -887,7 +890,7 @@ export default function VaultTokenInfo(props) {
             Write Option
           </WriteBtn>
 
-          <SellCallBtn
+          <SellOptionBtn
             color={sellColor}
             labelPosition="right"
             onClick={() => {
@@ -901,9 +904,9 @@ export default function VaultTokenInfo(props) {
             }}
             disabled={btnDisabled}
           >
-            Sell Call
-          </SellCallBtn>
-          <SellCallBtn
+            Sell Option
+          </SellOptionBtn>
+          <SellOptionBtn
             labelPosition="right"
             color={writeColor}
             onClick={() => {
@@ -917,8 +920,8 @@ export default function VaultTokenInfo(props) {
             }}
             disabled={btnDisabled}
           >
-            Write Call Option
-          </SellCallBtn>
+            Write & Sell Option
+          </SellOptionBtn>
           <SettleVaultBtn
             color={settleColor}
             onClick={settleVault}
@@ -926,7 +929,7 @@ export default function VaultTokenInfo(props) {
           >
             Settle Vault
           </SettleVaultBtn>
-        </MagmrCallsIndicator>
+        </MgmrOptionsIndicator>
         {showWriteCall && writeCallRender()}
         {showSellCall && renderSellCall()}
         {showWriteSellOption && renderWriteSellOptions()}
@@ -966,6 +969,7 @@ export default function VaultTokenInfo(props) {
     setShowW(true);
   }
   function showTokenPair() {
+    console.log(props);
     return (
       <>
         <DWIndicator>
@@ -988,6 +992,7 @@ export default function VaultTokenInfo(props) {
             <Deposit
               token={props.token}
               deposit={deposit}
+              approveAsset={approveAsset}
               depositAmt={depositAmt}
               updateDAmt={updateDAmt}
               showApproval={showApproval}

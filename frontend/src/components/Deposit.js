@@ -2,12 +2,13 @@ import { Button, Form, Divider } from "semantic-ui-react";
 import Approval from "./Approval";
 
 export default function Deposit(props) {
+  console.log(props);
   let wBalance = parseFloat(
     props.token.assetObject.myBalance / `1e${props.token.assetObject.tDecimals}`
   ).toFixed(6);
   return (
     <div>
-      {props.token.totalSupply > 0 && !props.managerClick && (
+      {props.token.totalSupply > 0 && (
         <Form>
           <div
             style={{
@@ -77,6 +78,7 @@ export default function Deposit(props) {
           ) : (
             <Approval
               token={props.token}
+              approveAsset={props.approveAsset}
               depositAmt={props.depositAmt}
               acct={props.acct}
             ></Approval>
