@@ -14,6 +14,12 @@ export class ERC20 {
     this.erc = new web3.eth.Contract(abi, address);
   }
 
+  async updateSelf() {
+    await this.setName(this.getName());
+    await this.setSymbol(this.getSymbol());
+    await this.setDecimals(this.getDecimals());
+  }
+
   async getName(f) {
     if (!this.ercStatus) {
       return this.tName;
@@ -112,5 +118,13 @@ export class ERC20 {
   }
   approve(c, a, f) {
     return this.erc.methods.approve(c, a).send({ from: f });
+  }
+  async allowance(o, s) {
+    let b;
+
+    await this.erc.methods.allowance(o, s).call(function (error, result) {
+      b = result;
+    });
+    return b;
   }
 }

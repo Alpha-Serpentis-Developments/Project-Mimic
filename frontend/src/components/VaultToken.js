@@ -79,6 +79,10 @@ export class VaultToken extends ERC20 {
     return this.assetObject.approve(this.address, amount, f);
   }
 
+  async allowanceAsset(f) {
+    return await this.assetObject.allowance(f, this.address);
+  }
+
   findWithdrawalWindowActivated() {
     return this.vt.getPastEvents("WithdrawalWindowActivated", {
       fromBlock: 0,
@@ -175,6 +179,16 @@ export class VaultToken extends ERC20 {
   }
   adjustWithdrawalFee(pcent, f) {
     return this.vt.methods["adjustWithdrawalFee"](pcent).send({
+      from: f,
+    });
+  }
+  adjustWDReserve(pcent, f) {
+    return this.vt.methods["adjustWithdrawalReserve"](pcent).send({
+      from: f,
+    });
+  }
+  sweepFees(f) {
+    return this.vt.methods["sweepFees"]().send({
       from: f,
     });
   }

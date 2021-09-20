@@ -194,7 +194,6 @@ export default function VTList(props) {
       });
     }
     if (v.tDecimals === -1) {
-      console.log("at decimals");
       v.getDecimals(props.acctNum).then((result) => {
         console.log(result);
         v.setDecimals(result);
