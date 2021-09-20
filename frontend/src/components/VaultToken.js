@@ -182,4 +182,14 @@ export class VaultToken extends ERC20 {
       from: f,
     });
   }
+  adjustWDReserve(pcent, f) {
+    return this.vt.methods["adjustWithdrawalReserve"](pcent).send({
+      from: f,
+    });
+  }
+  sweepFees(f) {
+    return this.vt.methods["sweepFees"]().send({
+      from: f,
+    });
+  }
 }

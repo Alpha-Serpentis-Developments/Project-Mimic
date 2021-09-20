@@ -193,6 +193,7 @@ export default function VaultTokenInfo(props) {
   const [maxAsset, setMaxAsset] = useState(0);
   const [depositFee, setDepositFee] = useState(0);
   const [withdrawFee, setWithdrawFee] = useState(0);
+  const [wdReserve, setWDReserve] = useState(0);
 
   useEffect(() => {
     createVT(ctAddr);
@@ -209,15 +210,11 @@ export default function VaultTokenInfo(props) {
 
   async function getTypeHash() {
     const typeUrlPrefix = "https://dweb.link/ipfs/";
-    const typeUrl = (typeUrlPrefix + typeHash);
+    const typeUrl = typeUrlPrefix + typeHash;
     console.log(typeUrl);
     fetch(typeUrl)
-      .then((response) => 
-        response.json()
-      )
-      .then((result) => 
-        setASHash(result)
-      )
+      .then((response) => response.json())
+      .then((result) => setASHash(result))
       .catch((error) => {
         console.error("Error:", error);
       });
@@ -504,6 +501,13 @@ export default function VaultTokenInfo(props) {
     sendTX(wc, "Deposit Fee Adjusted");
   }
 
+  function sweepFee() {
+    startTX();
+
+    let wc = cVT.sweepFees(props.acct);
+    sendTX(wc, "Sweep Fee");
+  }
+
   function updateWithdrawFee(e) {
     setWithdrawFee(e.target.value * 100);
   }
@@ -522,6 +526,24 @@ export default function VaultTokenInfo(props) {
     sendTX(wc, "Withdraw Fee Adjusted");
   }
 
+  function updateWDReserve(e) {
+    setWDReserve(e.target.value * 100);
+  }
+
+  function adjustWDReserveFee() {
+    startTX();
+
+    if (wdReserve === 0) {
+      setSM("Error", "Form Input Error", true, true);
+      setIconStatus("error");
+
+      return;
+    }
+
+    let wc = cVT.adjustWDReserve(wdReserve, props.acct);
+    sendTX(wc, "Withdraw Reserve Fee Adjusted");
+  }
+
   function approveAsset(amount, f) {
     cVT.approveAsset(amount, f);
   }
@@ -535,7 +557,10 @@ export default function VaultTokenInfo(props) {
   }
 
   async function checkApprovalAmount() {
-    let currentApprovalAmt = await cVT.assetObject.allowance(props.acct, cVT.address);
+    let currentApprovalAmt = await cVT.assetObject.allowance(
+      props.acct,
+      cVT.address
+    );
 
     return currentApprovalAmt;
   }
@@ -813,7 +838,7 @@ export default function VaultTokenInfo(props) {
     return (
       <Form>
         <Form.Field>
-          <label>Adjust Deposit Fee</label>
+          <label>Adjust Deposit Fee(up to 50%)</label>
           <Input
             placeholder="Percentage"
             onChange={updateDepositFee}
@@ -834,7 +859,7 @@ export default function VaultTokenInfo(props) {
       <Form>
         <Form.Field>
           {" "}
-          <label>Adjust Withdraw Fee</label>
+          <label>Adjust Withdraw Fee(up to 50%)</label>
           <Input
             placeholder="percentage"
             onChange={updateWithdrawFee}
@@ -844,6 +869,26 @@ export default function VaultTokenInfo(props) {
           />
         </Form.Field>
         <Button type="submit" onClick={adjustWithdrawFee}>
+          Confirm
+        </Button>
+      </Form>
+    );
+  }
+  function renderWDServe() {
+    return (
+      <Form>
+        <Form.Field>
+          {" "}
+          <label>Adjust Withdraw Reserve Fee(up to 50%)</label>
+          <Input
+            placeholder="percentage"
+            onChange={updateWDReserve}
+            style={{ width: "100px" }}
+            label={{ content: "%" }}
+            labelPosition="right"
+          />
+        </Form.Field>
+        <Button type="submit" onClick={adjustWDReserveFee}>
           Confirm
         </Button>
       </Form>
@@ -938,6 +983,12 @@ export default function VaultTokenInfo(props) {
         <div> {renderAdujstDepositFee()}</div>
         <br />
         <div> {renderAdjustWithdrawFee()}</div>
+        <br />
+        <div> {renderWDServe()}</div>
+        <br />
+        <Button type="submit" onClick={sweepFee}>
+          Sweep Fee
+        </Button>
       </div>
     );
   }
@@ -954,7 +1005,7 @@ export default function VaultTokenInfo(props) {
     setDeposit(e.target.value);
     let apprvAmt = await checkApprovalAmount();
 
-    if(apprvAmt < e.target.value * `1e${props.token.assetObject.tDecimals}`) {
+    if (apprvAmt < e.target.value * `1e${props.token.assetObject.tDecimals}`) {
       setShowApproval(true);
     } else {
       setShowApproval(false);
