@@ -24,7 +24,7 @@ export default function Approval(props) {
             </Button>
             <Button
                 onClick={() => {
-                    props.approveAsset(2^256 - 1, props.acct);
+                    props.approveAsset(new props.web3.utils.BN(2).pow(new props.web3.utils.BN(256)).sub(new props.web3.utils.BN(1)), props.acct);
                 }}
             >
                 Infinite Approval

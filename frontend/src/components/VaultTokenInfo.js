@@ -1020,7 +1020,6 @@ export default function VaultTokenInfo(props) {
     setShowW(true);
   }
   function showTokenPair() {
-    console.log(props);
     return (
       <>
         <DWIndicator>
@@ -1050,6 +1049,7 @@ export default function VaultTokenInfo(props) {
               managerClick={managerClick}
               btnDisabled={btnDisabled}
               acct={props.acct}
+              web3={web3}
             />
           </DWForm>
         )}
@@ -1080,7 +1080,7 @@ export default function VaultTokenInfo(props) {
       {/* {showConvertForm && convertForm()} */}
       <Divider hidden />
       <Divider hidden />
-      {props.token.totalSupply !== 0 && showTokenPair()}
+      {props.token.totalSupply !== -1 && showTokenPair()}
 
       {props.token.manageToken && managerMenu()}
       <Divider hidden />
