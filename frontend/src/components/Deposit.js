@@ -66,8 +66,7 @@ export default function Deposit(props) {
             size="large"
             // labelPosition="left"
             disabled={
-              props.depositAmt === 0 ||
-              props.token.totalSupply === 0 ||
+              Number(props.depositAmt) === 0 ||
               props.token.assetObject.myBalance === 0 ||
               props.btnDisabled
             }
