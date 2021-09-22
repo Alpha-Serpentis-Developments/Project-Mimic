@@ -319,7 +319,7 @@ export default function VaultTokenInfo(props) {
     // let amount = web3.utils.toWei(amt, dUnit);
     let amount = amt * `1e${props.token.tDecimals}`;
     cVT
-      .deposit(amount, props.acct)
+      .deposit(amount.toString(), props.acct)
       .on("transactionHash", function (hash) {
         setTxHash(hash);
         setSM("TX Hash Received", hash, true, false);

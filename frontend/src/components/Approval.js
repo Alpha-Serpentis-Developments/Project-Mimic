@@ -3,7 +3,7 @@ import { Button } from "semantic-ui-react";
 export default function Approval(props) {
     let sanitizedValue = parseFloat(
         props.depositAmt * `1e${props.token.assetObject.tDecimals}`
-    );
+    ).toString();
     return (
         <div
             style={{
