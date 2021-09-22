@@ -31,6 +31,9 @@ const SocialStyle = styled.div`
   &.discord {
     background-color: white;
   }
+  &.medium {
+    background-color: black;
+  }
 `;
 
 const CopyRightText = styled.div`
@@ -51,7 +54,7 @@ export default function Footer() {
     <FooterContainer>
       <SocialContainer>
         <SocialStyle className="socialLink twitter">
-          <a href="https://twitter.com/OptionalFinance" target="_blank">
+          <a href="https://twitter.com/OptionalFinance" rel="noreferrer" target="_blank">
             <i
               class="fab fa-twitter  fa-2x"
               style={{
@@ -66,6 +69,7 @@ export default function Footer() {
           <a
             style={{ color: "purple" }}
             href="https://github.com/Alpha-Serpentis-Developments/Project-Mimic"
+            rel="noreferrer"
             target="_blank"
           >
             <Icon
@@ -81,10 +85,29 @@ export default function Footer() {
             />
           </a>
         </SocialStyle>
+        <SocialStyle className="socialLink medium">
+          <a
+            style={{ color: "white" }}
+            href="https://medium.com/@OptionalFinance"
+            rel="noreferrer"
+            target="_blank"
+          >
+            <Icon
+              size="big"
+              name="medium"
+              style={{
+                color: "white",
+                paddingTop: "12px",
+                paddingLeft: "3px",
+              }}
+            />
+          </a>
+        </SocialStyle>
         <SocialStyle className="socialLink discord">
           <a
             style={{ color: "purple" }}
             href="https://discord.gg/u9wMgBY"
+            rel="noreferrer"
             target="_blank"
           >
             <Icon
