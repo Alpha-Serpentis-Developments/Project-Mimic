@@ -419,6 +419,7 @@ export default function VTList(props) {
             vtList={vtList}
             showTokenInfo={showTokenInfo}
             openModal={props.openModal}
+            openIPFSModal={props.openIPFSModal}
           />
         </Route>
 

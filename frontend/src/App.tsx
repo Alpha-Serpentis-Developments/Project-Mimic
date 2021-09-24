@@ -8,6 +8,7 @@ import { web3 } from "./components/Web3Handler";
 import VTList from "./components/VTList.js";
 import { Icon, Menu, Sidebar, Message, Button } from "semantic-ui-react";
 import DeployNewVaultToken from "./components/DeployNewVaultToken";
+import VaultTokenIPFS from "./components/VaultTokenIPFS";
 import NavBar from "./components/NavBar";
 import Landing from "./components/Landing";
 import Footer from "./components/Footer";
@@ -55,6 +56,8 @@ export default function App() {
   const [showSidebar, setShowSidebar] = useState(false);
   const [showMMInstallModal, setShowMMInstallModal] = useState(false);
   const [reload, setReload] = useState(false);
+  const [IPFSModal, setIPFSModal] = useState(false);
+  const [IPFSActive, setIPFSActive] = useState(false);
   // state variable to let users now we only work on the kovan and
   const [showChainAlert, setShowChainAlert] = useState(false);
   //=======detect chain id change before==============
@@ -193,6 +196,10 @@ export default function App() {
 
   function openModal() {
     setOpenPlusModal(true);
+  }
+
+  function openIPFSModal() {
+    setIPFSModal(true);
   }
 
   function clickShowSidebar() {
@@ -372,6 +379,7 @@ export default function App() {
                   renderPortfolio={renderPortfolio}
                   ethBal={ethBal}
                   openModal={openModal}
+                  openIPFSModal={openIPFSModal}
                   clickHome={clickHome}
                   clickTrade={clickTrade}
                   clickManager={clickManager}
@@ -387,6 +395,10 @@ export default function App() {
               openPlusModal={openPlusModal}
               onClose={() => setOpenPlusModal(false)}
               acctNum={acctNum}
+            />
+            <VaultTokenIPFS
+              openIPFSModal={IPFSModal}
+              onClose={() => setIPFSModal(false)}
             />
           </div>
           {/* {!renderHome && (
