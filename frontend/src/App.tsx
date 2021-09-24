@@ -398,6 +398,7 @@ export default function App() {
             />
             <VaultTokenIPFS
               openIPFSModal={IPFSModal}
+              IPFSActive={IPFSActive}
               onClose={() => setIPFSModal(false)}
             />
           </div>
