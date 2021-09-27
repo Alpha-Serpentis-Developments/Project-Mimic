@@ -2,6 +2,7 @@ export class VaultToken_Meta {
     constructor(Ipfs, OrbitDB) {
         this.Ipfs = Ipfs;
         this.OrbitDB = OrbitDB;
+        this.onready = undefined;
     }
 
     async create() {
