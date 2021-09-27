@@ -198,8 +198,12 @@ export default function App() {
     setOpenPlusModal(true);
   }
 
-  function openIPFSModal() {
-    setIPFSModal(true);
+  function openIPFSModal(e: any) {
+    setIPFSModal(e);
+    console.log("what");
+    console.log(IPFSModal);
+    console.log(e);
+    console.log("end");
   }
 
   function clickShowSidebar() {
@@ -379,10 +383,10 @@ export default function App() {
                   renderPortfolio={renderPortfolio}
                   ethBal={ethBal}
                   openModal={openModal}
-                  openIPFSModal={openIPFSModal}
                   clickHome={clickHome}
                   clickTrade={clickTrade}
                   clickManager={clickManager}
+                  openIPFSModal={openIPFSModal}
                 />
               </div>
             )}
@@ -397,10 +401,10 @@ export default function App() {
               acctNum={acctNum}
             />
             <VaultTokenIPFS
-              openIPFSModal={IPFSModal}
+              setIPFSModal={openIPFSModal}
+              IPFSModal={IPFSModal}
               IPFSActive={IPFSActive}
               setIPFSActive={setIPFSActive}
-              onClose={() => setIPFSModal(false)}
             />
           </div>
           {/* {!renderHome && (

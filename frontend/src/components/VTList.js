@@ -417,9 +417,6 @@ export default function VTList(props) {
             showSpinner={vtList.length === 0}
             ethBal={props.ethBal}
             vtList={vtList}
-            showTokenInfo={showTokenInfo}
-            openModal={props.openModal}
-            openIPFSModal={props.openIPFSModal}
           />
         </Route>
 
@@ -431,6 +428,7 @@ export default function VTList(props) {
             mpAddress={props.mpAddress}
             ethBal={props.ethBal}
             sellCallList={sellCallList}
+            openIPFSModal={props.openIPFSModal}
           />
         </Route>
       </Switch>

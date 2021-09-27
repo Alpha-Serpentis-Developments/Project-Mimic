@@ -3,10 +3,10 @@ import { useState } from "react";
 import { VaultToken_Meta } from "./VaultToken_meta";
 
 export default function VaultTokenIPFS(props: {
-    openIPFSModal: boolean;
+    setIPFSModal: any;
+    IPFSModal: boolean;
     IPFSActive: boolean;
     setIPFSActive: any;
-    onClose: any;
 }) { 
 
     const IPFS = require('ipfs');
@@ -47,7 +47,7 @@ export default function VaultTokenIPFS(props: {
     }
 
     function closeModal() {
-        props.onClose();
+        props.setIPFSModal(false);
     }
 
     function isValidDescription(text: string) {
@@ -63,7 +63,7 @@ export default function VaultTokenIPFS(props: {
     return (
         <div>
             <Modal 
-                open={props.openIPFSModal}
+                open={props.IPFSModal}
                 onClose={closeModal}
                 closeIcon
                 size="small"

@@ -40,14 +40,6 @@ export default function Managed(props) {
               >
                 New Token
               </Button>
-              <Button
-                icon="plus circle"
-                size="huge"
-                color="purple"
-                onClick={props.openIPFSModal}
-              >
-                Submit Vault Token Info
-              </Button>
               <Grid.Row />
               <Grid.Row />
               <Grid.Row />

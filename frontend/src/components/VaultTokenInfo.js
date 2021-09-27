@@ -989,6 +989,15 @@ export default function VaultTokenInfo(props) {
         <Button type="submit" onClick={sweepFee}>
           Sweep Fee
         </Button>
+        <Divider hidden />
+        <Button
+          icon="plus circle"
+          size="medium"
+          color="purple"
+          onClick={() => props.openIPFSModal(true)}
+        >
+          Submit Vault Token Info
+        </Button>
       </div>
     );
   }
@@ -1081,10 +1090,9 @@ export default function VaultTokenInfo(props) {
       <Divider hidden />
       <Divider hidden />
       {props.token.totalSupply !== -1 && showTokenPair()}
-
-      {props.token.manageToken && managerMenu()}
       <Divider hidden />
       {props.token.assetObject.tSymbol === "WETH" && convertForm()}
+      {props.token.manageToken && managerMenu()}
     </div>
   );
 }
