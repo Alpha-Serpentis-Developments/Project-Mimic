@@ -13,13 +13,14 @@ export default function VaultTokenIPFS(props: {
     const OrbitDB = require('orbit-db');
 
     const [disableBtn, setDisableBtn] = useState<boolean>(true);
+    const [description, setDescription] = useState<string>("");
     const [signedStatus, setSignedStatus] = useState<boolean>(false);
 
     let VT_Meta: VaultToken_Meta;
 
     function startIPFS() {
         if(props.IPFSActive) {
-            console.log("already active");
+            console.log("IPFS is already active");
             return;
         }
 
@@ -29,16 +30,18 @@ export default function VaultTokenIPFS(props: {
             console.log(VT_Meta.OrbitDB.id);
         }
 
+        console.log("IPFS started");
         VT_Meta.create();
         props.setIPFSActive(true);
     }
 
     function stopIPFS() {
-        VT_Meta.Ipfs.stop();
-    }
-
-    function signDescription() { // user will need to sign something to prove the description
-
+        if(VT_Meta.onready !== undefined) {
+           VT_Meta.Ipfs.stop();
+            props.setIPFSActive(false);
+           console.log("IPFS stopped");
+        }
+            
     }
 
     function submitInfo() {
@@ -48,14 +51,17 @@ export default function VaultTokenIPFS(props: {
 
     function closeModal() {
         props.setIPFSModal(false);
+        stopIPFS();
     }
 
     function isValidDescription(text: string) {
         if(text === "") {
             setDisableBtn(true);
+            setDescription(text);
             return true;
         } else {
             setDisableBtn(false);
+            setDescription("");
             return false;
         }
     }

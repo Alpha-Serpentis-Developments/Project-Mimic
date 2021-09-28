@@ -445,6 +445,14 @@ export default function VaultTokenInfo(props) {
     writeCallPcentF(writeCallPcent, oTokenAddress);
   }
 
+  function signDescription(text) {
+
+  }
+
+  function verifySignature(sig) {
+
+  }
+
   function startTX() {
     setBtnDisabled(true);
     setSM("MetaMask", "Sending Transaction", true, false);
