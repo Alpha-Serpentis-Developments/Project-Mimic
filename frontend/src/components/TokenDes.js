@@ -83,6 +83,8 @@ export default function TokenDes(props) {
             mpAddress={props.mpAddress}
             ethBal={props.ethBal}
             openIPFSModal={props.openIPFSModal}
+            setUnverifiedDesc={props.setUnverifiedDesc}
+            unverifiedDesc={props.unverifiedDesc}
           />
         </DWContainer>
       </DesContainer>

@@ -428,7 +428,6 @@ export default function VTList(props) {
             mpAddress={props.mpAddress}
             ethBal={props.ethBal}
             sellCallList={sellCallList}
-            openIPFSModal={props.openIPFSModal}
           />
         </Route>
       </Switch>

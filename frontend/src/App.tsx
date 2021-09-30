@@ -43,6 +43,7 @@ export default function App() {
   const [chainId, setChainId] = useState<number | undefined>();
   const [ethBal, setEthBal] = useState<number | undefined>();
   const [mpAddress, setMPAddress] = useState<string>("");
+  const [unverifiedDesc, setUnverifiedDesc] = useState<string>("");
   const [renderHome, setRenderHome] = useState<boolean>(true);
   const [renderManager, setRenderManager] = useState<boolean>(false);
   const [renderFollow, setRenderFollow] = useState<boolean>(false);
@@ -200,10 +201,6 @@ export default function App() {
 
   function openIPFSModal(e: any) {
     setIPFSModal(e);
-    console.log("what");
-    console.log(IPFSModal);
-    console.log(e);
-    console.log("end");
   }
 
   function clickShowSidebar() {
@@ -386,7 +383,6 @@ export default function App() {
                   clickHome={clickHome}
                   clickTrade={clickTrade}
                   clickManager={clickManager}
-                  openIPFSModal={openIPFSModal}
                 />
               </div>
             )}
@@ -400,12 +396,13 @@ export default function App() {
               onClose={() => setOpenPlusModal(false)}
               acctNum={acctNum}
             />
-            <VaultTokenIPFS
+            {/* <VaultTokenIPFS
               setIPFSModal={openIPFSModal}
               IPFSModal={IPFSModal}
               IPFSActive={IPFSActive}
               setIPFSActive={setIPFSActive}
-            />
+              setUnverifiedDesc={setUnverifiedDesc}
+            /> */}
           </div>
           {/* {!renderHome && (
           <div style={{ backgroundImage: "linear-gradient(#493CB3,#1A5387)" }}>

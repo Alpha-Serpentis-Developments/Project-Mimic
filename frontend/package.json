@@ -5,6 +5,7 @@
   "homepage": "./",
   "dependencies": {
     "@airswap/utils": "^0.4.5",
+    "@metamask/eth-sig-util": "^4.0.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
@@ -12,6 +13,7 @@
     "@types/node": "^15.14.9",
     "@types/react": "^17.0.22",
     "@types/react-dom": "^17.0.9",
+    "ethereumjs-util": "^7.1.2",
     "ipfs": "^0.59.0",
     "orbit-db": "^0.26.1",
     "react": "^17.0.2",

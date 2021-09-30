@@ -1,4 +1,4 @@
-import { Modal, Form, Input, Button } from "semantic-ui-react";
+import { Modal, Form, Input, Button, GridRow, Grid } from "semantic-ui-react";
 import { useState } from "react";
 import { VaultToken_Meta } from "./VaultToken_meta";
 
@@ -7,14 +7,17 @@ export default function VaultTokenIPFS(props: {
     IPFSModal: boolean;
     IPFSActive: boolean;
     setIPFSActive: any;
+    unverifiedDesc: string;
+    setUnverifiedDesc: any;
+    signDescription: any;
 }) { 
 
     const IPFS = require('ipfs');
     const OrbitDB = require('orbit-db');
 
     const [disableBtn, setDisableBtn] = useState<boolean>(true);
-    const [description, setDescription] = useState<string>("");
     const [signedStatus, setSignedStatus] = useState<boolean>(false);
+    const [dataSubmitted, setDataSubmitted] = useState<boolean>(false);
 
     let VT_Meta: VaultToken_Meta;
 
@@ -27,41 +30,44 @@ export default function VaultTokenIPFS(props: {
         VT_Meta = new VaultToken_Meta(IPFS, OrbitDB);
 
         VT_Meta.onready = () => {
+            console.log("IPFS started");
             console.log(VT_Meta.OrbitDB.id);
+            console.log(VT_Meta);
         }
 
-        console.log("IPFS started");
         VT_Meta.create();
         props.setIPFSActive(true);
     }
 
     function stopIPFS() {
+        console.log(VT_Meta);
         if(VT_Meta.onready !== undefined) {
            VT_Meta.Ipfs.stop();
             props.setIPFSActive(false);
            console.log("IPFS stopped");
         }
-            
     }
 
     function submitInfo() {
-        startIPFS();
-        closeModal();
+        props.setUnverifiedDesc()
+        props.signDescription();
     }
 
     function closeModal() {
-        props.setIPFSModal(false);
-        stopIPFS();
+        if(props.IPFSActive && props.unverifiedDesc === "") {
+            stopIPFS();
+        }
+            props.setIPFSModal(false);
     }
 
     function isValidDescription(text: string) {
         if(text === "") {
             setDisableBtn(true);
-            setDescription(text);
+            props.setUnverifiedDesc("");
             return true;
         } else {
             setDisableBtn(false);
-            setDescription("");
+            props.setUnverifiedDesc(text);
             return false;
         }
     }
@@ -85,12 +91,22 @@ export default function VaultTokenIPFS(props: {
                                 isValidDescription(e.target.value);
                             }}
                         />
-                        <Form.Field 
-                            control={Button}
-                            onClick={submitInfo}
-                            content={"Submit Vault Info"}
-                            disabled={disableBtn}
-                        />
+                        <Grid>
+                            <Grid.Row>
+                                <Form.Field 
+                                    control={Button}
+                                    onClick={submitInfo}
+                                    content={"Submit Vault Info"}
+                                    disabled={disableBtn}
+                                />
+                                <Form.Field
+                                    control={Button}
+                                    onClick={() => undefined}
+                                    content={"Submit to IPFS"}
+                                    disabled={disableBtn} 
+                                />
+                            </Grid.Row>
+                        </Grid>
                     </Form>
                 </Modal.Content>
             </Modal>

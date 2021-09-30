@@ -43,6 +43,11 @@ export class VaultToken extends ERC20 {
     this.asset = a;
   }
 
+  async updateInfo() {
+    this.setAsset(await this.getAsset())
+    this.setManager(await this.getManager());
+  }
+
   updateStatus() {
     if (
       this.manager !== "" &&
