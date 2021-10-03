@@ -9,10 +9,9 @@ export default function Withdraw(props) {
   // console.log(props.token.expireTime < Date.now() / 1000);
   // console.log((props.token.expireTime !== -1 && props.token.expireTime < Date.now() / 1000));
   // console.log(props);
-  console.log(props.token);
   return (
     <div>
-      {props.token.totalSupply > 0 && (
+      {props.token.totalSupply >= 0 && (
         <Form>
           <div
             style={{

@@ -319,7 +319,7 @@ export default function VaultTokenInfo(props) {
     // let amount = web3.utils.toWei(amt, dUnit);
     let amount = amt * `1e${props.token.tDecimals}`;
     cVT
-      .deposit(amount, props.acct)
+      .deposit(amount.toString(), props.acct)
       .on("transactionHash", function (hash) {
         setTxHash(hash);
         setSM("TX Hash Received", hash, true, false);
@@ -1020,7 +1020,6 @@ export default function VaultTokenInfo(props) {
     setShowW(true);
   }
   function showTokenPair() {
-    console.log(props);
     return (
       <>
         <DWIndicator>
@@ -1050,6 +1049,7 @@ export default function VaultTokenInfo(props) {
               managerClick={managerClick}
               btnDisabled={btnDisabled}
               acct={props.acct}
+              web3={web3}
             />
           </DWForm>
         )}
@@ -1080,7 +1080,7 @@ export default function VaultTokenInfo(props) {
       {/* {showConvertForm && convertForm()} */}
       <Divider hidden />
       <Divider hidden />
-      {props.token.totalSupply !== 0 && showTokenPair()}
+      {props.token.totalSupply !== -1 && showTokenPair()}
 
       {props.token.manageToken && managerMenu()}
       <Divider hidden />
