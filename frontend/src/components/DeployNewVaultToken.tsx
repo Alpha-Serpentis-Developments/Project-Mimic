@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { web3 } from "./Web3Handler";
 import { nwConfig, currentChain } from "./NetworkConfig";
 import {
@@ -9,7 +9,6 @@ import {
   Modal,
   Grid,
   Divider,
-  Label,
 } from "semantic-ui-react";
 
 import { Factory } from "./Factory";
@@ -43,7 +42,7 @@ export default function DeployNewVaultToken(props: {
   // let assetTokenAddrs = nc[currentChain].aTokenAddrs;
 
   const [tokenName, setTokenName] = useState<string>("");
-  const [tokenSymble, setTokenSymble] = useState<string>("");
+  const [tokenSymbol, setTokenSymbol] = useState<string>("");
   const [assetTokenAddr, setAssetTokenAddr] = useState<string>("");
   const [maxAmt, setMaxAmt] = useState<string>("10");
 
@@ -59,7 +58,7 @@ export default function DeployNewVaultToken(props: {
   const [miniute, setMinute] = useState(0);
   const [second, setSecond] = useState(0);
   const [winExpirLen, setWinExpirLen] = useState(0);
-  const [atDecial, setATDecimal] = useState(-1);
+  const [atDecimal, setATDecimal] = useState(-1);
 
   let factory = new Factory(web3);
 
@@ -104,7 +103,7 @@ export default function DeployNewVaultToken(props: {
     getATDecimal(assetTokenAddr);
     startTX();
     e.preventDefault();
-    if (tokenName === "" || tokenSymble === "" || assetTokenAddr === "") {
+    if (tokenName === "" || tokenSymbol === "" || assetTokenAddr === "") {
       setSM("Error", "Form input Error", true, true);
       setIconStatus("error");
       return;
@@ -112,11 +111,11 @@ export default function DeployNewVaultToken(props: {
 
     let amounta = web3.utils.toWei(maxAmt, "ether");
     console.log(typeof amounta);
-    let amount = (10 ** atDecial * parseFloat(maxAmt)).toString();
+    let amount = (10 ** atDecimal * parseFloat(maxAmt)).toString();
     console.log(amount);
     let c = factory.deployNewVT(
       tokenName,
-      tokenSymble,
+      tokenSymbol,
       // controllerAddr,
       // //"0x0000000000000000000000000000000000000000",
       assetTokenAddr,
@@ -136,7 +135,7 @@ export default function DeployNewVaultToken(props: {
     setTxHash("");
     resetSM();
     setTokenName("");
-    setTokenSymble("");
+    setTokenSymbol("");
     props.onClose();
   }
 
@@ -153,7 +152,7 @@ export default function DeployNewVaultToken(props: {
       .then((result) => {
         at.setDecimals(result);
         setATDecimal(result);
-        console.log(atDecial);
+        console.log(atDecimal);
       })
       .catch((error) => {
         at.ercStatus = false;
@@ -188,8 +187,8 @@ export default function DeployNewVaultToken(props: {
               control={Input}
               label="Token Symbol"
               placeholder="Token Symbbol"
-              value={tokenSymble}
-              onChange={(e: any) => setTokenSymble(e.target.value)}
+              value={tokenSymbol}
+              onChange={(e: any) => setTokenSymbol(e.target.value)}
               required
             />
             <Form.Field
