@@ -19,6 +19,7 @@ export class VaultToken extends ERC20 {
     this.collateralAmount = -1;
     this.oTokenAddr = "";
     this.oTokenObj = null;
+    this.soldOptionsEvents = [];
     this.oTokenNames = [];
     this.nav = -1;
     this.yield = -1;
@@ -100,29 +101,37 @@ export class VaultToken extends ERC20 {
   }
 
   sell(amount, premiumAmount, otherPartyAddress, f) {
-    return this.vt.methods["sellCalls"](
+    return this.vt.methods["sellOptions"](
       amount,
       premiumAmount,
       otherPartyAddress
     ).send({ from: f });
   }
 
+  setSoldOptionsEvents(arr) {
+    this.soldOptionsEvents = arr;
+  }
+
+  getSoldOptionsEvents() {
+    return this.soldOptionsEvents;
+  }
+
   findAllOT() {
-    return this.VT.getPastEvents("CallsMinted", {
+    return this.VT.getPastEvents("OptionsMinted", {
       fromBlock: 0,
       toBlock: "latest",
     });
   }
 
-  getCA(w, address) {
-    return w.eth.getStorageAt(address, 8);
+  async getCA() {
+    return this.vt.methods.collateralAmount().call();
   }
   setCA(a) {
     this.collateralAmount = a;
   }
 
-  getOT(w, address) {
-    return w.eth.getStorageAt(address, 11);
+  async getOT() {
+    return this.vt.methods.oToken().call();
   }
   setOT(a) {
     this.oTokenAddr = a;

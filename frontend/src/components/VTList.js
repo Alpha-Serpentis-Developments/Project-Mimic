@@ -81,6 +81,7 @@ export default function VTList(props) {
           allSellCalls.then((result) => {
             setSellCallList(result);
             setLastSellCall(result[result.length - 1]);
+            v.setSoldOptionsEvents(result);
             let oArr = [];
             for (let h = 0; h < result.length; h++) {
               web3.eth
@@ -230,13 +231,14 @@ export default function VTList(props) {
       let y;
 
       r = r.toFixed(5);
-      if (lastSellCall === undefined) {
+      const vaultLastSoldOptions = v.getSoldOptionsEvents()[v.getSoldOptionsEvents().length - 1];
+      if (vaultLastSoldOptions === undefined) {
         y = 0;
       } else {
         y =
-          lastSellCall.returnValues.premiumReceived /
+        vaultLastSoldOptions.returnValues.premiumReceived /
             1e18 /
-            (normalizeValues(lastSellCall.returnValues.amountSold, 8, 18) /
+            (normalizeValues(vaultLastSoldOptions.returnValues.amountSold, 8, 18) /
               10 ** 18) +
           1;
         y **= 52;
