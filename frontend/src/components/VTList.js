@@ -29,6 +29,8 @@ export default function VTList(props) {
   // const [currentTokenAddr, setCurrentTokenAddr] = useState(cVTAddr);
 
   async function showTokenInfo(e, i) {
+    console.log("clicked");
+    console.log(e);
     console.log(i.value);
     await setClickedItem(i.value);
     //  await setCurrentTokenAddr(i.value.address);
@@ -417,6 +419,7 @@ export default function VTList(props) {
             showSpinner={vtList.length === 0}
             ethBal={props.ethBal}
             vtList={vtList}
+            showTokenInfo={showTokenInfo}
           />
         </Route>
 

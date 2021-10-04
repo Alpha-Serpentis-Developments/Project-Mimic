@@ -43,7 +43,6 @@ export default function App() {
   const [chainId, setChainId] = useState<number | undefined>();
   const [ethBal, setEthBal] = useState<number | undefined>();
   const [mpAddress, setMPAddress] = useState<string>("");
-  const [unverifiedDesc, setUnverifiedDesc] = useState<string>("");
   const [renderHome, setRenderHome] = useState<boolean>(true);
   const [renderManager, setRenderManager] = useState<boolean>(false);
   const [renderFollow, setRenderFollow] = useState<boolean>(false);
@@ -57,8 +56,6 @@ export default function App() {
   const [showSidebar, setShowSidebar] = useState(false);
   const [showMMInstallModal, setShowMMInstallModal] = useState(false);
   const [reload, setReload] = useState(false);
-  const [IPFSModal, setIPFSModal] = useState(false);
-  const [IPFSActive, setIPFSActive] = useState(false);
   // state variable to let users now we only work on the kovan and
   const [showChainAlert, setShowChainAlert] = useState(false);
   //=======detect chain id change before==============
@@ -197,10 +194,6 @@ export default function App() {
 
   function openModal() {
     setOpenPlusModal(true);
-  }
-
-  function openIPFSModal(e: any) {
-    setIPFSModal(e);
   }
 
   function clickShowSidebar() {
@@ -396,13 +389,6 @@ export default function App() {
               onClose={() => setOpenPlusModal(false)}
               acctNum={acctNum}
             />
-            {/* <VaultTokenIPFS
-              setIPFSModal={openIPFSModal}
-              IPFSModal={IPFSModal}
-              IPFSActive={IPFSActive}
-              setIPFSActive={setIPFSActive}
-              setUnverifiedDesc={setUnverifiedDesc}
-            /> */}
           </div>
           {/* {!renderHome && (
           <div style={{ backgroundImage: "linear-gradient(#493CB3,#1A5387)" }}>

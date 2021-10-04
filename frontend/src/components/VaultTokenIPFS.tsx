@@ -1,4 +1,4 @@
-import { Modal, Form, Input, Button, GridRow, Grid } from "semantic-ui-react";
+import { Modal, Form, Input, Button, Grid, TextArea } from "semantic-ui-react";
 import { useState } from "react";
 import { VaultToken_Meta } from "./VaultToken_meta";
 
@@ -9,22 +9,27 @@ export default function VaultTokenIPFS(props: {
     setIPFSActive: any;
     unverifiedDesc: string;
     setUnverifiedDesc: any;
+    setManagerSocial: any;
     signDescription: any;
+    signedDesc: string;
+    timestamp: number;
 }) { 
 
     const IPFS = require('ipfs');
     const OrbitDB = require('orbit-db');
 
     const [disableBtn, setDisableBtn] = useState<boolean>(true);
-    const [signedStatus, setSignedStatus] = useState<boolean>(false);
+    const [disableIPFSBtn, setDisableIPFSBtn] = useState<boolean>(true);
     const [dataSubmitted, setDataSubmitted] = useState<boolean>(false);
 
     let VT_Meta: VaultToken_Meta;
 
     function startIPFS() {
         if(props.IPFSActive) {
-            console.log("IPFS is already active");
-            return;
+            return console.error("IPFS already active");
+        }
+        if(props.signedDesc === "") {
+            return console.error("Signed description does not exist");
         }
 
         VT_Meta = new VaultToken_Meta(IPFS, OrbitDB);
@@ -82,28 +87,41 @@ export default function VaultTokenIPFS(props: {
             >
                 <Modal.Content>
                     <Form>
-                        <Form.Field 
-                            control={Input}
-                            label="Token Description"
-                            placeholder="Lorem ipsum"
+                        <Form.Field
+                            control={TextArea}
+                            label="Description"
+                            placeholder="The vault's strategy is..."
                             required
                             onChange={(e: any) => {
                                 isValidDescription(e.target.value);
                             }}
                         />
-                        <Grid>
+                        <Form.Field 
+                            control={Input}
+                            label="Social Media"
+                            placeholder="twitter.com/OptionalFinance"
+                            required
+                            onChange={(e: any) => {
+                                props.setManagerSocial(e.target.value);
+                            }}
+                        />
+                        <Grid
+                            style={{
+                                marginLeft: "0%"
+                            }}
+                        >
                             <Grid.Row>
                                 <Form.Field 
                                     control={Button}
                                     onClick={submitInfo}
-                                    content={"Submit Vault Info"}
+                                    content={"Sign Description"}
                                     disabled={disableBtn}
                                 />
                                 <Form.Field
                                     control={Button}
-                                    onClick={() => undefined}
+                                    onClick={startIPFS}
                                     content={"Submit to IPFS"}
-                                    disabled={disableBtn} 
+                                    disabled={disableIPFSBtn} 
                                 />
                             </Grid.Row>
                         </Grid>

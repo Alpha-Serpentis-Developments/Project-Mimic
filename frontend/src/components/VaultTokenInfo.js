@@ -202,6 +202,8 @@ export default function VaultTokenInfo(props) {
   const [IPFSModal, setIPFSModal] = useState(false);
   const [IPFSActive, setIPFSActive] = useState(false);
   const [unverifiedDesc, setUnverifiedDesc] = useState("");
+  const [managerSocial, setManagerSocial] = useState("");
+  const [timestamp, setTimestamp] = useState(0);
   const [signedDesc, setSignedDesc] = useState("");
   const [signingResponse, setSigningResponse] = useState("");
 
@@ -461,6 +463,8 @@ export default function VaultTokenInfo(props) {
   }
 
   function signDescription() {
+    const currentTime = Math.floor(Date.now() / 1000);
+    setTimestamp(currentTime);
 
     const msgParams = JSON.stringify({
       domain: {
@@ -469,8 +473,10 @@ export default function VaultTokenInfo(props) {
       },
       message: {
           description: unverifiedDesc,
+          social: managerSocial,
           vaultToken: cVT.address,
-          manager: cVT.manager
+          manager: cVT.manager,
+          timestamp: currentTime
       },
       primaryType: 'Description',
       types: {
@@ -480,8 +486,10 @@ export default function VaultTokenInfo(props) {
           ],
           Description: [
               { name: 'description', type: 'string' },
+              { name: 'social', type: 'string' },
               { name: 'vaultToken', type: 'address' },
-              { name: 'manager', type: 'address' }
+              { name: 'manager', type: 'address' },
+              { name: 'timestamp', type: 'uint256' }
           ]
       }
     });
@@ -500,7 +508,6 @@ export default function VaultTokenInfo(props) {
 
         if(verifySignature(msgParams, cVT.manager, result.result)) {
           setSignedDesc(result.result);
-          setUnverifiedDesc("");
           console.log("Signature verified");
         } else {
           return console.error("Signature cannot be verified");
@@ -1181,7 +1188,9 @@ export default function VaultTokenInfo(props) {
         setIPFSActive={setIPFSActive}
         unverifiedDesc={unverifiedDesc}
         setUnverifiedDesc={setUnverifiedDesc}
+        setManagerSocial={setManagerSocial}
         signDescription={signDescription}
+        signedDesc={signedDesc}
       />
     </div>
   );
