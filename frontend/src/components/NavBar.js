@@ -27,11 +27,6 @@ const NavRight = styled.div`
   flex-direction: row;
   justify-content: start;
 `;
-const TitleLogo = styled.img`
-  width: 21.08px;
-  margin-left: 53.67px;
-  margin-bottom: 8px;
-`;
 const TitleImg = styled.img`
   width: 150px;
 `;

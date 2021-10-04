@@ -1,6 +1,5 @@
-import React from "react";
 import VTCard from "../components/VTCard";
-import { Table, Divider, Button, Grid } from "semantic-ui-react";
+import { Table, Divider } from "semantic-ui-react";
 
 export default function Trade(props) {
   return (

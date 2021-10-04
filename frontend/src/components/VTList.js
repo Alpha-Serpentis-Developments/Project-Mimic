@@ -25,13 +25,9 @@ export default function VTList(props) {
 
   const [clickedItem, setClickedItem] = useState(cVT);
   const [sellCallList, setSellCallList] = useState([]);
-  const [lastSellCall, setLastSellCall] = useState();
   // const [currentTokenAddr, setCurrentTokenAddr] = useState(cVTAddr);
 
   async function showTokenInfo(e, i) {
-    console.log("clicked");
-    console.log(e);
-    console.log(i.value);
     await setClickedItem(i.value);
     //  await setCurrentTokenAddr(i.value.address);
 
@@ -55,13 +51,6 @@ export default function VTList(props) {
   }
 
   function getAllVT() {
-    fetch(
-      "https://raw.githubusercontent.com/Alpha-Serpentis-Developments/Mimic-Token-Info/main/tokenInfo.json"
-    )
-      .then((response) => response.json())
-      .then((result) => {
-        console.log(result);
-      });
     let factoryObj = new Factory(web3);
 
     let p = factoryObj.findAllVT();
@@ -80,7 +69,6 @@ export default function VTList(props) {
           let allSellCalls = v.findAllSellCalls();
           allSellCalls.then((result) => {
             setSellCallList(result);
-            setLastSellCall(result[result.length - 1]);
             v.setSoldOptionsEvents(result);
             let oArr = [];
             for (let h = 0; h < result.length; h++) {

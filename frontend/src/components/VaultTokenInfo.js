@@ -4,7 +4,7 @@ import { nwConfig, currentChain } from "./NetworkConfig";
 
 import {
   recoverTypedSignature_v4 as recoverTypedSignatureV4,
-} from 'eth-sig-util';
+} from '@metamask/eth-sig-util';
 import {
   Button,
   Grid,
@@ -192,7 +192,6 @@ export default function VaultTokenInfo(props) {
   const [activeIndex, setActiveIndex] = useState(-1);
   const [showApproval, setShowApproval] = useState(false);
   const [showD, setShowD] = useState(false);
-  const [showW, setShowW] = useState(true);
   const [onAmt, setOnAmt] = useState(1);
   const [maxAsset, setMaxAsset] = useState(0);
   const [depositFee, setDepositFee] = useState(0);
@@ -224,7 +223,6 @@ export default function VaultTokenInfo(props) {
   async function getTypeHash() {
     const typeUrlPrefix = "https://dweb.link/ipfs/";
     const typeUrl = typeUrlPrefix + typeHash;
-    console.log(typeUrl);
     fetch(typeUrl)
       .then((response) => response.json())
       .then((result) => setASHash(result))
@@ -722,7 +720,6 @@ export default function VaultTokenInfo(props) {
                       props.token.assetObject.myBalance,
                       props.ethBal
                     );
-                    console.log(onAmt);
                     setWriteCallAmt(e.target.value);
                   } else {
                     let a = e.target.value;
@@ -741,9 +738,7 @@ export default function VaultTokenInfo(props) {
               options={options}
               style={{ width: "80px" }}
               onChange={async (e, data) => {
-                console.log(data.value);
                 await setOnAmt(data.value);
-                console.log(onAmt);
               }}
             />
 
@@ -982,24 +977,24 @@ export default function VaultTokenInfo(props) {
       </Form>
     );
   }
-  function renderAdjustMaxAsset() {
-    return (
-      <Form>
-        <Form.Field>
-          <label>Adjust Max Asset</label>
-          <Input
-            placeholder="Amt"
-            onChange={updateMaxAssetNum}
-            style={{ width: "100px" }}
-          />
-        </Form.Field>
+  // function renderAdjustMaxAsset() {
+  //   return (
+  //     <Form>
+  //       <Form.Field>
+  //         <label>Adjust Max Asset</label>
+  //         <Input
+  //           placeholder="Amt"
+  //           onChange={updateMaxAssetNum}
+  //           style={{ width: "100px" }}
+  //         />
+  //       </Form.Field>
 
-        <Button type="submit" onClick={adjustMaxAsset}>
-          Confirm
-        </Button>
-      </Form>
-    );
-  }
+  //       <Button type="submit" onClick={adjustMaxAsset}>
+  //         Confirm
+  //       </Button>
+  //     </Form>
+  //   );
+  // }
   function managerMenu() {
     return (
       <div>
@@ -1110,11 +1105,9 @@ export default function VaultTokenInfo(props) {
   }
   function clickShowD() {
     setShowD(true);
-    setShowW(false);
   }
   function clickShowW() {
     setShowD(false);
-    setShowW(true);
   }
   function showTokenPair() {
     return (

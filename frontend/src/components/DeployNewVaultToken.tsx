@@ -109,10 +109,7 @@ export default function DeployNewVaultToken(props: {
       return;
     }
 
-    let amounta = web3.utils.toWei(maxAmt, "ether");
-    console.log(typeof amounta);
     let amount = (10 ** atDecimal * parseFloat(maxAmt)).toString();
-    console.log(amount);
     let c = factory.deployNewVT(
       tokenName,
       tokenSymbol,
@@ -146,13 +143,11 @@ export default function DeployNewVaultToken(props: {
   }
 
   function getATDecimal(atAddr: string) {
-    console.log(atAddr);
     let at = new ERC20(web3, atAddr);
     at.getDecimals()
       .then((result) => {
         at.setDecimals(result);
         setATDecimal(result);
-        console.log(atDecimal);
       })
       .catch((error) => {
         at.ercStatus = false;
@@ -221,7 +216,6 @@ export default function DeployNewVaultToken(props: {
                     miniute * 60 +
                     second);
                   setWinExpirLen(totalLen);
-                  console.log(totalLen);
                 }}
               />
               <Form.Field
@@ -235,8 +229,7 @@ export default function DeployNewVaultToken(props: {
                   let totalLen = await (hour * 3600 +
                     parseInt(e.target.value) * 60 +
                     second);
-                  setWinExpirLen(totalLen);
-                  console.log(totalLen);
+                  setWinExpirLen(totalLen)
                 }}
               />
               <Form.Field
@@ -251,7 +244,6 @@ export default function DeployNewVaultToken(props: {
                     miniute * 60 +
                     parseInt(e.target.value));
                   setWinExpirLen(totalLen);
-                  console.log(totalLen);
                 }}
               />
             </Form.Group>

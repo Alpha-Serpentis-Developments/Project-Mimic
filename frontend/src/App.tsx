@@ -8,7 +8,6 @@ import { web3 } from "./components/Web3Handler";
 import VTList from "./components/VTList.js";
 import { Icon, Menu, Sidebar, Message, Button } from "semantic-ui-react";
 import DeployNewVaultToken from "./components/DeployNewVaultToken";
-import VaultTokenIPFS from "./components/VaultTokenIPFS";
 import NavBar from "./components/NavBar";
 import Landing from "./components/Landing";
 import Footer from "./components/Footer";
@@ -173,7 +172,6 @@ export default function App() {
     setTradeNav("#8b1bef");
   }
   function clickTrade(e: any) {
-    console.log("clicked trade=======");
     setRenderHome(false);
     setRenderManager(false);
     setRenderPortfolio(true);
