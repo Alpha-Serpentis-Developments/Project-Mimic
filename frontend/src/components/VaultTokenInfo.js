@@ -3,9 +3,6 @@ import StatusMessage from "./StatusMessage";
 import { nwConfig, currentChain } from "./NetworkConfig";
 
 import {
-  recoverTypedSignature_v4 as recoverTypedSignatureV4,
-} from '@metamask/eth-sig-util';
-import {
   Button,
   Grid,
   Divider,
@@ -199,12 +196,6 @@ export default function VaultTokenInfo(props) {
   const [wdReserve, setWDReserve] = useState(0);
 
   const [IPFSModal, setIPFSModal] = useState(false);
-  const [IPFSActive, setIPFSActive] = useState(false);
-  const [unverifiedDesc, setUnverifiedDesc] = useState("");
-  const [managerSocial, setManagerSocial] = useState("");
-  const [timestamp, setTimestamp] = useState(0);
-  const [signedDesc, setSignedDesc] = useState("");
-  const [signingResponse, setSigningResponse] = useState("");
 
   useEffect(() => {
     createVT(ctAddr);
@@ -458,77 +449,6 @@ export default function VaultTokenInfo(props) {
 
   function openIPFSModal(e) {
     setIPFSModal(e);
-  }
-
-  function signDescription() {
-    const currentTime = Math.floor(Date.now() / 1000);
-    setTimestamp(currentTime);
-
-    const msgParams = JSON.stringify({
-      domain: {
-          name: 'Optional Social Token Description',
-          version: '1'
-      },
-      message: {
-          description: unverifiedDesc,
-          social: managerSocial,
-          vaultToken: cVT.address,
-          manager: cVT.manager,
-          timestamp: currentTime
-      },
-      primaryType: 'Description',
-      types: {
-          EIP712Domain: [
-              { name: 'name', type: 'string' },
-              { name: 'version', type: 'string' }
-          ],
-          Description: [
-              { name: 'description', type: 'string' },
-              { name: 'social', type: 'string' },
-              { name: 'vaultToken', type: 'address' },
-              { name: 'manager', type: 'address' },
-              { name: 'timestamp', type: 'uint256' }
-          ]
-      }
-    });
-
-    web3.currentProvider.sendAsync({
-        method: 'eth_signTypedData_v4',
-        params: [cVT.manager, msgParams],
-        from: cVT.manager,
-    }, function (error, result) {
-
-        if(error)
-            return console.error(error);
-        if(result.error) {
-            return console.error(result.error.message);
-        }
-
-        if(verifySignature(msgParams, cVT.manager, result.result)) {
-          setSignedDesc(result.result);
-          console.log("Signature verified");
-        } else {
-          return console.error("Signature cannot be verified");
-        }
-
-    })
-  }
-
-  function verifySignature(msgParams, from, sig) {
-    let ethUtil = require('ethereumjs-util');
-
-    const recovered = recoverTypedSignatureV4({
-      data: JSON.parse(msgParams),
-      sig: sig
-    });
-
-    if(
-      ethUtil.toChecksumAddress(recovered) === ethUtil.toChecksumAddress(from)
-    ) {
-      return true;
-    } else {
-      alert("FAILED");
-    }
   }
 
   function startTX() {
@@ -1175,15 +1095,10 @@ export default function VaultTokenInfo(props) {
       {props.token.assetObject.tSymbol === "WETH" && convertForm()}
       {props.token.manageToken && managerMenu()}
       <VaultTokenIPFS
-        setIPFSModal={setIPFSModal}
         IPFSModal={IPFSModal}
-        IPFSActive={IPFSActive}
-        setIPFSActive={setIPFSActive}
-        unverifiedDesc={unverifiedDesc}
-        setUnverifiedDesc={setUnverifiedDesc}
-        setManagerSocial={setManagerSocial}
-        signDescription={signDescription}
-        signedDesc={signedDesc}
+        setIPFSModal={setIPFSModal}
+        web3={web3}
+        cVT={cVT}
       />
     </div>
   );

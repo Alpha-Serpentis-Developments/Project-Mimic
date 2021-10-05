@@ -191,13 +191,13 @@ export default function VTList(props) {
       });
     }
     if (v.collateralAmount === -1) {
-      v.getCA(web3, v.address).then((result) => {
+      v.getCA().then((result) => {
         let da = web3.utils.toBN(result).toString();
         v.setCA(da);
       });
     }
     if (v.oTokenAddr === "") {
-      v.getOT(web3, v.address).then((result) => {
+      v.getOT().then((result) => {
         if (
           result !==
           "0x0000000000000000000000000000000000000000000000000000000000000000"
