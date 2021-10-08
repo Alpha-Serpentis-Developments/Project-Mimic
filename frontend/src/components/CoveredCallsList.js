@@ -101,18 +101,35 @@ export default function CoveredCallsList(props) {
         <div>
           {props.sellCallList.map((t, i) => {
             return (
-              <IndividualSC>
-                <SCLink
-                  href={makeEtherscanLink(
-                    props.sellCallList[i].transactionHash
-                  )}
-                  target="_blank"
-                >
-                  <OTokenName>{props.token.oTokenNames[i]}</OTokenName>
-                  <div>{OneSellCall(t)}</div>
-                </SCLink>
-              </IndividualSC>
+              props.sellCallList[i].address === props.token.address ? (
+                <IndividualSC>
+                  <SCLink
+                    href={makeEtherscanLink(
+                      props.sellCallList[i].transactionHash
+                    )}
+                    target="_blank"
+                  >
+                    <OTokenName>{props.token.oTokenNames[i]}</OTokenName>
+                    <div>{OneSellCall(t)}</div>
+                  </SCLink>
+                </IndividualSC>
+              ) : (
+                <NoCoverCall>NO DATA AVAILABLE TO SHOW</NoCoverCall>
+              )
             );
+            // return (
+            //   <IndividualSC>
+            //     <SCLink
+            //       href={makeEtherscanLink(
+            //         props.sellCallList[i].transactionHash
+            //       )}
+            //       target="_blank"
+            //     >
+            //       <OTokenName>{props.token.oTokenNames[i]}</OTokenName>
+            //       <div>{OneSellCall(t)}</div>
+            //     </SCLink>
+            //   </IndividualSC>
+            // );
           })}
         </div>
       ) : (

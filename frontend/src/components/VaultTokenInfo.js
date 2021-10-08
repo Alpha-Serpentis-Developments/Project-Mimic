@@ -3,6 +3,9 @@ import StatusMessage from "./StatusMessage";
 import { nwConfig, currentChain } from "./NetworkConfig";
 
 import {
+  recoverTypedSignature_v4 as recoverTypedSignatureV4,
+} from 'eth-sig-util';
+import {
   Button,
   Grid,
   Divider,
@@ -13,6 +16,7 @@ import {
   Dropdown,
 } from "semantic-ui-react";
 import { web3 } from "./Web3Handler";
+import VaultTokenIPFS from "./VaultTokenIPFS";
 import WethWrap from "./WethWrap";
 import Withdraw from "./Withdraw";
 import Deposit from "./Deposit";
@@ -195,6 +199,14 @@ export default function VaultTokenInfo(props) {
   const [withdrawFee, setWithdrawFee] = useState(0);
   const [wdReserve, setWDReserve] = useState(0);
 
+  const [IPFSModal, setIPFSModal] = useState(false);
+  const [IPFSActive, setIPFSActive] = useState(false);
+  const [unverifiedDesc, setUnverifiedDesc] = useState("");
+  const [managerSocial, setManagerSocial] = useState("");
+  const [timestamp, setTimestamp] = useState(0);
+  const [signedDesc, setSignedDesc] = useState("");
+  const [signingResponse, setSigningResponse] = useState("");
+
   useEffect(() => {
     createVT(ctAddr);
   }, []);
@@ -202,6 +214,7 @@ export default function VaultTokenInfo(props) {
   async function createVT(va) {
     let t = new VaultToken(web3, va);
     let a = new ERC20(web3, await t.getAsset());
+    await t.updateInfo();
     await t.updateSelf();
     await a.updateSelf();
     t.assetObject = a;
@@ -443,6 +456,81 @@ export default function VaultTokenInfo(props) {
     }
 
     writeCallPcentF(writeCallPcent, oTokenAddress);
+  }
+
+  function openIPFSModal(e) {
+    setIPFSModal(e);
+  }
+
+  function signDescription() {
+    const currentTime = Math.floor(Date.now() / 1000);
+    setTimestamp(currentTime);
+
+    const msgParams = JSON.stringify({
+      domain: {
+          name: 'Optional Social Token Description',
+          version: '1'
+      },
+      message: {
+          description: unverifiedDesc,
+          social: managerSocial,
+          vaultToken: cVT.address,
+          manager: cVT.manager,
+          timestamp: currentTime
+      },
+      primaryType: 'Description',
+      types: {
+          EIP712Domain: [
+              { name: 'name', type: 'string' },
+              { name: 'version', type: 'string' }
+          ],
+          Description: [
+              { name: 'description', type: 'string' },
+              { name: 'social', type: 'string' },
+              { name: 'vaultToken', type: 'address' },
+              { name: 'manager', type: 'address' },
+              { name: 'timestamp', type: 'uint256' }
+          ]
+      }
+    });
+
+    web3.currentProvider.sendAsync({
+        method: 'eth_signTypedData_v4',
+        params: [cVT.manager, msgParams],
+        from: cVT.manager,
+    }, function (error, result) {
+
+        if(error)
+            return console.error(error);
+        if(result.error) {
+            return console.error(result.error.message);
+        }
+
+        if(verifySignature(msgParams, cVT.manager, result.result)) {
+          setSignedDesc(result.result);
+          console.log("Signature verified");
+        } else {
+          return console.error("Signature cannot be verified");
+        }
+
+    })
+  }
+
+  function verifySignature(msgParams, from, sig) {
+    let ethUtil = require('ethereumjs-util');
+
+    const recovered = recoverTypedSignatureV4({
+      data: JSON.parse(msgParams),
+      sig: sig
+    });
+
+    if(
+      ethUtil.toChecksumAddress(recovered) === ethUtil.toChecksumAddress(from)
+    ) {
+      return true;
+    } else {
+      alert("FAILED");
+    }
   }
 
   function startTX() {
@@ -989,6 +1077,15 @@ export default function VaultTokenInfo(props) {
         <Button type="submit" onClick={sweepFee}>
           Sweep Fee
         </Button>
+        <Divider hidden />
+        <Button
+          icon="plus circle"
+          size="medium"
+          color="purple"
+          onClick={() => openIPFSModal(true)}
+        >
+          Submit Vault Token Info
+        </Button>
       </div>
     );
   }
@@ -1081,10 +1178,20 @@ export default function VaultTokenInfo(props) {
       <Divider hidden />
       <Divider hidden />
       {props.token.totalSupply !== -1 && showTokenPair()}
-
-      {props.token.manageToken && managerMenu()}
       <Divider hidden />
       {props.token.assetObject.tSymbol === "WETH" && convertForm()}
+      {props.token.manageToken && managerMenu()}
+      <VaultTokenIPFS
+        setIPFSModal={setIPFSModal}
+        IPFSModal={IPFSModal}
+        IPFSActive={IPFSActive}
+        setIPFSActive={setIPFSActive}
+        unverifiedDesc={unverifiedDesc}
+        setUnverifiedDesc={setUnverifiedDesc}
+        setManagerSocial={setManagerSocial}
+        signDescription={signDescription}
+        signedDesc={signedDesc}
+      />
     </div>
   );
 }
