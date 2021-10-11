@@ -1,9 +1,7 @@
 import { Modal, Form, Input, Button, Grid, TextArea } from "semantic-ui-react";
 import { useEffect, useState } from "react";
 import { VaultToken_Meta } from "./VaultToken_meta";
-import {
-    recoverTypedSignature_v4 as recoverTypedSignatureV4,
-  } from 'eth-sig-util';
+import { recoverTypedSignature, SignTypedDataVersion } from "@metamask/eth-sig-util";
 
 export default function VaultTokenIPFS(props: {
     setIPFSModal: any;
@@ -15,21 +13,28 @@ export default function VaultTokenIPFS(props: {
     const [IPFSActive, setIPFSActive] = useState<boolean>(false);
     const [dataSubmitted, setDataSubmitted] = useState<boolean>(false);
     const [unverifiedDesc, setUnverifiedDesc] = useState("");
+    const [verifiedMsg, setVerifiedMsg] = useState<any>();
     const [managerSocial, setManagerSocial] = useState("");
     const [signedDesc, setSignedDesc] = useState("");
     const [VT_Meta, setVT_Meta] = useState<any>();
 
     useEffect(() => {
-        if(VT_Meta !== undefined) {
+        if(VT_Meta !== undefined && !IPFSActive) {
             VT_Meta.onready = () => {
                 console.log("IPFS started");
-                console.log(VT_Meta.OrbitDB.id);
-                VT_Meta.setActive(true);
+                console.log(VT_Meta.orbitdb.id);
             }
-            setIPFSActive(true);
-            VT_Meta.create();
+            VT_Meta.create().then(() => {
+                setIPFSActive(true);
+            }
+            );
         }
-    }, [VT_Meta])
+        if(VT_Meta !== undefined) {
+            if(IPFSActive && signedDesc !== undefined && verifiedMsg !== undefined) {
+                pushSignedDataToIPFS();
+            }
+        }
+    }, [VT_Meta, IPFSActive, signedDesc, verifiedMsg])
 
     function startIPFS() {
         const OrbitDB = require('orbit-db');
@@ -45,6 +50,7 @@ export default function VaultTokenIPFS(props: {
     function stopIPFS() {
         if(VT_Meta.active) {
             VT_Meta.node.stop();
+            setVT_Meta(undefined);
             setIPFSActive(false);
             console.log("IPFS stopped");
         }
@@ -94,7 +100,8 @@ export default function VaultTokenIPFS(props: {
     
             if(verifySignature(msgParams, props.cVT.manager, result.result)) {
               setSignedDesc(result.result);
-              pushSignedDataToIPFS();
+              setVerifiedMsg(msgParams);
+              startIPFS();
               return true;
             } else {
               return false;
@@ -103,12 +110,13 @@ export default function VaultTokenIPFS(props: {
         });
     }
 
-    function verifySignature(msgParams: any, from: any, sig: any) {
+    function verifySignature(msgParams: any, from: any, sig: string) {
         let ethUtil = require('ethereumjs-util');
 
-        const recovered = recoverTypedSignatureV4({
+        const recovered = recoverTypedSignature({
             data: JSON.parse(msgParams),
-            sig: sig
+            signature: sig,
+            version: SignTypedDataVersion.V4
         });
 
         if(
@@ -122,12 +130,12 @@ export default function VaultTokenIPFS(props: {
     }
 
     async function pushSignedDataToIPFS() {
-        if(!IPFSActive) {
-            await startIPFS();
-            console.log("last");
-        } else {
-
-        }
+        setDataSubmitted(true);
+        const cid = await VT_Meta.addNewDescription(await VT_Meta.descriptions.id, verifiedMsg, signedDesc);
+        console.log("data put");
+        console.log(cid);
+        console.log(await VT_Meta.Ipfs.CID.isCID(cid));
+        console.log(await VT_Meta.node.dag.get(new VT_Meta.Ipfs.CID(cid)));
     }
 
     function submitInfo() {

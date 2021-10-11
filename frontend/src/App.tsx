@@ -92,7 +92,7 @@ export default function App() {
   }, []);
 
   async function clickToVisit() {
-    await setVisited(false);
+    setVisited(false);
     localStorage.setItem("new", "false");
   }
 
@@ -120,7 +120,7 @@ export default function App() {
   // check if meta mask is installed
   async function hasMMInstall() {
     if (typeof window.ethereum !== "undefined") {
-      await setHasMM(true);
+      setHasMM(true);
       window.ethereum.on("chainChanged", (chainId: any) => {
         // setChainId(parseInt(chainId));
         if (parseInt(chainId, 16) !== 1 && parseInt(chainId, 16) !== 42) {
@@ -162,7 +162,7 @@ export default function App() {
     }
   }
 
-  function clickHome(e: any) {
+  function clickHome() {
     setRenderHome(true);
     setRenderManager(false);
     setRenderPortfolio(false);
@@ -171,7 +171,7 @@ export default function App() {
     setManagerNav("#8b1bef");
     setTradeNav("#8b1bef");
   }
-  function clickTrade(e: any) {
+  function clickTrade() {
     setRenderHome(false);
     setRenderManager(false);
     setRenderPortfolio(true);
@@ -180,7 +180,7 @@ export default function App() {
     setManagerNav("#8b1bef");
     setTradeNav("#9489ffba");
   }
-  function clickManager(e: any) {
+  function clickManager() {
     setRenderHome(false);
     setRenderManager(true);
     setRenderPortfolio(false);

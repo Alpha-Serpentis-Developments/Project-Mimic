@@ -199,7 +199,7 @@ export default function VaultTokenInfo(props) {
 
   useEffect(() => {
     createVT(ctAddr);
-  }, []);
+  }, [ctAddr]);
 
   async function createVT(va) {
     let t = new VaultToken(web3, va);
@@ -296,7 +296,7 @@ export default function VaultTokenInfo(props) {
   function overAmount(a, b, c) {
     c = c * 1e18;
     if (a > b + c) {
-      setSM("Error", "You don't have enough balance", true, true);
+      setSM("Error", "You don't have enough Ether", true, true);
       setIconStatus("error");
       return;
     } else if (a > b && a < b + c) {
@@ -658,7 +658,7 @@ export default function VaultTokenInfo(props) {
               options={options}
               style={{ width: "80px" }}
               onChange={async (e, data) => {
-                await setOnAmt(data.value);
+                setOnAmt(data.value);
               }}
             />
 

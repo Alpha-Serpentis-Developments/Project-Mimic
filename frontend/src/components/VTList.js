@@ -28,7 +28,7 @@ export default function VTList(props) {
   // const [currentTokenAddr, setCurrentTokenAddr] = useState(cVTAddr);
 
   async function showTokenInfo(e, i) {
-    await setClickedItem(i.value);
+    setClickedItem(i.value);
     //  await setCurrentTokenAddr(i.value.address);
 
     let T = i.value;
@@ -45,8 +45,8 @@ export default function VTList(props) {
       };
     }
 
-    await localStorage.setItem("cVT", "");
-    await localStorage.setItem("cVT", JSON.stringify(T, getCircularReplacer()));
+    localStorage.setItem("cVT", "");
+    localStorage.setItem("cVT", JSON.stringify(T, getCircularReplacer()));
     // await localStorage.setItem("cVTAddr", JSON.stringify(i.value.address));
   }
 
@@ -186,7 +186,6 @@ export default function VTList(props) {
     }
     if (v.tDecimals === -1) {
       v.getDecimals(props.acctNum).then((result) => {
-        console.log(result);
         v.setDecimals(result);
       });
     }
