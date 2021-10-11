@@ -368,7 +368,6 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
         if(_amount == 0)
             revert Invalid();
         
-        uint256 adjustedBal;
         uint256 vaultMint;
 
         (uint256 protocolFees, uint256 vaultFees) = _calculateFees(_amount, factory.depositFee(), depositFee, _waiver, _waiverId, true);
@@ -381,7 +380,7 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
 
             withdrawalWindowExpires = block.timestamp + withdrawalWindowLength;
         } else {
-            adjustedBal = collateralAmount + IERC20(asset).balanceOf(address(this)) - obligatedFees - withheldProtocolFees;
+            uint256 adjustedBal = collateralAmount + IERC20(asset).balanceOf(address(this)) - obligatedFees - withheldProtocolFees;
 
             if(adjustedBal + _amount > maximumAssets)
                 revert MaximumFundsReached();
