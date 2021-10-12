@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import StatusMessage from "./StatusMessage";
 import { nwConfig, currentChain } from "./NetworkConfig";
 
-import {
-  recoverTypedSignature_v4 as recoverTypedSignatureV4,
-} from 'eth-sig-util';
+import { recoverTypedSignature_v4 as recoverTypedSignatureV4 } from "eth-sig-util";
 import {
   Button,
   Grid,
@@ -71,6 +69,17 @@ const WIndicator = styled.div`
 `;
 
 const MgmrOptionsIndicator = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: 80%;
+  height: 60px;
+
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 20px;
+`;
+
+const MgmrAdjustIndicator = styled.div`
   display: flex;
   flex-direction: row;
   width: 80%;
@@ -206,6 +215,13 @@ export default function VaultTokenInfo(props) {
   const [timestamp, setTimestamp] = useState(0);
   const [signedDesc, setSignedDesc] = useState("");
   const [signingResponse, setSigningResponse] = useState("");
+
+  const [showMgmrAct, setShowMgmrAct] = useState(false);
+
+  const [showAdjustMaxAsset, setShowAdjustMaxAsset] = useState(false);
+  const [showAdujstDepositFee, setShowAdujstDepositFee] = useState(false);
+  const [showAdjustWithdrawFee, setShowAdjustWithdrawFee] = useState(false);
+  const [showWDServe, setShowWDServe] = useState(false);
 
   useEffect(() => {
     createVT(ctAddr);
@@ -468,63 +484,63 @@ export default function VaultTokenInfo(props) {
 
     const msgParams = JSON.stringify({
       domain: {
-          name: 'Optional Social Token Description',
-          version: '1'
+        name: "Optional Social Token Description",
+        version: "1",
       },
       message: {
-          description: unverifiedDesc,
-          social: managerSocial,
-          vaultToken: cVT.address,
-          manager: cVT.manager,
-          timestamp: currentTime
+        description: unverifiedDesc,
+        social: managerSocial,
+        vaultToken: cVT.address,
+        manager: cVT.manager,
+        timestamp: currentTime,
       },
-      primaryType: 'Description',
+      primaryType: "Description",
       types: {
-          EIP712Domain: [
-              { name: 'name', type: 'string' },
-              { name: 'version', type: 'string' }
-          ],
-          Description: [
-              { name: 'description', type: 'string' },
-              { name: 'social', type: 'string' },
-              { name: 'vaultToken', type: 'address' },
-              { name: 'manager', type: 'address' },
-              { name: 'timestamp', type: 'uint256' }
-          ]
-      }
+        EIP712Domain: [
+          { name: "name", type: "string" },
+          { name: "version", type: "string" },
+        ],
+        Description: [
+          { name: "description", type: "string" },
+          { name: "social", type: "string" },
+          { name: "vaultToken", type: "address" },
+          { name: "manager", type: "address" },
+          { name: "timestamp", type: "uint256" },
+        ],
+      },
     });
 
-    web3.currentProvider.sendAsync({
-        method: 'eth_signTypedData_v4',
+    web3.currentProvider.sendAsync(
+      {
+        method: "eth_signTypedData_v4",
         params: [cVT.manager, msgParams],
         from: cVT.manager,
-    }, function (error, result) {
-
-        if(error)
-            return console.error(error);
-        if(result.error) {
-            return console.error(result.error.message);
+      },
+      function (error, result) {
+        if (error) return console.error(error);
+        if (result.error) {
+          return console.error(result.error.message);
         }
 
-        if(verifySignature(msgParams, cVT.manager, result.result)) {
+        if (verifySignature(msgParams, cVT.manager, result.result)) {
           setSignedDesc(result.result);
           console.log("Signature verified");
         } else {
           return console.error("Signature cannot be verified");
         }
-
-    })
+      }
+    );
   }
 
   function verifySignature(msgParams, from, sig) {
-    let ethUtil = require('ethereumjs-util');
+    let ethUtil = require("ethereumjs-util");
 
     const recovered = recoverTypedSignatureV4({
       data: JSON.parse(msgParams),
-      sig: sig
+      sig: sig,
     });
 
-    if(
+    if (
       ethUtil.toChecksumAddress(recovered) === ethUtil.toChecksumAddress(from)
     ) {
       return true;
@@ -910,16 +926,18 @@ export default function VaultTokenInfo(props) {
   }
   function renderAdjustMaxAsset() {
     return (
-      <Form>
-        <Form.Field>
-          <label>Adjust Max Asset</label>
-          <input placeholder="Amt" onChange={updateMaxAssetNum} />
-        </Form.Field>
+      <MgmrOptionForm>
+        <Form>
+          <Form.Field>
+            <label>Adjust Max Asset</label>
+            <input placeholder="Amt" onChange={updateMaxAssetNum} />
+          </Form.Field>
 
-        <Button type="submit" onClick={adjustMaxAsset}>
-          Confirm
-        </Button>
-      </Form>
+          <Button type="submit" onClick={adjustMaxAsset}>
+            Confirm
+          </Button>
+        </Form>
+      </MgmrOptionForm>
     );
   }
   function renderAdujstDepositFee() {
@@ -1066,13 +1084,82 @@ export default function VaultTokenInfo(props) {
         {showWriteCall && writeCallRender()}
         {showSellCall && renderSellCall()}
         {showWriteSellOption && renderWriteSellOptions()}
-        <div> {renderAdjustMaxAsset()}</div>
+
+        {/* const [showAdjustMaxAsset, setShowAdjustMaxAsset] = useState(false);
+        const [showAdujstDepositFee, setShowAdujstDepositFee] = useState(false);
+        const [showAdjustWithdrawFee, setShowAdjustWithdrawFee] =
+        useState(false); const [showWDServe, setShowWDServe] = useState(false); */}
+
+        <MgmrAdjustIndicator>
+          <WriteBtn
+            labelPosition="right"
+            onClick={() => {
+              setShowAdjustMaxAsset(true);
+
+              setShowAdujstDepositFee(false);
+
+              setShowAdjustWithdrawFee(false);
+
+              setShowWDServe(false);
+            }}
+            disabled={btnDisabled}
+          >
+            Adjust Max Asset
+          </WriteBtn>
+
+          <SellOptionBtn
+            labelPosition="right"
+            onClick={() => {
+              setShowAdjustMaxAsset(false);
+
+              setShowAdujstDepositFee(true);
+
+              setShowAdjustWithdrawFee(false);
+
+              setShowWDServe(false);
+            }}
+            disabled={btnDisabled}
+          >
+            Adujst Deposit Fee
+          </SellOptionBtn>
+          <SellOptionBtn
+            labelPosition="right"
+            onClick={() => {
+              setShowAdjustMaxAsset(false);
+
+              setShowAdujstDepositFee(false);
+
+              setShowAdjustWithdrawFee(true);
+
+              setShowWDServe(false);
+            }}
+            disabled={btnDisabled}
+          >
+            Adjust Withdraw Fee
+          </SellOptionBtn>
+          <SettleVaultBtn
+            labelPosition="right"
+            onClick={() => {
+              setShowAdjustMaxAsset(false);
+
+              setShowAdujstDepositFee(false);
+
+              setShowAdjustWithdrawFee(false);
+
+              setShowWDServe(true);
+            }}
+            disabled={btnDisabled}
+          >
+            Adjust Withdraw Reserve Fee
+          </SettleVaultBtn>
+        </MgmrAdjustIndicator>
+        <div> {showAdjustMaxAsset && renderAdjustMaxAsset()}</div>
         <br />
-        <div> {renderAdujstDepositFee()}</div>
+        <div> {showAdujstDepositFee && renderAdujstDepositFee()}</div>
         <br />
-        <div> {renderAdjustWithdrawFee()}</div>
+        <div> {showAdjustWithdrawFee && renderAdjustWithdrawFee()}</div>
         <br />
-        <div> {renderWDServe()}</div>
+        <div> {showWDServe && renderWDServe()}</div>
         <br />
         <Button type="submit" onClick={sweepFee}>
           Sweep Fee
