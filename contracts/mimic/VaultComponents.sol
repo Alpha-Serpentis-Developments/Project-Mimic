@@ -212,10 +212,10 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     function adjustWaiver(
         address _token,
         uint256 _minimumAmount,
+        uint256 _idERC1155,
         uint16 _depositDeduction,
         uint16 _withdrawalDeduction,
-        WaiverType _standard,
-        uint256 _idERC1155
+        WaiverType _standard
     ) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
         if(_token == address(0))
             revert Invalid();
