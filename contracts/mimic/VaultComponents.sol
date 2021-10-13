@@ -112,10 +112,7 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     /// @dev Stops all activities on the vault (or reactivates them)
     /// @param _val true to pause the vault, false to unpause the vault
     function emergency(bool _val) external ifNotClosed onlyManager {
-        if(_val)
-            super._pause();
-        else
-            super._unpause();
+        _val ? super._pause() : super._unpause();
     }
 
     /// @notice Changes the maximum allowed deposits under management
@@ -270,7 +267,7 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     /// @dev Performs a full RFQ trade via AirSwap
     /// @param _order A Types.Order struct that defines the AirSwap order (requires signature)
     function _sellOptions(Types.Order memory _order) internal {
-        if(!_withdrawalWindowCheck(false))
+        if(_withdrawalWindowCheck())
             revert WithdrawalWindowActive();
         if(_order.sender.amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
             revert Invalid();
@@ -359,13 +356,9 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
 
     /// @notice Checks if the withdrawal window is active
     /// @dev A withdrawal window check that may either revert or return the status without revert
-    /// @param _revertIfClosed a boolean to determine if the transaction should revert or not if closed
     /// @return isActive true if the withdrawal window is open, otherwise false
-    function _withdrawalWindowCheck(bool _revertIfClosed) internal view returns(bool isActive) {
-        if(block.timestamp > withdrawalWindowExpires && _revertIfClosed)
-            revert WithdrawalWindowNotActive();
-        
-        return block.timestamp > withdrawalWindowExpires;
+    function _withdrawalWindowCheck() internal view returns(bool isActive) {
+        return block.timestamp < withdrawalWindowExpires;
     }
 
     /// @notice Multiplies a value by a percentage
@@ -398,11 +391,7 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
         if(_waiver != address(0)) {
             Waiver storage waiver = waiverTokens[_waiver];
 
-            uint16 whichDeduction;
-            if(_isDeposit)
-                whichDeduction = waiver.depositDeduction;
-            else
-                whichDeduction = waiver.withdrawalDeduction;
+            uint16 whichDeduction = _isDeposit ? waiver.depositDeduction : waiver.withdrawalDeduction;
 
             if(whichDeduction > _vaultFee) // prevent underflow
                 whichDeduction = _vaultFee;

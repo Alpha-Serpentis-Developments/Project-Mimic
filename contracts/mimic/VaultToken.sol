@@ -85,7 +85,7 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
     /// @dev Operation to burn away the oTOkens in redemption of the asset collateral
     /// @param _amount Amount of options to burn
     function burnOptions(uint256 _amount) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        if(!_withdrawalWindowCheck(false))
+        if(_withdrawalWindowCheck())
             revert WithdrawalWindowActive();
         if(_amount > IERC20(oToken).balanceOf(address(this)))
             revert Invalid();
@@ -139,7 +139,7 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
     /// @notice Operation to settle the vault
     /// @dev Settles the currently open vault and opens the withdrawal window
     function settleVault() external ifNotClosed nonReentrant() whenNotPaused() {
-        if(!_withdrawalWindowCheck(false))
+        if(_withdrawalWindowCheck())
             revert WithdrawalWindowActive();
 
         IController controller = IController(addressBook.getController());
@@ -254,7 +254,7 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
     /// @param _amount Amount of the asset to collateralize (no margin) for the oToken
     /// @param _oToken Address of the oToken to write with
     function _writeOptions(uint256 _amount, address _oToken) internal {
-        if(!_withdrawalWindowCheck(false))
+        if(_withdrawalWindowCheck())
             revert WithdrawalWindowActive();
         if(_amount == 0 || _oToken == address(0))
             revert Invalid();
@@ -426,7 +426,7 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
             revert Invalid();
 
         // (Reserve) safety check
-        if(_withdrawalWindowCheck(false) && oToken != address(0)) {
+        if(!_withdrawalWindowCheck() && oToken != address(0)) {
             if(assetAmount > currentReserves)
                 revert NotEnoughFunds_ReserveViolation();
             else
