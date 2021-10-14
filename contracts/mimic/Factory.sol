@@ -10,7 +10,6 @@ contract Factory is ReentrancyGuard {
     error Unauthorized();
     error Invalid();
     error TooHighFee();
-    error ContractCreationFailed();
     error ZeroAddress();
 
     /// @notice Protocol-level fees for deposits represented with two decimals of precision up to 50% (5000)

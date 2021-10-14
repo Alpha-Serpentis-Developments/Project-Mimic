@@ -21,3 +21,9 @@ Mercury is Optional's preliminary run of the platform. Mercury only had the abil
 Venus is the latest version of our platform that supports both covered calls and put selling. It addresses various UX issues + security enhancements from what we learned about Mercury. In addition, it is able to charge fees at both the protocol and social token-level from deposits, withdrawals, and performance.
 
 Venus uses EIP1167 (minimal proxies) to allow for cheaper deployments for social traders. With minimal proxies, Optional is not allowed to upgrade vaults, but we are able to change the implementation in which new proxies use.
+
+# Socials
+
+Twitter: [@OptionalFinance](twitter.com/OptionalFinance)
+
+Discord: [discord.optional.finance](https://discord.optional.finance)
