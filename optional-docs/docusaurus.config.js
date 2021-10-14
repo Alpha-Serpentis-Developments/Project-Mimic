@@ -22,6 +22,7 @@ const config = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
+          routeBasePath: '/',
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl: 'https://github.com/Alpha-Serpentis-Developments/Project-Mimic/optional-docs/',
@@ -44,17 +45,22 @@ const config = {
         },
         items: [
           {
-            to: '/docs/optional/factory',
+            to: '/optional/deployments',
+            label: 'Deployments',
+            position: 'left'
+          },
+          {
+            to: '/optional/factory',
             label: 'Factory',
             position: 'left'
           },
           {
-            to: '/docs/optional/vaulttoken',
+            to: '/optional/vaulttoken',
             label: 'Vault Token',
             position: 'left'
           },
           {
-            to: '/docs/security',
+            to: '/security',
             label: 'Security',
             position: 'left'
           },
@@ -72,8 +78,12 @@ const config = {
             title: 'Docs',
             items: [
               {
+                label: 'Deployments',
+                to: '/optional/deployments'
+              },
+              {
                 label: 'Security',
-                to: '/docs/security',
+                to: '/security',
               },
             ],
           },
