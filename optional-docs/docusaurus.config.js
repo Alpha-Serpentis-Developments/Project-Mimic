@@ -37,19 +37,27 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'Optional',
+        title: 'Optional Finance',
         logo: {
           alt: 'Optional Finance logo',
           src: 'img/optional.png',
         },
         items: [
           {
-            type: 'doc',
-            docId: 'intro',
-            position: 'left',
-            label: 'Tutorial',
+            to: '/docs/optional/factory',
+            label: 'Factory',
+            position: 'left'
           },
-          {to: '/blog', label: 'Blog', position: 'left'},
+          {
+            to: '/docs/optional/vaulttoken',
+            label: 'Vault Token',
+            position: 'left'
+          },
+          {
+            to: '/docs/security',
+            label: 'Security',
+            position: 'left'
+          },
           {
             href: 'https://github.com/Alpha-Serpentis-Developments/Project-Mimic',
             label: 'GitHub',
@@ -64,8 +72,8 @@ const config = {
             title: 'Docs',
             items: [
               {
-                label: 'Tutorial',
-                to: '/docs/intro',
+                label: 'Security',
+                to: '/docs/security',
               },
             ],
           },
