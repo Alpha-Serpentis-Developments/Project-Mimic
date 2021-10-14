@@ -155,3 +155,43 @@ modifier ifNotClosed {
 - `function _calculateFees(uint256 _amount, uint16 _protocolFee, uint16 _vaultFee, address _waiver, uint256 _idERC1155, bool _isDeposit) internal view returns(uint256 protocolFees, uint256 vaultFees)`
     - Calculates the fees with a waiver
 ## VaultToken
+
+### Inherits
+
+- `ERC20Upgradeable`
+- `VaultComponents`
+
+### Functions
+
+- `function deposit(uint256 _amount) external`
+    - Deposit assets and receive vault tokens to represent a share
+- `function discountDeposit(uint256 _amount, address _waiver, uint256 _waiverId) external`
+    - Deposit assets and receive vault tokens to represent a share with a waiver discount (if applicable)
+- `function withdraw(uint256 _amount) external`
+    - Redeem vault tokens for assets
+- `function discountWithdraw(uint256 _amount, address _waiver, uint256 _waiverId) external`
+    - Redeem vault tokens for assets with waiver discount
+- `function reactivateWithdrawalWindow() external`
+    - Allows anyone to call it in the event the withdrawal window is closed, but no action has occurred within 1 day
+- `function burnOptions(uint256 _amount) external`
+    - Burns away the oTokens to redeem the collateral asset
+- `function settleVault() external`
+    - Operation to settle the vault
+- `function writeOptions(uint256 _amount, address _oToken) external`
+    - Write options for an `_amount` of asset for the specified oToken
+- `function writeOptions(uint16 _percentage, address _oToken) external`
+    - Write options for a `_percentage` of the current balance of the vault
+- `function sellOptions(uint16 _percentage, address _oToken) external`
+    - Operation to sell options to an EXISTING order on AirSwap (via off-chain signature)
+- `function writeAndSellOptions(uint256 _amount, address _oToken, Types.Order memory _order) external`
+    - Operation to both write AND sell options
+- `function writeAndSellOptions(uint16 _percentage, address _oToken, Types.Order memory _order) external`
+    - Operation to both write AND sell options, but using percentages
+- `function _writeOptions(uint256 _amount, address _oToken) internal`
+    - Write oTokens provided the `_amount` and `_oToken`
+- `function _deposit(uint256 _amount, address _waiver, uint256 _waiverId) internal`
+    - Handles the deposit function
+- `function _withdraw(uint256 _amount, address _waiver, uint256 _waiverId) internal`
+    - Handles the withdraw function
+- `function _calculateAndSetReserves() internal`
+    - Calculates and sets the reserves
