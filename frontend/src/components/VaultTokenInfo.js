@@ -1079,6 +1079,10 @@ export default function VaultTokenInfo(props) {
               setSellColor("grey");
               setSettleColor("grey");
               setManagerClick(true);
+              setShowAdjustMaxAsset(false);
+              setShowAdujstDepositFee(false);
+              setShowAdjustWithdrawFee(false);
+              setShowWDServe(false);
             }}
             disabled={btnDisabled}
           >
@@ -1096,6 +1100,10 @@ export default function VaultTokenInfo(props) {
               setWriteColor("grey");
               setSettleColor("grey");
               setManagerClick(true);
+              setShowAdjustMaxAsset(false);
+              setShowAdujstDepositFee(false);
+              setShowAdjustWithdrawFee(false);
+              setShowWDServe(false);
             }}
             disabled={btnDisabled}
           >
@@ -1112,6 +1120,10 @@ export default function VaultTokenInfo(props) {
               setSellColor("grey");
               setSettleColor("grey");
               setManagerClick(true);
+              setShowAdjustMaxAsset(false);
+              setShowAdujstDepositFee(false);
+              setShowAdjustWithdrawFee(false);
+              setShowWDServe(false);
             }}
             disabled={btnDisabled}
           >
@@ -1183,7 +1195,7 @@ export default function VaultTokenInfo(props) {
               setShowAdjustWithdrawFee(true);
 
               setShowWDServe(false);
-              setShowWDServe(false);
+
               setShowSellCall(false);
               setShowWriteCall(false);
               setShowWriteSellOption(false);
