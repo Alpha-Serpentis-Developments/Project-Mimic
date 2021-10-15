@@ -24,6 +24,6 @@ Venus uses EIP1167 (minimal proxies) to allow for cheaper deployments for social
 
 # Socials
 
-Twitter: [@OptionalFinance](twitter.com/OptionalFinance)
+Twitter: [@OptionalFinance](https://twitter.com/OptionalFinance)
 
 Discord: [discord.optional.finance](https://discord.optional.finance)

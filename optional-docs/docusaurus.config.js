@@ -16,6 +16,17 @@ const config = {
   organizationName: 'alpha-serpentis-developments', // Usually your GitHub org/user name.
   projectName: 'project-mimic', // Usually your repo name.
 
+  scripts: [
+    {
+      src: 'https://unpkg.com/react-dom@17/umd/react-dom.development.js',
+      async: false
+    },
+    {
+      src: 'https://unpkg.com/react@17/umd/react.development.js',
+      async: false
+    }
+  ],
+
   presets: [
     [
       '@docusaurus/preset-classic',

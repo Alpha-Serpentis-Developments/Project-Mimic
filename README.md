@@ -8,6 +8,10 @@ Optional allows option traders to become social traders or follow other social t
 
 Each social trading token has a unique style based on the trader's strategies. Followers can limit their risk to certain traders or tokens based on their predetermined moves.
 
+# Documentation
+
+**https://docs.optional.finance**
+
 # People Involved
 
 **Amethyst C. (AlphaSerpentis)**
