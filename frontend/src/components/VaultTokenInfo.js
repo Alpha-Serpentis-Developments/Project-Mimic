@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import StatusMessage from "./StatusMessage";
 import { nwConfig, currentChain } from "./NetworkConfig";
+import Slider from "react-slick";
 
 import { recoverTypedSignature_v4 as recoverTypedSignatureV4 } from "eth-sig-util";
 import {
@@ -928,97 +929,140 @@ export default function VaultTokenInfo(props) {
     return (
       <MgmrOptionForm>
         <Form>
-          <Form.Field>
+          <Form.Field
+            style={{
+              width: "90%",
+              marginRight: "auto",
+              marginLeft: "auto",
+              marginTop: "30px",
+            }}
+          >
             <label>Adjust Max Asset</label>
             <input placeholder="Amt" onChange={updateMaxAssetNum} />
           </Form.Field>
-
-          <Button type="submit" onClick={adjustMaxAsset}>
-            Confirm
-          </Button>
+          <ConfirmCancelBtns>
+            <Button
+              type="submit"
+              style={{ width: "40%" }}
+              onClick={adjustMaxAsset}
+            >
+              Confirm
+            </Button>
+          </ConfirmCancelBtns>
         </Form>
       </MgmrOptionForm>
     );
   }
   function renderAdujstDepositFee() {
     return (
-      <Form>
-        <Form.Field>
-          <label>Adjust Deposit Fee(up to 50%)</label>
-          <Input
-            placeholder="Percentage"
-            onChange={updateDepositFee}
-            style={{ width: "100px" }}
-            label={{ content: "%" }}
-            labelPosition="right"
-          />
-        </Form.Field>
-
-        <Button type="submit" onClick={adjustDepositFee}>
-          Confirm
-        </Button>
-      </Form>
+      <MgmrOptionForm>
+        <Form>
+          <Form.Field
+            style={{
+              width: "90%",
+              marginRight: "auto",
+              marginLeft: "auto",
+              marginTop: "30px",
+            }}
+          >
+            <label>Adjust Deposit Fee(up to 50%)</label>
+            <Input
+              placeholder="Percentage"
+              onChange={updateDepositFee}
+              label={{ content: "%" }}
+              labelPosition="right"
+            />
+          </Form.Field>
+          <ConfirmCancelBtns>
+            <Button
+              type="submit"
+              style={{ width: "40%" }}
+              onClick={adjustDepositFee}
+            >
+              Confirm
+            </Button>
+          </ConfirmCancelBtns>
+        </Form>
+      </MgmrOptionForm>
     );
   }
   function renderAdjustWithdrawFee() {
     return (
-      <Form>
-        <Form.Field>
-          {" "}
-          <label>Adjust Withdraw Fee(up to 50%)</label>
-          <Input
-            placeholder="percentage"
-            onChange={updateWithdrawFee}
-            style={{ width: "100px" }}
-            label={{ content: "%" }}
-            labelPosition="right"
-          />
-        </Form.Field>
-        <Button type="submit" onClick={adjustWithdrawFee}>
-          Confirm
-        </Button>
-      </Form>
+      <MgmrOptionForm>
+        <Form>
+          <Form.Field
+            style={{
+              width: "90%",
+              marginRight: "auto",
+              marginLeft: "auto",
+              marginTop: "30px",
+            }}
+          >
+            {" "}
+            <label>Adjust Withdraw Fee(up to 50%)</label>
+            <Input
+              placeholder="percentage"
+              onChange={updateWithdrawFee}
+              label={{ content: "%" }}
+              labelPosition="right"
+            />
+          </Form.Field>
+          <ConfirmCancelBtns>
+            <Button
+              type="submit"
+              style={{ width: "40%" }}
+              onClick={adjustWithdrawFee}
+            >
+              Confirm
+            </Button>
+          </ConfirmCancelBtns>
+        </Form>
+      </MgmrOptionForm>
     );
   }
   function renderWDServe() {
     return (
-      <Form>
-        <Form.Field>
-          {" "}
-          <label>Adjust Withdraw Reserve Fee(up to 50%)</label>
-          <Input
-            placeholder="percentage"
-            onChange={updateWDReserve}
-            style={{ width: "100px" }}
-            label={{ content: "%" }}
-            labelPosition="right"
-          />
-        </Form.Field>
-        <Button type="submit" onClick={adjustWDReserveFee}>
-          Confirm
-        </Button>
-      </Form>
+      <MgmrOptionForm>
+        <Form>
+          <Form.Field
+            style={{
+              width: "90%",
+              marginRight: "auto",
+              marginLeft: "auto",
+              marginTop: "30px",
+            }}
+          >
+            {" "}
+            <label>Adjust Withdraw Reserve Fee(up to 50%)</label>
+            <Input
+              placeholder="percentage"
+              onChange={updateWDReserve}
+              label={{ content: "%" }}
+              labelPosition="right"
+            />
+          </Form.Field>
+          <ConfirmCancelBtns>
+            <Button
+              type="submit"
+              style={{ width: "40%" }}
+              onClick={adjustWDReserveFee}
+            >
+              Confirm
+            </Button>
+          </ConfirmCancelBtns>
+        </Form>
+      </MgmrOptionForm>
     );
   }
-  function renderAdjustMaxAsset() {
-    return (
-      <Form>
-        <Form.Field>
-          <label>Adjust Max Asset</label>
-          <Input
-            placeholder="Amt"
-            onChange={updateMaxAssetNum}
-            style={{ width: "100px" }}
-          />
-        </Form.Field>
 
-        <Button type="submit" onClick={adjustMaxAsset}>
-          Confirm
-        </Button>
-      </Form>
-    );
-  }
   function managerMenu() {
+    const settings = {
+      dots: true,
+      infinite: true,
+      speed: 500,
+      slidesToShow: 1,
+      slidesToScroll: 1,
+    };
     return (
       <div>
         <Divider hidden />
@@ -1089,7 +1133,7 @@ export default function VaultTokenInfo(props) {
         const [showAdujstDepositFee, setShowAdujstDepositFee] = useState(false);
         const [showAdjustWithdrawFee, setShowAdjustWithdrawFee] =
         useState(false); const [showWDServe, setShowWDServe] = useState(false); */}
-
+        <br />
         <MgmrAdjustIndicator>
           <WriteBtn
             labelPosition="right"
@@ -1101,6 +1145,9 @@ export default function VaultTokenInfo(props) {
               setShowAdjustWithdrawFee(false);
 
               setShowWDServe(false);
+              setShowSellCall(false);
+              setShowWriteCall(false);
+              setShowWriteSellOption(false);
             }}
             disabled={btnDisabled}
           >
@@ -1117,6 +1164,10 @@ export default function VaultTokenInfo(props) {
               setShowAdjustWithdrawFee(false);
 
               setShowWDServe(false);
+              setShowWDServe(false);
+              setShowSellCall(false);
+              setShowWriteCall(false);
+              setShowWriteSellOption(false);
             }}
             disabled={btnDisabled}
           >
@@ -1132,6 +1183,10 @@ export default function VaultTokenInfo(props) {
               setShowAdjustWithdrawFee(true);
 
               setShowWDServe(false);
+              setShowWDServe(false);
+              setShowSellCall(false);
+              setShowWriteCall(false);
+              setShowWriteSellOption(false);
             }}
             disabled={btnDisabled}
           >
@@ -1147,32 +1202,40 @@ export default function VaultTokenInfo(props) {
               setShowAdjustWithdrawFee(false);
 
               setShowWDServe(true);
+              setShowSellCall(false);
+              setShowWriteCall(false);
+              setShowWriteSellOption(false);
             }}
             disabled={btnDisabled}
           >
-            Adjust Withdraw Reserve Fee
+            Adjust Reserve
           </SettleVaultBtn>
         </MgmrAdjustIndicator>
+        <br />
         <div> {showAdjustMaxAsset && renderAdjustMaxAsset()}</div>
-        <br />
         <div> {showAdujstDepositFee && renderAdujstDepositFee()}</div>
-        <br />
         <div> {showAdjustWithdrawFee && renderAdjustWithdrawFee()}</div>
-        <br />
         <div> {showWDServe && renderWDServe()}</div>
         <br />
-        <Button type="submit" onClick={sweepFee}>
-          Sweep Fee
-        </Button>
         <Divider hidden />
-        <Button
-          icon="plus circle"
-          size="medium"
-          color="purple"
-          onClick={() => openIPFSModal(true)}
+        <Slider
+          {...settings}
+          style={{ width: "70%", marginLeft: "auto", marginRight: "auto" }}
         >
-          Submit Vault Token Info
-        </Button>
+          <Button type="submit" onClick={sweepFee}>
+            Sweep Fee
+          </Button>
+
+          <Button
+            icon="plus circle"
+            size="medium"
+            color="purple"
+            onClick={() => openIPFSModal(true)}
+          >
+            Submit Vault Token Info
+          </Button>
+        </Slider>
+        <Divider hidden />
       </div>
     );
   }
