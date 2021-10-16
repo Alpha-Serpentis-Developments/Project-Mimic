@@ -152,11 +152,11 @@ export default function VTCard(props) {
             <ManagedText>
               managed by{" "}
               <a
-                href="https://twitter.com/AlphaSerpentis_"
+                href="https://twitter.com/OptionalFinance"
                 rel="noreferrer noopener"
                 target="_blank"
               >
-                @Amethyst
+                @OptionalFinance
               </a>
             </ManagedText>
             <PercentContent>
@@ -186,6 +186,7 @@ export default function VTCard(props) {
                   borderRadius: "30px",
                   padding: "10px 30px",
                   backgroundColor: "#7950EE",
+                  color: "white"
                 }}
               >
                 Trade
