@@ -22,16 +22,16 @@ export class Factory {
   deployNewVT(
     tokenName,
     tokenSymble,
-    controllerAddr,
     assetTokenAddr,
+    withdrawWindowLen,
     amount,
     f
   ) {
     return this.factory.methods["deployNewVaultToken"](
       tokenName,
       tokenSymble,
-      controllerAddr,
       assetTokenAddr,
+      withdrawWindowLen,
       amount
     ).send({ from: f });
   }

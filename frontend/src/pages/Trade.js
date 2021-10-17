@@ -11,6 +11,7 @@ export default function Trade(props) {
         borderStyle: "none",
         backgroundColor: "#070036",
         backgroundImage: "linear-gradient(#8b1bef,#20759D)",
+        minHeight: "100vh",
       }}
     >
       <Table.Body>

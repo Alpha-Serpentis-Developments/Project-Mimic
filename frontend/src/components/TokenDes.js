@@ -60,6 +60,7 @@ export default function TokenDes(props) {
       style={{
         backgroundColor: "#070036",
         backgroundImage: "linear-gradient(#8b1bef,#20759D)",
+        minHeight: "100vh",
       }}
     >
       <DesContainer className="tokenDes">
@@ -81,6 +82,9 @@ export default function TokenDes(props) {
             acct={props.acct}
             mpAddress={props.mpAddress}
             ethBal={props.ethBal}
+            openIPFSModal={props.openIPFSModal}
+            setUnverifiedDesc={props.setUnverifiedDesc}
+            unverifiedDesc={props.unverifiedDesc}
           />
         </DWContainer>
       </DesContainer>

@@ -1,4 +1,5 @@
 import { ERC20 } from "./Erc20";
+
 const vtabi = require("../abi/vtAbi.json");
 
 // create a vault token class and inherent ERC 20 class
@@ -18,16 +19,14 @@ export class VaultToken extends ERC20 {
     this.collateralAmount = -1;
     this.oTokenAddr = "";
     this.oTokenObj = null;
+    this.soldOptionsEvents = [];
     this.oTokenNames = [];
     this.nav = -1;
     this.yield = -1;
+    this.twitterLink = "";
+    this.twitterHandle = "";
+    this.vtStrategy = "";
   }
-  // return the manager address
-
-  // let ad = events[i].returnValues.vaultToken;
-  // web3.eth.getStorageAt(ad, 2).then((result) => {
-  //   console.log(result);
-  // });
 
   async getManager() {
     return this.vt.methods.manager().call();
@@ -37,18 +36,17 @@ export class VaultToken extends ERC20 {
     this.manager = a;
   }
 
-  // async symbol() {
-  //   return this.vt.methods.symbol().call();
-  // }
-
-  // asset is the contract address of an ERC20 token that can be used to buy or sell this vault token
-
   async getAsset() {
     return this.vt.methods.asset().call();
   }
 
   setAsset(a) {
     this.asset = a;
+  }
+
+  async updateInfo() {
+    this.setAsset(await this.getAsset())
+    this.setManager(await this.getManager());
   }
 
   updateStatus() {
@@ -83,19 +81,12 @@ export class VaultToken extends ERC20 {
     this.vaultBalance = parseInt(amount);
   }
 
-  initialize1(amount, f) {
-    this.assetObject.approve(this.address, amount, f).then((result) => {
-      console.log("approve result +");
-      console.log(result);
-    });
-    return this.vt.methods["initializeRatio"](amount).send({ from: f });
-  }
-
   approveAsset(amount, f) {
     return this.assetObject.approve(this.address, amount, f);
   }
-  initialize(amount, f) {
-    return this.vt.methods["initializeRatio"](amount).send({ from: f });
+
+  async allowanceAsset(f) {
+    return await this.assetObject.allowance(f, this.address);
   }
 
   findWithdrawalWindowActivated() {
@@ -109,53 +100,38 @@ export class VaultToken extends ERC20 {
     return this.vt.methods["settleVault"]().send({ from: f });
   }
 
-  writeCalls(amount, otAddress, mpAddress, f) {
-    return this.vt.methods["writeCalls"](amount, otAddress, mpAddress).send({
-      from: f,
-    });
-  }
-
-  sellCalls(amount, premiumAmount, otherPartyAddress, f) {
-    return this.vt.methods["sellCalls"](
+  sell(amount, premiumAmount, otherPartyAddress, f) {
+    return this.vt.methods["sellOptions"](
       amount,
       premiumAmount,
       otherPartyAddress
     ).send({ from: f });
   }
 
-  async symbol1() {
-    let symbol = "";
-    await this.vt.methods.symbol().call(function (error, result) {
-      console.log(result);
-      symbol = result;
-    });
-    return symbol;
+  setSoldOptionsEvents(arr) {
+    this.soldOptionsEvents = arr;
   }
 
-  async getAsset1(f) {
-    let asset = "";
-    await this.vt.methods.asset().call({ from: f }, function (error, result) {
-      asset = result;
-    });
-    return asset;
+  getSoldOptionsEvents() {
+    return this.soldOptionsEvents;
   }
 
   findAllOT() {
-    return this.VT.getPastEvents("CallsMinted", {
+    return this.VT.getPastEvents("OptionsMinted", {
       fromBlock: 0,
       toBlock: "latest",
     });
   }
 
-  getCA(w, address) {
-    return w.eth.getStorageAt(address, 8);
+  async getCA() {
+    return this.vt.methods.collateralAmount().call();
   }
   setCA(a) {
     this.collateralAmount = a;
   }
 
-  getOT(w, address) {
-    return w.eth.getStorageAt(address, 11);
+  async getOT() {
+    return this.vt.methods.oToken().call();
   }
   setOT(a) {
     this.oTokenAddr = a;
@@ -170,12 +146,64 @@ export class VaultToken extends ERC20 {
   }
 
   findAllSellCalls() {
-    return this.vt.getPastEvents("CallsSold", {
+    return this.vt.getPastEvents("OptionsSold", {
       fromBlock: 0,
       toBlock: "latest",
     });
   }
   setAllOtokenName(array) {
     this.oTokenNames = array;
+  }
+
+  writeOptionsAmt(amount, otAddress, f) {
+    return this.vt.methods["writeOptions"](amount, otAddress).send({
+      from: f,
+    });
+  }
+  writeOptionsPcent(pcent, otAddress, f) {
+    return this.vt.methods["writeOptions"](pcent, otAddress).send({
+      from: f,
+    });
+  }
+
+  sellOptions(a, f) {
+    return this.vt.methods["sellOptions"](a).send({ from: f });
+  }
+  writeAndSellOptionsAmt(amount, otAddress, a, f) {
+    return this.vt.methods["writeAndSellOptions"](amount, otAddress, a).send({
+      from: f,
+    });
+  }
+  writeAndSellOptionsPcent(pcent, otAddress, a, f) {
+    return this.vt.methods["writeAndSellOptions"](pcent, otAddress, a).send({
+      from: f,
+    });
+  }
+
+  adjustTheMaxAssets(v, f) {
+    console.log(this.vt);
+    return this.vt.methods["adjustTheMaximumAssets"](v).send({
+      from: f,
+    });
+  }
+  adjustDepositFee(pcent, f) {
+    return this.vt.methods["adjustDepositFee"](pcent).send({
+      from: f,
+    });
+  }
+  adjustWithdrawalFee(pcent, f) {
+    return this.vt.methods["adjustWithdrawalFee"](pcent).send({
+      from: f,
+    });
+  }
+  adjustWDReserve(pcent, f) {
+    return this.vt.methods["adjustWithdrawalReserve"](pcent).send({
+      from: f,
+    });
+  }
+  sweepFees(f) {
+    return this.vt.methods["sweepFees"]().send({
+      from: f,
+    });
   }
 }

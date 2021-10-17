@@ -70,6 +70,9 @@ export default function NavBar(props) {
     &.navMgrLink {
       border-bottom: ${props.managerNav} 4px solid;
     }
+    &.navDocsLink {
+      border-bottom: ${props.docsNav} 4px solid;
+    }
     &:hover {
       border-bottom: #9489ffba 4px solid;
     }
@@ -108,6 +111,13 @@ export default function NavBar(props) {
               Manager
             </NavLink>
           </Link>
+          <a href="https://docs.optional.finance" rel="noreferrer" target="_blank">
+            <NavLink
+              className="navDocsLink"
+            >
+              Docs
+            </NavLink>
+          </a>
         </NavLinkGroup>
 
         <Button
