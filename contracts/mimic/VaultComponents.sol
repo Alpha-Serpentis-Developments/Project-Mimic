@@ -77,6 +77,8 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     uint16 public depositFee;
     /// @notice Take profit fee
     uint16 public withdrawalFee;
+    /// @notice Early withdrawal penalty
+    uint16 public earlyWithdrawalPenalty;
     /// @notice Performance fee (taken when options are sold)
     uint16 public performanceFee;
     /// @notice Withdrawal reserve percentage
@@ -94,6 +96,7 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     event MaximumAssetsModified(uint256 newAUM);
     event DepositFeeModified(uint16 newFee);
     event WithdrawalFeeModified(uint16 newFee);
+    event EarlyWithdrawalPenalty(uint16 newFee);
     event PerformanceFeeModified(uint16 newFee);
     event WithdrawalReserveModified(uint16 newReserve);
     event WaiverTokenModified(address token, uint16 depositDeduction, uint16 withdrawawlDeduction);
@@ -168,6 +171,18 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
         withdrawalFee = _newValue;
 
         emit WithdrawalFeeModified(_newValue);
+    }
+
+    /// @notice Changes the early withdrawal penalty
+    /// @dev Changes the earlyWithdrawalPenalty with two decimals of precision up to 50.00% (5000)
+    /// @param _newValue new earlyWithdrawalFee with two decimals of precision
+    function adjustEarlyWithdrawalPenalty(uint16 _newValue) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
+        if(_newValue > 5000 || _newValue + withdrawalFee + factory.withdrawalFee() > 5000)
+            revert Invalid();
+
+        earlyWithdrawalPenalty = _newValue;
+
+        emit EarlyWithdrawalPenalty(_newValue);
     }
     
     /// @notice Changes the performance fee
@@ -309,27 +324,26 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     /// @dev Internal function that calculates the penalty of an ITM withdrawal and penalizes against the user
     /// @param _assetAmount is the amount of asset tokens being potentially withdrawn
     /// @return adjustedBal is the balance after penalizing the user for an ITM withdrawal
-    function _calculatePenalty(uint256 _assetAmount) internal view returns(uint256 adjustedBal) {
-        if(oToken == address(0))
+    function _calculatePenalty(uint256 _assetAmount) internal returns(uint256 adjustedBal) {
+        if(oToken == address(0) || (oToken != address(0) && block.timestamp >= OtokenInterface(oToken).expiryTimestamp()))
             return _assetAmount;
         
         uint256 strikePrice = OtokenInterface(oToken).strikePrice();
         uint256 oraclePrice = IOracle(addressBook.getOracle()).getPrice(OtokenInterface(oToken).underlyingAsset());
-        uint16 percentageForUser;
+        uint16 percentageForUser = 10000;
 
         if(OtokenInterface(oToken).isPut() && strikePrice > oraclePrice) {
             percentageForUser = uint16(
                 (10e22 * oraclePrice / strikePrice)/10e18
             );
-            adjustedBal = _percentMultiply(_assetAmount, percentageForUser);
         } else if(oraclePrice > strikePrice) {
             percentageForUser = uint16(
                 (10e22 * strikePrice / oraclePrice)/10e18
             );
-            adjustedBal = _percentMultiply(_assetAmount, percentageForUser);
-        } else {
-            adjustedBal = _assetAmount;
         }
+
+        adjustedBal = _percentMultiply(_assetAmount, percentageForUser - earlyWithdrawalPenalty);
+        premiumsWithheld += (_assetAmount - adjustedBal);
     }
     
     /// @notice Normalizes a value to the requested decimals

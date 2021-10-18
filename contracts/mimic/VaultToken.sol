@@ -413,7 +413,7 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
 
         uint256 assetAmount = _amount * (IERC20(asset).balanceOf(address(this)) + collateralAmount - premiumsWithheld - obligatedFees - withheldProtocolFees) / totalSupply();
         (uint256 protocolFee, uint256 vaultFee) = _calculateFees(assetAmount, factory.withdrawalFee(), withdrawalFee, _waiver, _waiverId, false);
-        
+
         withheldProtocolFees += protocolFee;
         obligatedFees += vaultFee;
 
@@ -426,7 +426,7 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
             revert Invalid();
 
         // (Reserve) safety check
-        if(!_withdrawalWindowCheck() && oToken != address(0)) {
+        if(!_withdrawalWindowCheck() && oToken != address(0) && block.timestamp < OtokenInterface(oToken).expiryTimestamp()) {
             if(assetAmount > currentReserves)
                 revert NotEnoughFunds_ReserveViolation();
             else
