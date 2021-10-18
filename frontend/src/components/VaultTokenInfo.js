@@ -69,28 +69,6 @@ const WIndicator = styled.div`
   }
 `;
 
-const MgmrOptionsIndicator = styled.div`
-  display: flex;
-  flex-direction: row;
-  width: 80%;
-  height: 60px;
-
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 20px;
-`;
-
-const MgmrAdjustIndicator = styled.div`
-  display: flex;
-  flex-direction: row;
-  width: 80%;
-  height: 60px;
-
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 20px;
-`;
-
 const DWForm = styled.div`
   width: 80%;
   margin-left: auto;
@@ -109,57 +87,10 @@ const MgmrOptionForm = styled.div`
   border: 1px solid black;
   background-color: #9aa9ff63;
   padding-bottom: 50px;
+  margin-top: auto;
+  margin-bottom: auto;
 `;
 
-const ManagerTXBtns = styled.div`
-  width: 80%;
-  display: flex;
-  flex-direction: row;
-`;
-const WriteBtn = styled.div`
-  padding-top: 17px;
-  cursor: pointer;
-  border-radius: 20px 0px 0 20px;
-  background-color: #146ca4;
-  width: 50%;
-  text-align: center;
-  border-top: 1px solid black;
-  border-left: 1px solid black;
-  border-bottom: 1px solid black;
-  border-right: 1px solid black;
-  &:hover {
-    background-color: purple;
-  }
-`;
-const SellOptionBtn = styled.div`
-  padding-top: 17px;
-  cursor: pointer;
-  border-radius: 0px 0px 0 0;
-  border-top: 1px solid black;
-  border-bottom: 1px solid black;
-  border-right: 1px solid black;
-  background-color: #146ca4;
-  width: 50%;
-  text-align: center;
-  &:hover {
-    background-color: purple;
-  }
-`;
-const SettleVaultBtn = styled.div`
-  padding-top: 17px;
-  cursor: pointer;
-  border-radius: 0px 20px 20px 0;
-
-  background-color: #146ca4;
-  border-top: 1px solid black;
-  border-right: 1px solid black;
-  border-bottom: 1px solid black;
-  width: 50%;
-  text-align: center;
-  &:hover {
-    background-color: purple;
-  }
-`;
 const ConfirmCancelBtns = styled.div`
   display: flex;
   flex-direction: row;
@@ -1062,190 +993,53 @@ export default function VaultTokenInfo(props) {
       speed: 500,
       slidesToShow: 1,
       slidesToScroll: 1,
+      adaptiveHeight: true,
     };
     return (
       <div>
         <Divider hidden />
-        <MgmrOptionsIndicator>
-          <WriteBtn
-            labelPosition="right"
-            color={writeColor}
-            onClick={() => {
-              setShowWriteCall(true);
-              setWriteColor("teal");
-              setShowWriteSellOption(false);
 
-              setShowSellCall(false);
-              setSellColor("grey");
-              setSettleColor("grey");
-              setManagerClick(true);
-              setShowAdjustMaxAsset(false);
-              setShowAdujstDepositFee(false);
-              setShowAdjustWithdrawFee(false);
-              setShowWDServe(false);
-            }}
-            disabled={btnDisabled}
-          >
-            Write Option
-          </WriteBtn>
+        <Slider {...settings}>
+          <div> {writeCallRender()} </div>
+          <div> {renderSellCall()} </div>
+          <div> {renderWriteSellOptions()} </div>
 
-          <SellOptionBtn
-            color={sellColor}
-            labelPosition="right"
-            onClick={() => {
-              setShowSellCall(true);
-              setShowWriteCall(false);
-              setShowWriteSellOption(false);
-              setSellColor("teal");
-              setWriteColor("grey");
-              setSettleColor("grey");
-              setManagerClick(true);
-              setShowAdjustMaxAsset(false);
-              setShowAdujstDepositFee(false);
-              setShowAdjustWithdrawFee(false);
-              setShowWDServe(false);
-            }}
-            disabled={btnDisabled}
-          >
-            Sell Option
-          </SellOptionBtn>
-          <SellOptionBtn
-            labelPosition="right"
-            color={writeColor}
-            onClick={() => {
-              setShowWriteSellOption(true);
-              setWriteColor("teal");
-              setShowSellCall(false);
-              setShowWriteCall(false);
-              setSellColor("grey");
-              setSettleColor("grey");
-              setManagerClick(true);
-              setShowAdjustMaxAsset(false);
-              setShowAdujstDepositFee(false);
-              setShowAdjustWithdrawFee(false);
-              setShowWDServe(false);
-            }}
-            disabled={btnDisabled}
-          >
-            Write & Sell Option
-          </SellOptionBtn>
-          <SettleVaultBtn
-            color={settleColor}
-            onClick={settleVault}
-            disabled={btnDisabled}
-          >
-            Settle Vault
-          </SettleVaultBtn>
-        </MgmrOptionsIndicator>
-        {showWriteCall && writeCallRender()}
-        {showSellCall && renderSellCall()}
-        {showWriteSellOption && renderWriteSellOptions()}
-
-        {/* const [showAdjustMaxAsset, setShowAdjustMaxAsset] = useState(false);
-        const [showAdujstDepositFee, setShowAdujstDepositFee] = useState(false);
-        const [showAdjustWithdrawFee, setShowAdjustWithdrawFee] =
-        useState(false); const [showWDServe, setShowWDServe] = useState(false); */}
-        <br />
-        <MgmrAdjustIndicator>
-          <WriteBtn
-            labelPosition="right"
-            onClick={() => {
-              setShowAdjustMaxAsset(true);
-
-              setShowAdujstDepositFee(false);
-
-              setShowAdjustWithdrawFee(false);
-
-              setShowWDServe(false);
-              setShowSellCall(false);
-              setShowWriteCall(false);
-              setShowWriteSellOption(false);
-            }}
-            disabled={btnDisabled}
-          >
-            Adjust Max Asset
-          </WriteBtn>
-
-          <SellOptionBtn
-            labelPosition="right"
-            onClick={() => {
-              setShowAdjustMaxAsset(false);
-
-              setShowAdujstDepositFee(true);
-
-              setShowAdjustWithdrawFee(false);
-
-              setShowWDServe(false);
-              setShowWDServe(false);
-              setShowSellCall(false);
-              setShowWriteCall(false);
-              setShowWriteSellOption(false);
-            }}
-            disabled={btnDisabled}
-          >
-            Adujst Deposit Fee
-          </SellOptionBtn>
-          <SellOptionBtn
-            labelPosition="right"
-            onClick={() => {
-              setShowAdjustMaxAsset(false);
-
-              setShowAdujstDepositFee(false);
-
-              setShowAdjustWithdrawFee(true);
-
-              setShowWDServe(false);
-
-              setShowSellCall(false);
-              setShowWriteCall(false);
-              setShowWriteSellOption(false);
-            }}
-            disabled={btnDisabled}
-          >
-            Adjust Withdraw Fee
-          </SellOptionBtn>
-          <SettleVaultBtn
-            labelPosition="right"
-            onClick={() => {
-              setShowAdjustMaxAsset(false);
-
-              setShowAdujstDepositFee(false);
-
-              setShowAdjustWithdrawFee(false);
-
-              setShowWDServe(true);
-              setShowSellCall(false);
-              setShowWriteCall(false);
-              setShowWriteSellOption(false);
-            }}
-            disabled={btnDisabled}
-          >
-            Adjust Reserve
-          </SettleVaultBtn>
-        </MgmrAdjustIndicator>
-        <br />
-        <div> {showAdjustMaxAsset && renderAdjustMaxAsset()}</div>
-        <div> {showAdujstDepositFee && renderAdujstDepositFee()}</div>
-        <div> {showAdjustWithdrawFee && renderAdjustWithdrawFee()}</div>
-        <div> {showWDServe && renderWDServe()}</div>
-        <br />
-        <Divider hidden />
-        <Slider
-          {...settings}
-          style={{ width: "70%", marginLeft: "auto", marginRight: "auto" }}
-        >
-          <Button type="submit" onClick={sweepFee}>
-            Sweep Fee
-          </Button>
-
-          <Button
-            icon="plus circle"
-            size="medium"
-            color="purple"
-            onClick={() => openIPFSModal(true)}
-          >
-            Submit Vault Token Info
-          </Button>
+          <div> {renderAdjustMaxAsset()}</div>
+          <div> {renderAdujstDepositFee()}</div>
+          <div> {renderAdjustWithdrawFee()}</div>
+          <div> {renderWDServe()}</div>
+          <div>
+            <Button
+              type="submit"
+              onClick={sweepFee}
+              style={{
+                width: "70%",
+                display: "block",
+                marginLeft: "auto",
+                marginRight: "auto",
+              }}
+            >
+              Sweep Fee
+            </Button>
+          </div>
+          <div>
+            <Button
+              style={{
+                width: "70%",
+                display: "block",
+                marginLeft: "auto",
+                marginRight: "auto",
+                top: "50%",
+                // justifyContent: "center",
+              }}
+              icon="plus circle"
+              size="medium"
+              color="purple"
+              onClick={() => openIPFSModal(true)}
+            >
+              Submit Vault Token Info
+            </Button>
+          </div>
         </Slider>
         <Divider hidden />
       </div>
