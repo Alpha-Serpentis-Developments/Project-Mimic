@@ -418,6 +418,7 @@ export default function VTList(props) {
             mpAddress={props.mpAddress}
             showSpinner={vtList.length === 0}
             ethBal={props.ethBal}
+            openModal={props.openModal}
             vtList={vtList}
             showTokenInfo={showTokenInfo}
           />

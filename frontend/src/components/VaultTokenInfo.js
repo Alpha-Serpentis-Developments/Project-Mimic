@@ -629,7 +629,7 @@ export default function VaultTokenInfo(props) {
               }
               disabled={btnDisabled}
             >
-              Write Option
+              Write Options
             </Button>
             <Button
               style={{ width: "40%" }}
@@ -729,7 +729,7 @@ export default function VaultTokenInfo(props) {
               }
               disabled={btnDisabled}
             >
-              Write Sell Option{" "}
+              Write & Sell Options{" "}
             </Button>
           </ConfirmCancelBtns>
         </Form>
@@ -759,7 +759,7 @@ export default function VaultTokenInfo(props) {
               onClick={sellOptions}
               disabled={btnDisabled}
             >
-              Sell Call
+              Sell Options
             </Button>
           </ConfirmCancelBtns>
         </Form>
