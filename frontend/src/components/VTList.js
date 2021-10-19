@@ -68,7 +68,18 @@ export default function VTList(props) {
           vTokenList.push(v);
           let allSellCalls = v.findAllSellCalls();
           allSellCalls.then((result) => {
-            setSellCallList(result);
+            for(let a = 0; a < result.length; a++) {
+              let pass = true;
+              for(let ab = 0; ab < sellCallList.length; ab++) {
+                if(sellCallList[ab].blockHash === result[a].blockHash) {
+                  pass = false;
+                  break;
+                }
+              }
+              if(pass) {
+                sellCallList.push(result[a]);
+              }
+            }
             v.setSoldOptionsEvents(result);
             let oArr = [];
             for (let h = 0; h < result.length; h++) {
@@ -372,7 +383,9 @@ export default function VTList(props) {
   }, []);
   useEffect(() => {
     populate();
-  }, [update]);
+    console.log("update");
+    console.log(sellCallList);
+  }, [update, sellCallList]);
 
   return (
     <div>

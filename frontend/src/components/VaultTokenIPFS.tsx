@@ -2,6 +2,7 @@ import { Modal, Form, Input, Button, Grid, TextArea } from "semantic-ui-react";
 import { useEffect, useState } from "react";
 import { VaultToken_Meta } from "./VaultToken_meta";
 import { recoverTypedSignature, SignTypedDataVersion } from "@metamask/eth-sig-util";
+import { ThreeIdConnect, EthereumAuthProvider } from "@3id/connect";
 
 export default function VaultTokenIPFS(props: {
     setIPFSModal: any;
@@ -22,7 +23,6 @@ export default function VaultTokenIPFS(props: {
         if(VT_Meta !== undefined && !IPFSActive) {
             VT_Meta.onready = () => {
                 console.log("IPFS started");
-                console.log(VT_Meta.orbitdb.id);
             }
             VT_Meta.create().then(() => {
                 setIPFSActive(true);
@@ -36,15 +36,23 @@ export default function VaultTokenIPFS(props: {
         }
     }, [VT_Meta, IPFSActive, signedDesc, verifiedMsg])
 
+    async function start3ID() {
+        const addresses = await window.ethereum.enable();
+        const threeIdConnect = new ThreeIdConnect();
+        const authProvider = new EthereumAuthProvider(window.ethereum, addresses[0]);
+        await threeIdConnect.connect(authProvider);
+
+        const provider = await threeIdConnect.getDidProvider();
+    }
+
     function startIPFS() {
-        const OrbitDB = require('orbit-db');
         const Ipfs = require('ipfs');
 
         if(IPFSActive) {
             return console.error("IPFS already active");
         }
 
-        setVT_Meta(new VaultToken_Meta(Ipfs, OrbitDB));
+        setVT_Meta(new VaultToken_Meta(Ipfs));
     }
 
     function stopIPFS() {
@@ -101,7 +109,7 @@ export default function VaultTokenIPFS(props: {
             if(verifySignature(msgParams, props.cVT.manager, result.result)) {
               setSignedDesc(result.result);
               setVerifiedMsg(msgParams);
-              startIPFS();
+              start3ID();
               return true;
             } else {
               return false;
@@ -130,12 +138,12 @@ export default function VaultTokenIPFS(props: {
     }
 
     async function pushSignedDataToIPFS() {
-        setDataSubmitted(true);
-        const cid = await VT_Meta.addNewDescription(await VT_Meta.descriptions.id, verifiedMsg, signedDesc);
-        console.log("data put");
-        console.log(cid);
-        console.log(await VT_Meta.Ipfs.CID.isCID(cid));
-        console.log(await VT_Meta.node.dag.get(new VT_Meta.Ipfs.CID(cid)));
+        // setDataSubmitted(true);
+        // const cid = await VT_Meta.addNewDescription(await VT_Meta.descriptions.id, verifiedMsg, signedDesc);
+        // console.log("data put");
+        // console.log(cid);
+        // console.log(await VT_Meta.Ipfs.CID.isCID(cid));
+        // console.log(await VT_Meta.node.dag.get(new VT_Meta.Ipfs.CID(cid)));
     }
 
     function submitInfo() {
