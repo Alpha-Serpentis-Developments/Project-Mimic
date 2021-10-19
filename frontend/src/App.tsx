@@ -51,6 +51,7 @@ export default function App() {
   const [homeNav, setHomeNav] = useState("#8b1bef");
   const [managerNav, setManagerNav] = useState("#8b1bef");
   const [tradeNav, setTradeNav] = useState("#8b1bef");
+  const [docsNav, setDocsNav] = useState("#8b1bef");
   const [mmColor, setMMColor] = useState("grey");
   const [showSidebar, setShowSidebar] = useState(false);
   const [showMMInstallModal, setShowMMInstallModal] = useState(false);
@@ -170,6 +171,7 @@ export default function App() {
     setHomeNav("#9489ffba");
     setManagerNav("#8b1bef");
     setTradeNav("#8b1bef");
+    setDocsNav("#8b1bef");
   }
   function clickTrade() {
     setRenderHome(false);
@@ -179,6 +181,7 @@ export default function App() {
     setHomeNav("#8b1bef");
     setManagerNav("#8b1bef");
     setTradeNav("#9489ffba");
+    setDocsNav("#8b1bef");
   }
   function clickManager() {
     setRenderHome(false);
@@ -188,6 +191,7 @@ export default function App() {
     setHomeNav("#8b1bef");
     setManagerNav("#9489ffba");
     setTradeNav("#8b1bef");
+    setDocsNav("#8b1bef");
   }
 
   function openModal() {
@@ -324,6 +328,7 @@ export default function App() {
               homeNav={homeNav}
               tradeNav={tradeNav}
               managerNav={managerNav}
+              docsNav={docsNav}
               mmColor={mmColor}
               visited={visited}
               clickToVisit={clickToVisit}
