@@ -383,8 +383,6 @@ export default function VTList(props) {
   }, []);
   useEffect(() => {
     populate();
-    console.log("update");
-    console.log(sellCallList);
   }, [update, sellCallList]);
 
   return (

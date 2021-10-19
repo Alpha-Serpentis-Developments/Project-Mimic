@@ -100,10 +100,6 @@ export default function CoveredCallsList(props) {
       {props.sellCallList.length > 0 ? (
         <div>
           {props.sellCallList.map((t, i) => {
-            console.log(props.sellCallList.length);
-            console.log(props.sellCallList[i]);
-            console.log(props.token.address);
-            console.log(props.sellCallList[i].address === props.token.address)
             return (
               props.sellCallList[i].address === props.token.address ? (
                 <IndividualSC>
