@@ -17,7 +17,6 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20 for IERC20;
 
     error ClosedPermanently();
-    error WithdrawalWindowNotActive();
     error WithdrawalWindowActive();
     error oTokenNotCleared();
     error Unauthorized();
