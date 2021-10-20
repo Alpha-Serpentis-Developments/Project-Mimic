@@ -137,6 +137,11 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
             revert oTokenNotCleared();
 
         closedPermanently = true;
+        IERC20(asset).safeTransfer(factory.admin(), withheldProtocolFees);
+        IERC20(asset).safeTransfer(msg.sender, obligatedFees);
+        withheldProtocolFees = 0;
+        obligatedFees = 0;
+
         currentReserves = IERC20(asset).balanceOf(address(this));
 
         emit VaultClosedPermanently();
@@ -224,13 +229,15 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     /// @param _withdrawalDeduction Fee deduction against the withdrawal represented in % form with two decimals of precision (100.00% = 10000)
     /// @param _standard WaiverType enum determining what ERC standard the waiver is (IMPORTANT)
     /// @param _idERC1155 If the standard is ERC1155, use this parameter to determine the ID necessary for the eligible waiver
+    /// @param _revokeId If the standard is ERC1155, use this parameter to determine if the ID needs to be revoked
     function adjustWaiver(
         address _token,
         uint256 _minimumAmount,
         uint256 _idERC1155,
         uint16 _depositDeduction,
         uint16 _withdrawalDeduction,
-        WaiverType _standard
+        WaiverType _standard,
+        bool _revokeId
     ) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
         if(_token == address(0))
             revert Invalid();
@@ -243,7 +250,11 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
         waiver.withdrawalDeduction = _withdrawalDeduction;
 
         if(_standard == WaiverType.ERC1155) {
-            waiver.isValidID[_idERC1155] = true;
+            if(_revokeId) {
+                waiver.isValidID[_idERC1155] = false;
+            } else {
+                waiver.isValidID[_idERC1155] = true;
+            }
         }
 
         emit WaiverTokenModified(_token, _depositDeduction, _withdrawalDeduction);
@@ -297,11 +308,11 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
 
         // Fee calculation + withheldProtocolFees 
         obligatedFees += _percentMultiply(_order.signer.amount, performanceFee);
-        IERC20(asset).transfer(address(factory), _percentMultiply(_order.signer.amount + withheldProtocolFees, factory.performanceFee()));
+        IERC20(asset).safeTransfer(address(factory), _percentMultiply(_order.signer.amount + withheldProtocolFees, factory.performanceFee()));
         withheldProtocolFees = 0;
 
         // Withhold premiums temporarily
-        premiumsWithheld = _order.signer.amount;
+        premiumsWithheld += _order.signer.amount;
 
         emit OptionsSold(_order.sender.amount, _order.signer.amount);
     }
