@@ -142,8 +142,6 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
         withheldProtocolFees = 0;
         obligatedFees = 0;
 
-        currentReserves = IERC20(asset).balanceOf(address(this));
-
         emit VaultClosedPermanently();
     }
 
@@ -293,8 +291,6 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     /// @dev Performs a full RFQ trade via AirSwap
     /// @param _order A Types.Order struct that defines the AirSwap order (requires signature)
     function _sellOptions(Types.Order memory _order) internal {
-        if(_withdrawalWindowCheck())
-            revert WithdrawalWindowActive();
         if(_order.sender.amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
             revert Invalid();
 
@@ -308,7 +304,7 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
 
         // Fee calculation + withheldProtocolFees 
         obligatedFees += _percentMultiply(_order.signer.amount, performanceFee);
-        IERC20(asset).safeTransfer(address(factory), _percentMultiply(_order.signer.amount + withheldProtocolFees, factory.performanceFee()));
+        IERC20(asset).safeTransfer(address(factory), _percentMultiply(_order.signer.amount, factory.performanceFee()) + withheldProtocolFees);
         withheldProtocolFees = 0;
 
         // Withhold premiums temporarily

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity =0.8.4;
+pragma solidity ^0.8.4;
 
 import {ERC20, IERC20} from "../../oz/token/ERC20/ERC20.sol";
 

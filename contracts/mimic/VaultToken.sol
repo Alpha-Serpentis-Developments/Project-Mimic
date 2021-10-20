@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity =0.8.4;
+pragma solidity ^0.8.4;
 
 import {VaultComponents} from "./VaultComponents.sol";
 import {IFactory} from "./interfaces/IFactory.sol";
@@ -63,7 +63,7 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
     /// @param _amount amount of VAULT TOKENS to burn
     /// @param _waiver address of the waiver token msg.sender is trying to redeem
     /// @param _waiverId if the waiver is an ERC1155, the ID of the ERC1155
-    function discountWithdraw(uint256 _amount, address _waiver, uint256 _waiverId) external ifNotClosed nonReentrant() whenNotPaused() {
+    function discountWithdraw(uint256 _amount, address _waiver, uint256 _waiverId) external nonReentrant() whenNotPaused() {
         _withdraw(_amount, _waiver, _waiverId);
     }
 
@@ -139,9 +139,6 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
     /// @notice Operation to settle the vault
     /// @dev Settles the currently open vault and opens the withdrawal window
     function settleVault() external ifNotClosed nonReentrant() whenNotPaused() {
-        if(_withdrawalWindowCheck())
-            revert WithdrawalWindowActive();
-
         IController controller = IController(addressBook.getController());
 
         // Check if ready to settle otherwise revert
