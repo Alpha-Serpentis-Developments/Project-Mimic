@@ -3,7 +3,6 @@ import StatusMessage from "./StatusMessage";
 import { nwConfig, currentChain } from "./NetworkConfig";
 import Slider from "react-slick";
 
-import { recoverTypedSignature_v4 as recoverTypedSignatureV4 } from "eth-sig-util";
 import {
   Button,
   Grid,
@@ -133,7 +132,6 @@ export default function VaultTokenInfo(props) {
   const [activeIndex, setActiveIndex] = useState(-1);
   const [showApproval, setShowApproval] = useState(false);
   const [showD, setShowD] = useState(false);
-  const [showW, setShowW] = useState(true);
   const [onAmt, setOnAmt] = useState(1);
   const [maxAsset, setMaxAsset] = useState(0);
   const [depositFee, setDepositFee] = useState(0);
@@ -141,23 +139,10 @@ export default function VaultTokenInfo(props) {
   const [wdReserve, setWDReserve] = useState(0);
 
   const [IPFSModal, setIPFSModal] = useState(false);
-  const [IPFSActive, setIPFSActive] = useState(false);
-  const [unverifiedDesc, setUnverifiedDesc] = useState("");
-  const [managerSocial, setManagerSocial] = useState("");
-  const [timestamp, setTimestamp] = useState(0);
-  const [signedDesc, setSignedDesc] = useState("");
-  const [signingResponse, setSigningResponse] = useState("");
-
-  const [showMgmrAct, setShowMgmrAct] = useState(false);
-
-  const [showAdjustMaxAsset, setShowAdjustMaxAsset] = useState(false);
-  const [showAdujstDepositFee, setShowAdujstDepositFee] = useState(false);
-  const [showAdjustWithdrawFee, setShowAdjustWithdrawFee] = useState(false);
-  const [showWDServe, setShowWDServe] = useState(false);
 
   useEffect(() => {
     createVT(ctAddr);
-  }, []);
+  }, [ctAddr]);
 
   async function createVT(va) {
     let t = new VaultToken(web3, va);
@@ -172,7 +157,6 @@ export default function VaultTokenInfo(props) {
   async function getTypeHash() {
     const typeUrlPrefix = "https://dweb.link/ipfs/";
     const typeUrl = typeUrlPrefix + typeHash;
-    console.log(typeUrl);
     fetch(typeUrl)
       .then((response) => response.json())
       .then((result) => setASHash(result))
@@ -255,7 +239,7 @@ export default function VaultTokenInfo(props) {
   function overAmount(a, b, c) {
     c = c * 1e18;
     if (a > b + c) {
-      setSM("Error", "You don't have enough balance", true, true);
+      setSM("Error", "You don't have enough Ether", true, true);
       setIconStatus("error");
       return;
     } else if (a > b && a < b + c) {
@@ -408,77 +392,6 @@ export default function VaultTokenInfo(props) {
 
   function openIPFSModal(e) {
     setIPFSModal(e);
-  }
-
-  function signDescription() {
-    const currentTime = Math.floor(Date.now() / 1000);
-    setTimestamp(currentTime);
-
-    const msgParams = JSON.stringify({
-      domain: {
-        name: "Optional Social Token Description",
-        version: "1",
-      },
-      message: {
-        description: unverifiedDesc,
-        social: managerSocial,
-        vaultToken: cVT.address,
-        manager: cVT.manager,
-        timestamp: currentTime,
-      },
-      primaryType: "Description",
-      types: {
-        EIP712Domain: [
-          { name: "name", type: "string" },
-          { name: "version", type: "string" },
-        ],
-        Description: [
-          { name: "description", type: "string" },
-          { name: "social", type: "string" },
-          { name: "vaultToken", type: "address" },
-          { name: "manager", type: "address" },
-          { name: "timestamp", type: "uint256" },
-        ],
-      },
-    });
-
-    web3.currentProvider.sendAsync(
-      {
-        method: "eth_signTypedData_v4",
-        params: [cVT.manager, msgParams],
-        from: cVT.manager,
-      },
-      function (error, result) {
-        if (error) return console.error(error);
-        if (result.error) {
-          return console.error(result.error.message);
-        }
-
-        if (verifySignature(msgParams, cVT.manager, result.result)) {
-          setSignedDesc(result.result);
-          console.log("Signature verified");
-        } else {
-          return console.error("Signature cannot be verified");
-        }
-      }
-    );
-  }
-
-  function verifySignature(msgParams, from, sig) {
-    let ethUtil = require("ethereumjs-util");
-
-    const recovered = recoverTypedSignatureV4({
-      data: JSON.parse(msgParams),
-      sig: sig,
-    });
-
-    if (
-      ethUtil.toChecksumAddress(recovered) === ethUtil.toChecksumAddress(from)
-    ) {
-      return true;
-    } else {
-      alert("FAILED");
-    }
   }
 
   function startTX() {
@@ -670,7 +583,6 @@ export default function VaultTokenInfo(props) {
                       props.token.assetObject.myBalance,
                       props.ethBal
                     );
-                    console.log(onAmt);
                     setWriteCallAmt(e.target.value);
                   } else {
                     let a = e.target.value;
@@ -689,9 +601,7 @@ export default function VaultTokenInfo(props) {
               options={options}
               style={{ width: "80px" }}
               onChange={async (e, data) => {
-                console.log(data.value);
-                await setOnAmt(data.value);
-                console.log(onAmt);
+                setOnAmt(data.value);
               }}
             />
 
@@ -719,7 +629,7 @@ export default function VaultTokenInfo(props) {
               }
               disabled={btnDisabled}
             >
-              Write Option
+              Write Options
             </Button>
             <Button
               style={{ width: "40%" }}
@@ -819,7 +729,7 @@ export default function VaultTokenInfo(props) {
               }
               disabled={btnDisabled}
             >
-              Write Sell Option{" "}
+              Write & Sell Options{" "}
             </Button>
           </ConfirmCancelBtns>
         </Form>
@@ -849,7 +759,7 @@ export default function VaultTokenInfo(props) {
               onClick={sellOptions}
               disabled={btnDisabled}
             >
-              Sell Call
+              Sell Options
             </Button>
           </ConfirmCancelBtns>
         </Form>
@@ -1066,11 +976,9 @@ export default function VaultTokenInfo(props) {
   }
   function clickShowD() {
     setShowD(true);
-    setShowW(false);
   }
   function clickShowW() {
     setShowD(false);
-    setShowW(true);
   }
   function showTokenPair() {
     return (
@@ -1138,15 +1046,10 @@ export default function VaultTokenInfo(props) {
       {props.token.assetObject.tSymbol === "WETH" && convertForm()}
       {props.token.manageToken && managerMenu()}
       <VaultTokenIPFS
-        setIPFSModal={setIPFSModal}
         IPFSModal={IPFSModal}
-        IPFSActive={IPFSActive}
-        setIPFSActive={setIPFSActive}
-        unverifiedDesc={unverifiedDesc}
-        setUnverifiedDesc={setUnverifiedDesc}
-        setManagerSocial={setManagerSocial}
-        signDescription={signDescription}
-        signedDesc={signedDesc}
+        setIPFSModal={setIPFSModal}
+        web3={web3}
+        cVT={cVT}
       />
     </div>
   );
