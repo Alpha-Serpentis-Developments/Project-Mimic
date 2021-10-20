@@ -141,7 +141,7 @@ describe('VaultToken contract (simple test)', () => {
             await factory.connect(deployer).changeWithdrawalFee(0);
             await factory.connect(deployer).changeDepositFee(0);
             await vaultToken.connect(manager).adjustDepositFee(1000);
-            await vaultToken.connect(manager).adjustWaiver(testWaiver.address, 1, 0, 1000, 1000, 2);
+            await vaultToken.connect(manager).adjustWaiver(testWaiver.address, 1, 0, 1000, 1000, 2, false);
 
             await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 6));
             await vaultToken.connect(depositor).discountDeposit(ethers.utils.parseUnits('1', 6), testWaiver.address, 0);
@@ -238,7 +238,7 @@ describe('VaultToken contract (simple test)', () => {
             await factory.connect(deployer).changeWithdrawalFee(0);
             await factory.connect(deployer).changeDepositFee(0);
             await vaultToken.connect(manager).adjustDepositFee(1000);
-            await vaultToken.connect(manager).adjustWaiver(testWaiver.address, 1, 0, 1000, 1000, 2);
+            await vaultToken.connect(manager).adjustWaiver(testWaiver.address, 1, 0, 1000, 1000, 2, false);
 
             await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('2', 6));
             await vaultToken.connect(depositor).discountDeposit(ethers.utils.parseUnits('2', 6), testWaiver.address, 0);
@@ -450,6 +450,7 @@ describe('VaultToken contract (simple test)', () => {
                 1000,
                 1000,
                 0,
+                false
             );
 
         });
