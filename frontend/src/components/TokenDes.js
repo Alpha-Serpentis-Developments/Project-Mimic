@@ -55,6 +55,7 @@ const DWContainer = styled.div`
 `;
 
 export default function TokenDes(props) {
+  console.log(props);
   return (
     <div
       style={{

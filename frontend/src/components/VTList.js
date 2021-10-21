@@ -13,6 +13,7 @@ import Managed from "../pages/Managed";
 import TokenDes from "./TokenDes";
 
 export default function VTList(props) {
+  console.log(props);
   let cVT = JSON.parse(localStorage.getItem("cVT") || "{}");
   // let cVTAddr = JSON.parse(localStorage.getItem("cVTAddr") || "false");
 
@@ -95,6 +96,12 @@ export default function VTList(props) {
                     // oArr.push(result);
                     oArr[h] = result;
                     v.setAllOtokenName(oArr);
+                  });
+                  o.getStrike().then((result) => {
+                    o.setStrike(result);
+                  });
+                  o.getIsPut().then((result) => {
+                    o.setIsPut(result);
                   });
                 });
             }
@@ -218,9 +225,16 @@ export default function VTList(props) {
           v.setOT(oAddr);
           if (v.oTokenAddr !== "") {
             let o = new Otoken(web3, v.oTokenAddr);
+            console.log(v);
             v.oTokenObj = o;
             o.getName().then((result) => {
               o.setName(result);
+            });
+            o.getIsPut().then((result) => {
+              o.setIsPut(result);
+            });
+            o.getExpiryTS().then((result) => {
+              o.setExpiryTS(result);
             });
           }
         }
@@ -231,21 +245,64 @@ export default function VTList(props) {
       let y;
 
       r = r.toFixed(5);
-      const vaultLastSoldOptions = v.getSoldOptionsEvents()[v.getSoldOptionsEvents().length - 1];
+
+      const vaultLastSoldOptions = v.getSoldOptionsEvents()[
+        v.getSoldOptionsEvents().length - 1
+      ];
       if (vaultLastSoldOptions === undefined) {
         y = 0;
       } else {
-        y =
-        vaultLastSoldOptions.returnValues.premiumReceived /
-            1e18 /
-            (normalizeValues(vaultLastSoldOptions.returnValues.amountSold, 8, 18) /
-              10 ** 18) +
-          1;
-        y **= 52;
-        y -= 1;
-        y *= 100;
-        y = y.toFixed(3);
+        let txBlockNum = vaultLastSoldOptions.blockNumber;
+        let txTS = 0;
+        web3.eth.getBlock(txBlockNum).then((result) => {
+          txTS = result.timestamp;
+          if (!v.oTokenObj.isPut) {
+            y =
+              (vaultLastSoldOptions.returnValues.premiumReceived /
+                1e18 /
+                (normalizeValues(
+                  vaultLastSoldOptions.returnValues.amountSold,
+                  8,
+                  18
+                ) /
+                  10 ** 18) +
+                1) **
+              (365 / ((v.oTokenObj.expiryTS - txTS) / 86400));
+            //   y =
+            //   vaultLastSoldOptions.returnValues.premiumReceived /
+            //     1e18 /
+            //     (normalizeValues(
+            //       vaultLastSoldOptions.returnValues.amountSold,
+            //       8,
+            //       18
+            //     ) /
+            //       10 ** 18) +
+            //   1;
+            // y **= 52;
+            // y -= 1;
+            // y *= 100;
+            // y = y.toFixed(3);
+          } else {
+            y =
+              ((vaultLastSoldOptions.returnValues.premiumReceived /
+                1e18 /
+                (normalizeValues(
+                  vaultLastSoldOptions.returnValues.amountSold,
+                  8,
+                  18
+                ) /
+                  10 ** 18)) *
+                v.oTokenObj.strikPrice +
+                1) **
+              (365 / ((v.oTokenObj.expiryTS - txTS) / 86400));
+          }
+        });
       }
+
+      // } else {
+      //   if (oTokenObj.isPut) {
+      //   }
+      // }
 
       v.setNAV(r + " " + v.assetObject.symbol());
       v.setYield(y + "%");
@@ -276,6 +333,7 @@ export default function VTList(props) {
           v.ercStatus = false;
         });
     }
+    console.log(sellCallList);
     if (v.tDecimals === -1) {
       v.getDecimals(props.acctNum)
         .then((result) => {

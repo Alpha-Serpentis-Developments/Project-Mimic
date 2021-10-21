@@ -69,6 +69,7 @@ export default function CoveredCallsList(props) {
     return nwConfig[currentChain].prefix + "tx/" + h;
   }
   function OneSellCall(el) {
+    console.log(el);
     let premiumAmt, oTokenAmt, estYield, estYieldAnnualized;
 
     premiumAmt =
@@ -76,7 +77,7 @@ export default function CoveredCallsList(props) {
     oTokenAmt = el.returnValues.amountSold / 1e8;
     estYield = (premiumAmt / oTokenAmt) * 100;
     estYield = estYield.toFixed(3);
-    estYieldAnnualized = (((estYield/100 + 1)**52 - 1) * 100);
+    estYieldAnnualized = ((estYield / 100 + 1) ** 52 - 1) * 100;
     estYieldAnnualized = estYieldAnnualized.toFixed(3);
 
     return (
@@ -93,29 +94,31 @@ export default function CoveredCallsList(props) {
     <CoveredCallDetail>
       <SectionTitle>Traded Covered Calls</SectionTitle>
       <NAVTSContainer>
-        {ts > (Date.now()/1000) ? <TS>Vault is OPENED</TS> : <TS>Vault is CLOSED</TS>}
+        {ts > Date.now() / 1000 ? (
+          <TS>Vault is OPENED</TS>
+        ) : (
+          <TS>Vault is CLOSED</TS>
+        )}
         <NAV>{props.token.nav}</NAV>
       </NAVTSContainer>
       <HRLine />
       {props.sellCallList.length > 0 ? (
         <div>
           {props.sellCallList.map((t, i) => {
-            return (
-              props.sellCallList[i].address === props.token.address ? (
-                <IndividualSC>
-                  <SCLink
-                    href={makeEtherscanLink(
-                      props.sellCallList[i].transactionHash
-                    )}
-                    target="_blank"
-                  >
-                    <OTokenName>{props.token.oTokenNames[i]}</OTokenName>
-                    <div>{OneSellCall(t)}</div>
-                  </SCLink>
-                </IndividualSC>
-              ) : (
-                <NoCoverCall>NO DATA AVAILABLE TO SHOW</NoCoverCall>
-              )
+            return props.sellCallList[i].address === props.token.address ? (
+              <IndividualSC>
+                <SCLink
+                  href={makeEtherscanLink(
+                    props.sellCallList[i].transactionHash
+                  )}
+                  target="_blank"
+                >
+                  <OTokenName>{props.token.oTokenNames[i]}</OTokenName>
+                  <div>{OneSellCall(t)}</div>
+                </SCLink>
+              </IndividualSC>
+            ) : (
+              <NoCoverCall>NO DATA AVAILABLE TO SHOW</NoCoverCall>
             );
             // return (
             //   <IndividualSC>
