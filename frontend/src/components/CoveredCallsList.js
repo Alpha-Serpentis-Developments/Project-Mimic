@@ -69,7 +69,6 @@ export default function CoveredCallsList(props) {
     return nwConfig[currentChain].prefix + "tx/" + h;
   }
   function OneSellCall(el) {
-    console.log(el);
     let premiumAmt, oTokenAmt, estYield, estYieldAnnualized;
 
     premiumAmt =
