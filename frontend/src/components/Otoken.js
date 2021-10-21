@@ -12,8 +12,17 @@ export class Otoken extends ERC20 {
     this.expiryTS = 0;
   }
 
-  async getIsPut() {
-    return this.ot.methods.isPut().call();
+  async defineSelf() {
+    this.setStrike(await this.getStrike());
+    this.setIsPut(await this.getIsPut());
+    this.setExpiryTS(await this.getExpiryTS());
+  }
+
+  async getIsPut(blockNum) {
+    if(blockNum === 0)
+      return this.ot.methods.isPut().call();
+    else
+      return this.ot.methods.isPut().call(null, blockNum);
   }
   setIsPut(a) {
     this.isPut = a;

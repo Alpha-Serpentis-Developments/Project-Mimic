@@ -163,7 +163,7 @@ export default function VTCard(props) {
               <ItemInfo>
                 <ItemTextHeader>Est. Yield (APY)</ItemTextHeader>
                 <ItemText>
-                  {item.yield === -1 ? <div>Calculating...</div> : item.yield}
+                  {item.yield === -1 ? <div>Calculating...</div> : (item.yield + "%")}
                 </ItemText>
               </ItemInfo>
               <ItemInfo>

@@ -130,8 +130,8 @@ export class VaultToken extends ERC20 {
     this.collateralAmount = a;
   }
 
-  async getOT() {
-    return this.vt.methods.oToken().call();
+  async getOT(blockNum) {
+    return this.vt.methods.oToken().call(0, blockNum);
   }
   setOT(a) {
     this.oTokenAddr = a;
