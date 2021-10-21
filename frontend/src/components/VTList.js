@@ -13,7 +13,6 @@ import Managed from "../pages/Managed";
 import TokenDes from "./TokenDes";
 
 export default function VTList(props) {
-  console.log(props);
   let cVT = JSON.parse(localStorage.getItem("cVT") || "{}");
   // let cVTAddr = JSON.parse(localStorage.getItem("cVTAddr") || "false");
 
@@ -30,9 +29,9 @@ export default function VTList(props) {
   // const [currentTokenAddr, setCurrentTokenAddr] = useState(cVTAddr);
 
   async function showTokenInfo(e, i) {
-    console.log("clicked");
-    console.log(e);
-    console.log(i.value);
+//     console.log("clicked");
+//     console.log(e);
+//     console.log(i.value);
     await setClickedItem(i.value);
     //  await setCurrentTokenAddr(i.value.address);
 
