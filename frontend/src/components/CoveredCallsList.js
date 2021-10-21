@@ -91,7 +91,7 @@ export default function CoveredCallsList(props) {
 
   return (
     <CoveredCallDetail>
-      <SectionTitle>Traded Covered Calls</SectionTitle>
+      <SectionTitle>Traded Options</SectionTitle>
       <NAVTSContainer>
         {ts > Date.now() / 1000 ? (
           <TS>Vault is OPENED</TS>

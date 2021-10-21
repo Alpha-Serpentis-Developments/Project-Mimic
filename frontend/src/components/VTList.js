@@ -25,14 +25,13 @@ export default function VTList(props) {
 
   const [clickedItem, setClickedItem] = useState(cVT);
   const [sellCallList, setSellCallList] = useState([]);
-  const [lastSellCall, setLastSellCall] = useState();
   // const [currentTokenAddr, setCurrentTokenAddr] = useState(cVTAddr);
 
   async function showTokenInfo(e, i) {
 //     console.log("clicked");
 //     console.log(e);
 //     console.log(i.value);
-    await setClickedItem(i.value);
+    setClickedItem(i.value);
     //  await setCurrentTokenAddr(i.value.address);
 
     let T = i.value;
@@ -49,19 +48,12 @@ export default function VTList(props) {
       };
     }
 
-    await localStorage.setItem("cVT", "");
-    await localStorage.setItem("cVT", JSON.stringify(T, getCircularReplacer()));
+    localStorage.setItem("cVT", "");
+    localStorage.setItem("cVT", JSON.stringify(T, getCircularReplacer()));
     // await localStorage.setItem("cVTAddr", JSON.stringify(i.value.address));
   }
 
   function getAllVT() {
-    fetch(
-      "https://raw.githubusercontent.com/Alpha-Serpentis-Developments/Mimic-Token-Info/main/tokenInfo.json"
-    )
-      .then((response) => response.json())
-      .then((result) => {
-        console.log(result);
-      });
     let factoryObj = new Factory(web3);
 
     let p = factoryObj.findAllVT();
@@ -79,8 +71,18 @@ export default function VTList(props) {
           vTokenList.push(v);
           let allSellCalls = v.findAllSellCalls();
           allSellCalls.then((result) => {
-            setSellCallList(result);
-            setLastSellCall(result[result.length - 1]);
+            for(let a = 0; a < result.length; a++) {
+              let pass = true;
+              for(let ab = 0; ab < sellCallList.length; ab++) {
+                if(sellCallList[ab].blockHash === result[a].blockHash) {
+                  pass = false;
+                  break;
+                }
+              }
+              if(pass) {
+                sellCallList.push(result[a]);
+              }
+            }
             v.setSoldOptionsEvents(result);
             let oArr = [];
             for (let h = 0; h < result.length; h++) {
@@ -204,18 +206,17 @@ export default function VTList(props) {
     }
     if (v.tDecimals === -1) {
       v.getDecimals(props.acctNum).then((result) => {
-        console.log(result);
         v.setDecimals(result);
       });
     }
     if (v.collateralAmount === -1) {
-      v.getCA(web3, v.address).then((result) => {
+      v.getCA().then((result) => {
         let da = web3.utils.toBN(result).toString();
         v.setCA(da);
       });
     }
     if (v.oTokenAddr === "") {
-      v.getOT(web3, v.address).then((result) => {
+      v.getOT().then((result) => {
         if (
           result !==
           "0x0000000000000000000000000000000000000000000000000000000000000000"
@@ -442,7 +443,7 @@ export default function VTList(props) {
   }, []);
   useEffect(() => {
     populate();
-  }, [update]);
+  }, [update, sellCallList]);
 
   return (
     <div>
@@ -477,6 +478,7 @@ export default function VTList(props) {
             mpAddress={props.mpAddress}
             showSpinner={vtList.length === 0}
             ethBal={props.ethBal}
+            openModal={props.openModal}
             vtList={vtList}
             showTokenInfo={showTokenInfo}
           />
