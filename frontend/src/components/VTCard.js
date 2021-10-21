@@ -186,7 +186,7 @@ export default function VTCard(props) {
                   borderRadius: "30px",
                   padding: "10px 30px",
                   backgroundColor: "#7950EE",
-                  color: "white"
+                  color: "white",
                 }}
               >
                 Trade
