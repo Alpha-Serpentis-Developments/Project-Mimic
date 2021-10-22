@@ -69,28 +69,6 @@ const WIndicator = styled.div`
   }
 `;
 
-const MgmrOptionsIndicator = styled.div`
-  display: flex;
-  flex-direction: row;
-  width: 80%;
-  height: 60px;
-
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 20px;
-`;
-
-const MgmrAdjustIndicator = styled.div`
-  display: flex;
-  flex-direction: row;
-  width: 80%;
-  height: 60px;
-
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 20px;
-`;
-
 const DWForm = styled.div`
   width: 80%;
   margin-left: auto;
@@ -109,57 +87,10 @@ const MgmrOptionForm = styled.div`
   border: 1px solid black;
   background-color: #9aa9ff63;
   padding-bottom: 50px;
+  margin-top: auto;
+  margin-bottom: auto;
 `;
 
-const ManagerTXBtns = styled.div`
-  width: 80%;
-  display: flex;
-  flex-direction: row;
-`;
-const WriteBtn = styled.div`
-  padding-top: 17px;
-  cursor: pointer;
-  border-radius: 20px 0px 0 20px;
-  background-color: #146ca4;
-  width: 50%;
-  text-align: center;
-  border-top: 1px solid black;
-  border-left: 1px solid black;
-  border-bottom: 1px solid black;
-  border-right: 1px solid black;
-  &:hover {
-    background-color: purple;
-  }
-`;
-const SellOptionBtn = styled.div`
-  padding-top: 17px;
-  cursor: pointer;
-  border-radius: 0px 0px 0 0;
-  border-top: 1px solid black;
-  border-bottom: 1px solid black;
-  border-right: 1px solid black;
-  background-color: #146ca4;
-  width: 50%;
-  text-align: center;
-  &:hover {
-    background-color: purple;
-  }
-`;
-const SettleVaultBtn = styled.div`
-  padding-top: 17px;
-  cursor: pointer;
-  border-radius: 0px 20px 20px 0;
-
-  background-color: #146ca4;
-  border-top: 1px solid black;
-  border-right: 1px solid black;
-  border-bottom: 1px solid black;
-  width: 50%;
-  text-align: center;
-  &:hover {
-    background-color: purple;
-  }
-`;
 const ConfirmCancelBtns = styled.div`
   display: flex;
   flex-direction: row;
@@ -202,7 +133,6 @@ export default function VaultTokenInfo(props) {
   const [activeIndex, setActiveIndex] = useState(-1);
   const [showApproval, setShowApproval] = useState(false);
   const [showD, setShowD] = useState(false);
-  const [showW, setShowW] = useState(true);
   const [onAmt, setOnAmt] = useState(1);
   const [maxAsset, setMaxAsset] = useState(0);
   const [depositFee, setDepositFee] = useState(0);
@@ -210,23 +140,10 @@ export default function VaultTokenInfo(props) {
   const [wdReserve, setWDReserve] = useState(0);
 
   const [IPFSModal, setIPFSModal] = useState(false);
-  const [IPFSActive, setIPFSActive] = useState(false);
-  const [unverifiedDesc, setUnverifiedDesc] = useState("");
-  const [managerSocial, setManagerSocial] = useState("");
-  const [timestamp, setTimestamp] = useState(0);
-  const [signedDesc, setSignedDesc] = useState("");
-  const [signingResponse, setSigningResponse] = useState("");
-
-  const [showMgmrAct, setShowMgmrAct] = useState(false);
-
-  const [showAdjustMaxAsset, setShowAdjustMaxAsset] = useState(false);
-  const [showAdujstDepositFee, setShowAdujstDepositFee] = useState(false);
-  const [showAdjustWithdrawFee, setShowAdjustWithdrawFee] = useState(false);
-  const [showWDServe, setShowWDServe] = useState(false);
 
   useEffect(() => {
     createVT(ctAddr);
-  }, []);
+  }, [ctAddr]);
 
   async function createVT(va) {
     let t = new VaultToken(web3, va);
@@ -241,7 +158,6 @@ export default function VaultTokenInfo(props) {
   async function getTypeHash() {
     const typeUrlPrefix = "https://dweb.link/ipfs/";
     const typeUrl = typeUrlPrefix + typeHash;
-    console.log(typeUrl);
     fetch(typeUrl)
       .then((response) => response.json())
       .then((result) => setASHash(result))
@@ -324,7 +240,7 @@ export default function VaultTokenInfo(props) {
   function overAmount(a, b, c) {
     c = c * 1e18;
     if (a > b + c) {
-      setSM("Error", "You don't have enough balance", true, true);
+      setSM("Error", "You don't have enough Ether", true, true);
       setIconStatus("error");
       return;
     } else if (a > b && a < b + c) {
@@ -477,77 +393,6 @@ export default function VaultTokenInfo(props) {
 
   function openIPFSModal(e) {
     setIPFSModal(e);
-  }
-
-  function signDescription() {
-    const currentTime = Math.floor(Date.now() / 1000);
-    setTimestamp(currentTime);
-
-    const msgParams = JSON.stringify({
-      domain: {
-        name: "Optional Social Token Description",
-        version: "1",
-      },
-      message: {
-        description: unverifiedDesc,
-        social: managerSocial,
-        vaultToken: cVT.address,
-        manager: cVT.manager,
-        timestamp: currentTime,
-      },
-      primaryType: "Description",
-      types: {
-        EIP712Domain: [
-          { name: "name", type: "string" },
-          { name: "version", type: "string" },
-        ],
-        Description: [
-          { name: "description", type: "string" },
-          { name: "social", type: "string" },
-          { name: "vaultToken", type: "address" },
-          { name: "manager", type: "address" },
-          { name: "timestamp", type: "uint256" },
-        ],
-      },
-    });
-
-    web3.currentProvider.sendAsync(
-      {
-        method: "eth_signTypedData_v4",
-        params: [cVT.manager, msgParams],
-        from: cVT.manager,
-      },
-      function (error, result) {
-        if (error) return console.error(error);
-        if (result.error) {
-          return console.error(result.error.message);
-        }
-
-        if (verifySignature(msgParams, cVT.manager, result.result)) {
-          setSignedDesc(result.result);
-          console.log("Signature verified");
-        } else {
-          return console.error("Signature cannot be verified");
-        }
-      }
-    );
-  }
-
-  function verifySignature(msgParams, from, sig) {
-    let ethUtil = require("ethereumjs-util");
-
-    const recovered = recoverTypedSignatureV4({
-      data: JSON.parse(msgParams),
-      sig: sig,
-    });
-
-    if (
-      ethUtil.toChecksumAddress(recovered) === ethUtil.toChecksumAddress(from)
-    ) {
-      return true;
-    } else {
-      alert("FAILED");
-    }
   }
 
   function startTX() {
@@ -739,7 +584,6 @@ export default function VaultTokenInfo(props) {
                       props.token.assetObject.myBalance,
                       props.ethBal
                     );
-                    console.log(onAmt);
                     setWriteCallAmt(e.target.value);
                   } else {
                     let a = e.target.value;
@@ -758,9 +602,7 @@ export default function VaultTokenInfo(props) {
               options={options}
               style={{ width: "80px" }}
               onChange={async (e, data) => {
-                console.log(data.value);
-                await setOnAmt(data.value);
-                console.log(onAmt);
+                setOnAmt(data.value);
               }}
             />
 
@@ -788,7 +630,7 @@ export default function VaultTokenInfo(props) {
               }
               disabled={btnDisabled}
             >
-              Write Option
+              Write Options
             </Button>
             <Button
               style={{ width: "40%" }}
@@ -888,7 +730,7 @@ export default function VaultTokenInfo(props) {
               }
               disabled={btnDisabled}
             >
-              Write Sell Option{" "}
+              Write & Sell Options{" "}
             </Button>
           </ConfirmCancelBtns>
         </Form>
@@ -918,7 +760,7 @@ export default function VaultTokenInfo(props) {
               onClick={sellOptions}
               disabled={btnDisabled}
             >
-              Sell Call
+              Sell Options
             </Button>
           </ConfirmCancelBtns>
         </Form>
@@ -1062,190 +904,53 @@ export default function VaultTokenInfo(props) {
       speed: 500,
       slidesToShow: 1,
       slidesToScroll: 1,
+      adaptiveHeight: true,
     };
     return (
       <div>
         <Divider hidden />
-        <MgmrOptionsIndicator>
-          <WriteBtn
-            labelPosition="right"
-            color={writeColor}
-            onClick={() => {
-              setShowWriteCall(true);
-              setWriteColor("teal");
-              setShowWriteSellOption(false);
 
-              setShowSellCall(false);
-              setSellColor("grey");
-              setSettleColor("grey");
-              setManagerClick(true);
-              setShowAdjustMaxAsset(false);
-              setShowAdujstDepositFee(false);
-              setShowAdjustWithdrawFee(false);
-              setShowWDServe(false);
-            }}
-            disabled={btnDisabled}
-          >
-            Write Option
-          </WriteBtn>
+        <Slider {...settings}>
+          <div> {writeCallRender()} </div>
+          <div> {renderSellCall()} </div>
+          <div> {renderWriteSellOptions()} </div>
 
-          <SellOptionBtn
-            color={sellColor}
-            labelPosition="right"
-            onClick={() => {
-              setShowSellCall(true);
-              setShowWriteCall(false);
-              setShowWriteSellOption(false);
-              setSellColor("teal");
-              setWriteColor("grey");
-              setSettleColor("grey");
-              setManagerClick(true);
-              setShowAdjustMaxAsset(false);
-              setShowAdujstDepositFee(false);
-              setShowAdjustWithdrawFee(false);
-              setShowWDServe(false);
-            }}
-            disabled={btnDisabled}
-          >
-            Sell Option
-          </SellOptionBtn>
-          <SellOptionBtn
-            labelPosition="right"
-            color={writeColor}
-            onClick={() => {
-              setShowWriteSellOption(true);
-              setWriteColor("teal");
-              setShowSellCall(false);
-              setShowWriteCall(false);
-              setSellColor("grey");
-              setSettleColor("grey");
-              setManagerClick(true);
-              setShowAdjustMaxAsset(false);
-              setShowAdujstDepositFee(false);
-              setShowAdjustWithdrawFee(false);
-              setShowWDServe(false);
-            }}
-            disabled={btnDisabled}
-          >
-            Write & Sell Option
-          </SellOptionBtn>
-          <SettleVaultBtn
-            color={settleColor}
-            onClick={settleVault}
-            disabled={btnDisabled}
-          >
-            Settle Vault
-          </SettleVaultBtn>
-        </MgmrOptionsIndicator>
-        {showWriteCall && writeCallRender()}
-        {showSellCall && renderSellCall()}
-        {showWriteSellOption && renderWriteSellOptions()}
-
-        {/* const [showAdjustMaxAsset, setShowAdjustMaxAsset] = useState(false);
-        const [showAdujstDepositFee, setShowAdujstDepositFee] = useState(false);
-        const [showAdjustWithdrawFee, setShowAdjustWithdrawFee] =
-        useState(false); const [showWDServe, setShowWDServe] = useState(false); */}
-        <br />
-        <MgmrAdjustIndicator>
-          <WriteBtn
-            labelPosition="right"
-            onClick={() => {
-              setShowAdjustMaxAsset(true);
-
-              setShowAdujstDepositFee(false);
-
-              setShowAdjustWithdrawFee(false);
-
-              setShowWDServe(false);
-              setShowSellCall(false);
-              setShowWriteCall(false);
-              setShowWriteSellOption(false);
-            }}
-            disabled={btnDisabled}
-          >
-            Adjust Max Asset
-          </WriteBtn>
-
-          <SellOptionBtn
-            labelPosition="right"
-            onClick={() => {
-              setShowAdjustMaxAsset(false);
-
-              setShowAdujstDepositFee(true);
-
-              setShowAdjustWithdrawFee(false);
-
-              setShowWDServe(false);
-              setShowWDServe(false);
-              setShowSellCall(false);
-              setShowWriteCall(false);
-              setShowWriteSellOption(false);
-            }}
-            disabled={btnDisabled}
-          >
-            Adujst Deposit Fee
-          </SellOptionBtn>
-          <SellOptionBtn
-            labelPosition="right"
-            onClick={() => {
-              setShowAdjustMaxAsset(false);
-
-              setShowAdujstDepositFee(false);
-
-              setShowAdjustWithdrawFee(true);
-
-              setShowWDServe(false);
-
-              setShowSellCall(false);
-              setShowWriteCall(false);
-              setShowWriteSellOption(false);
-            }}
-            disabled={btnDisabled}
-          >
-            Adjust Withdraw Fee
-          </SellOptionBtn>
-          <SettleVaultBtn
-            labelPosition="right"
-            onClick={() => {
-              setShowAdjustMaxAsset(false);
-
-              setShowAdujstDepositFee(false);
-
-              setShowAdjustWithdrawFee(false);
-
-              setShowWDServe(true);
-              setShowSellCall(false);
-              setShowWriteCall(false);
-              setShowWriteSellOption(false);
-            }}
-            disabled={btnDisabled}
-          >
-            Adjust Reserve
-          </SettleVaultBtn>
-        </MgmrAdjustIndicator>
-        <br />
-        <div> {showAdjustMaxAsset && renderAdjustMaxAsset()}</div>
-        <div> {showAdujstDepositFee && renderAdujstDepositFee()}</div>
-        <div> {showAdjustWithdrawFee && renderAdjustWithdrawFee()}</div>
-        <div> {showWDServe && renderWDServe()}</div>
-        <br />
-        <Divider hidden />
-        <Slider
-          {...settings}
-          style={{ width: "70%", marginLeft: "auto", marginRight: "auto" }}
-        >
-          <Button type="submit" onClick={sweepFee}>
-            Sweep Fee
-          </Button>
-
-          <Button
-            icon="plus circle"
-            size="medium"
-            color="purple"
-            onClick={() => openIPFSModal(true)}
-          >
-            Submit Vault Token Info
-          </Button>
+          <div> {renderAdjustMaxAsset()}</div>
+          <div> {renderAdujstDepositFee()}</div>
+          <div> {renderAdjustWithdrawFee()}</div>
+          <div> {renderWDServe()}</div>
+          <div>
+            <Button
+              type="submit"
+              onClick={sweepFee}
+              style={{
+                width: "70%",
+                display: "block",
+                marginLeft: "auto",
+                marginRight: "auto",
+              }}
+            >
+              Sweep Fee
+            </Button>
+          </div>
+          <div>
+            <Button
+              style={{
+                width: "70%",
+                display: "block",
+                marginLeft: "auto",
+                marginRight: "auto",
+                top: "50%",
+                // justifyContent: "center",
+              }}
+              icon="plus circle"
+              size="medium"
+              color="purple"
+              onClick={() => openIPFSModal(true)}
+            >
+              Submit Vault Token Info
+            </Button>
+          </div>
         </Slider>
         <Divider hidden />
       </div>
@@ -1272,11 +977,9 @@ export default function VaultTokenInfo(props) {
   }
   function clickShowD() {
     setShowD(true);
-    setShowW(false);
   }
   function clickShowW() {
     setShowD(false);
-    setShowW(true);
   }
   function showTokenPair() {
     return (
@@ -1344,15 +1047,10 @@ export default function VaultTokenInfo(props) {
       {props.token.assetObject.tSymbol === "WETH" && convertForm()}
       {props.token.manageToken && managerMenu()}
       <VaultTokenIPFS
-        setIPFSModal={setIPFSModal}
         IPFSModal={IPFSModal}
-        IPFSActive={IPFSActive}
-        setIPFSActive={setIPFSActive}
-        unverifiedDesc={unverifiedDesc}
-        setUnverifiedDesc={setUnverifiedDesc}
-        setManagerSocial={setManagerSocial}
-        signDescription={signDescription}
-        signedDesc={signedDesc}
+        setIPFSModal={setIPFSModal}
+        web3={web3}
+        cVT={cVT}
       />
     </div>
   );

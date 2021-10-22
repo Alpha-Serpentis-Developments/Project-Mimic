@@ -1,8 +1,12 @@
 export class VaultToken_Meta {
-    constructor(Ipfs, OrbitDB) {
+    constructor(Ipfs) {
         this.Ipfs = Ipfs;
-        this.OrbitDB = OrbitDB;
-        this.onready = undefined;
+        this.onready = "";
+        this.active = false;
+    }
+
+    setActive(setting) {
+        this.active = setting;
     }
 
     async create() {
@@ -11,15 +15,12 @@ export class VaultToken_Meta {
             EXPERIMENTAL: { pubsub: true }
         });
 
-        this._init();
+        await this._init();
     }
 
     async _init() {
-        this.OrbitDB = await this.OrbitDB.createInstance(this.node);
-        this.defaultOptions = { accessController: {
-            write: [this.OrbitDB.identity.id]
-            }
-        }
+        this.setActive(true);
+        
         if(this.onready) this.onready();
     }
 }

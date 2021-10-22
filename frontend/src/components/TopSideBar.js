@@ -1,6 +1,6 @@
 import "../App.css";
 import styled from "styled-components";
-import { Icon, Grid, Image } from "semantic-ui-react";
+import { Icon, Grid } from "semantic-ui-react";
 import optionalProfile from "../images/optionalProfile.png";
 
 const TitleImg = styled.img`

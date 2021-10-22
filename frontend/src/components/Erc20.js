@@ -15,9 +15,9 @@ export class ERC20 {
   }
 
   async updateSelf() {
-    await this.setName(this.getName());
-    await this.setSymbol(this.getSymbol());
-    await this.setDecimals(this.getDecimals());
+    this.setName(this.getName());
+    this.setSymbol(this.getSymbol());
+    this.setDecimals(this.getDecimals());
   }
 
   async getName(f) {

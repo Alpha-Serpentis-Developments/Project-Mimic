@@ -25,14 +25,13 @@ export default function VTList(props) {
 
   const [clickedItem, setClickedItem] = useState(cVT);
   const [sellCallList, setSellCallList] = useState([]);
-  const [lastSellCall, setLastSellCall] = useState();
   // const [currentTokenAddr, setCurrentTokenAddr] = useState(cVTAddr);
 
   async function showTokenInfo(e, i) {
-    console.log("clicked");
-    console.log(e);
-    console.log(i.value);
-    await setClickedItem(i.value);
+//     console.log("clicked");
+//     console.log(e);
+//     console.log(i.value);
+    setClickedItem(i.value);
     //  await setCurrentTokenAddr(i.value.address);
 
     let T = i.value;
@@ -49,8 +48,8 @@ export default function VTList(props) {
       };
     }
 
-    await localStorage.setItem("cVT", "");
-    await localStorage.setItem("cVT", JSON.stringify(T, getCircularReplacer()));
+    localStorage.setItem("cVT", "");
+    localStorage.setItem("cVT", JSON.stringify(T, getCircularReplacer()));
     // await localStorage.setItem("cVTAddr", JSON.stringify(i.value.address));
   }
 
@@ -79,8 +78,18 @@ export default function VTList(props) {
           vTokenList.push(v);
           let allSellCalls = v.findAllSellCalls();
           allSellCalls.then((result) => {
-            setSellCallList(result);
-            setLastSellCall(result[result.length - 1]);
+            for(let a = 0; a < result.length; a++) {
+              let pass = true;
+              for(let ab = 0; ab < sellCallList.length; ab++) {
+                if(sellCallList[ab].blockHash === result[a].blockHash) {
+                  pass = false;
+                  break;
+                }
+              }
+              if(pass) {
+                sellCallList.push(result[a]);
+              }
+            }
             v.setSoldOptionsEvents(result);
             let oArr = [];
             for (let h = 0; h < result.length; h++) {
@@ -95,6 +104,12 @@ export default function VTList(props) {
                     // oArr.push(result);
                     oArr[h] = result;
                     v.setAllOtokenName(oArr);
+                  });
+                  o.getStrike().then((result) => {
+                    o.setStrike(result);
+                  });
+                  o.getIsPut().then((result) => {
+                    o.setIsPut(result);
                   });
                 });
             }
@@ -198,18 +213,17 @@ export default function VTList(props) {
     }
     if (v.tDecimals === -1) {
       v.getDecimals(props.acctNum).then((result) => {
-        console.log(result);
         v.setDecimals(result);
       });
     }
     if (v.collateralAmount === -1) {
-      v.getCA(web3, v.address).then((result) => {
+      v.getCA().then((result) => {
         let da = web3.utils.toBN(result).toString();
         v.setCA(da);
       });
     }
-    if (v.oTokenAddr === "") {
-      v.getOT(web3, v.address).then((result) => {
+    if (v.oTokenAddr === "0x0000000000000000000000000000000000000000000000000000000000000000") {
+      v.getOT().then((result) => {
         if (
           result !==
           "0x0000000000000000000000000000000000000000000000000000000000000000"
@@ -222,33 +236,87 @@ export default function VTList(props) {
             o.getName().then((result) => {
               o.setName(result);
             });
+            o.getIsPut().then((result) => {
+              o.setIsPut(result);
+            });
+            o.getExpiryTS().then((result) => {
+              o.setExpiryTS(result);
+            });
           }
         }
       });
     }
     if (v.collateralAmount !== -1 && v.vaultBalance !== -1) {
       let r = (parseInt(v.collateralAmount) + parseInt(v.vaultBalance)) / 1e18;
-      let y;
+      let y = 0;
 
       r = r.toFixed(5);
-      const vaultLastSoldOptions = v.getSoldOptionsEvents()[v.getSoldOptionsEvents().length - 1];
-      if (vaultLastSoldOptions === undefined) {
-        y = 0;
+
+      const vaultLastSoldOptions = v.getSoldOptionsEvents()[
+        v.getSoldOptionsEvents().length - 1
+      ];
+      if(vaultLastSoldOptions !== undefined) {
+        let txBlockNum = vaultLastSoldOptions.blockNumber;
+        let tempOtoken;
+        let txTS = 0;
+        v.getOT(txBlockNum).then((result) => {
+          tempOtoken = new Otoken(web3, result);
+          tempOtoken.defineSelf().then(() => {
+            web3.eth.getBlock(txBlockNum).then((result) => {
+              txTS = result.timestamp;
+              if (!tempOtoken.isPut) {
+  
+                y = (
+                  (
+                    vaultLastSoldOptions.returnValues.premiumReceived /
+                    normalizeValues(
+                      vaultLastSoldOptions.returnValues.amountSold,
+                      8,
+                      v.assetObject.tDecimals
+                      ) + 1
+                    ) ** (31557600/(tempOtoken.expiryTS - txTS)) * 100
+                );
+  
+                // y =
+                //   (vaultLastSoldOptions.returnValues.premiumReceived /
+                //     1e18 /
+                //     (normalizeValues(
+                //       vaultLastSoldOptions.returnValues.amountSold,
+                //       8,
+                //       18
+                //     ) /
+                //       10 ** 18) +
+                //     1) **
+                //   (365 / ((tempOtoken.expiryTS - txTS)));
+              } else {
+
+                y = (
+                  (
+                    vaultLastSoldOptions.returnValues.premiumReceived / 
+                    (
+                      normalizeValues(
+                        vaultLastSoldOptions.returnValues.amountSold,
+                        v.assetObject.tDecimals,
+                        8
+                        ) * tempOtoken.strikePrice
+                    )
+                  ) + 1
+                ) ** (31557600/(tempOtoken.expiryTS - txTS)) * 100;
+              }
+              y = y.toFixed(2);
+              v.setYield(y);
+            });
+          }); 
+        });
       } else {
-        y =
-        vaultLastSoldOptions.returnValues.premiumReceived /
-            1e18 /
-            (normalizeValues(vaultLastSoldOptions.returnValues.amountSold, 8, 18) /
-              10 ** 18) +
-          1;
-        y **= 52;
-        y -= 1;
-        y *= 100;
-        y = y.toFixed(3);
+        v.setYield(y);
       }
 
+      // } else {
+      //   if (oTokenObj.isPut) {
+      //   }
+      // }
       v.setNAV(r + " " + v.assetObject.symbol());
-      v.setYield(y + "%");
     }
   }
   function populateAssetName(i) {
@@ -385,7 +453,7 @@ export default function VTList(props) {
   }, []);
   useEffect(() => {
     populate();
-  }, [update]);
+  }, [update, sellCallList]);
 
   return (
     <div>
@@ -420,6 +488,7 @@ export default function VTList(props) {
             mpAddress={props.mpAddress}
             showSpinner={vtList.length === 0}
             ethBal={props.ethBal}
+            openModal={props.openModal}
             vtList={vtList}
             showTokenInfo={showTokenInfo}
           />
