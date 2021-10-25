@@ -80,7 +80,7 @@ contract Factory is ReentrancyGuard {
     }
     
     function changeWithdrawalFee(uint16 _newFee) external nonReentrant() onlyAdmin {
-        if(_newFee > 5000)
+        if(_newFee > 3333)
             revert TooHighFee();
 
         withdrawalFee = _newFee;

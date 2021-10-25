@@ -167,7 +167,7 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     /// @dev Changes the withdrawalFee with two decimals of precision up to 50.00% (5000)
     /// @param _newValue new withdrawalFee with two decimals of precision
     function adjustWithdrawalFee(uint16 _newValue) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        if(_newValue > 5000)
+        if(_newValue > 3333)
             revert Invalid();
 
         withdrawalFee = _newValue;
@@ -179,7 +179,7 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     /// @dev Changes the earlyWithdrawalPenalty with two decimals of precision up to 50.00% (5000)
     /// @param _newValue new earlyWithdrawalFee with two decimals of precision
     function adjustEarlyWithdrawalPenalty(uint16 _newValue) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        if(_newValue > 5000 || _newValue + withdrawalFee + factory.withdrawalFee() > 5000)
+        if(_newValue > 3333)
             revert Invalid();
 
         earlyWithdrawalPenalty = _newValue;
