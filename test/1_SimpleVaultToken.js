@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe('VaultToken contract (simple test)', () => {
-    let VaultToken, TestToken, TestWaiver, Factory, vaultToken, pricer, testToken, mockOtokenAddr, controller, testWaiver, manager, depositor, fake_multisig, fake_addressBook, fake_airswap;
+    let VaultToken, TestToken, TestWaiver, Factory, vaultToken, pricer, testToken, mockUSDC, mockOtokenAddr, controller, testWaiver, manager, depositor, fake_multisig, fake_addressBook, fake_airswap;
 
     let normalVaultToken;
 
@@ -276,6 +276,8 @@ describe('VaultToken contract (simple test)', () => {
 
             await vaultToken.connect(manager).adjustDepositFee(0);
             await vaultToken.connect(manager).adjustWithdrawalFee(0);
+            await factory.connect(deployer).changeDepositFee(0);
+            await factory.connect(deployer).changeWithdrawalFee(0);
 
             await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 6));
             await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 6));
@@ -339,6 +341,36 @@ describe('VaultToken contract (simple test)', () => {
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(19.5e6);
             expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('19', 6));
         });
+        it('(BURN TEST) Successfully burn oTokens and redeem', async () => {
+            const starting = await testToken.balanceOf(vaultToken.address);
+
+            await vaultToken.connect(manager).adjustDepositFee(0);
+            await vaultToken.connect(manager).adjustWithdrawalFee(0);
+            await factory.connect(deployer).changeDepositFee(0);
+            await factory.connect(deployer).changeWithdrawalFee(0);
+
+            await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 6));
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 6));
+
+            await network.provider.send('evm_increaseTime', [86400]);
+            await pricer.connect(manager).setTestPrice(ethers.utils.parseUnits('1000', 18));
+            normalVaultToken = vaultToken;
+            vaultToken = new ethers.Contract(vaultToken.address, abi, manager);
+
+            await expect(
+                vaultToken.connect(manager)['writeOptions(uint256,address)'](
+                    ethers.utils.parseUnits('1', 6),
+                    mockOtokenAddr
+                )
+            ).to.not.be.reverted;
+            vaultToken = normalVaultToken;
+            
+            await vaultToken.connect(manager).burnOptions(ethers.utils.parseUnits('1', 8));
+
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('2', 18));
+
+            expect(await testToken.balanceOf(vaultToken.address)).to.be.equal(starting);
+        });
     });
 
     describe("Depositor interaction (2:1 ratio)", () => {
@@ -395,6 +427,36 @@ describe('VaultToken contract (simple test)', () => {
             expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(21e6);
         });
+        it('(BURN TEST) Successfully burn oTokens and redeem', async () => {
+            const starting = await testToken.balanceOf(vaultToken.address);
+
+            await vaultToken.connect(manager).adjustDepositFee(0);
+            await vaultToken.connect(manager).adjustWithdrawalFee(0);
+            await factory.connect(deployer).changeDepositFee(0);
+            await factory.connect(deployer).changeWithdrawalFee(0);
+
+            await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('2', 6));
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('2', 6));
+
+            await network.provider.send('evm_increaseTime', [86400]);
+            await pricer.connect(manager).setTestPrice(ethers.utils.parseUnits('1000', 18));
+            normalVaultToken = vaultToken;
+            vaultToken = new ethers.Contract(vaultToken.address, abi, manager);
+
+            await expect(
+                vaultToken.connect(manager)['writeOptions(uint256,address)'](
+                    ethers.utils.parseUnits('1', 6),
+                    mockOtokenAddr
+                )
+            ).to.not.be.reverted;
+            vaultToken = normalVaultToken;
+            
+            await vaultToken.connect(manager).burnOptions(ethers.utils.parseUnits('1', 8));
+
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('1', 18));
+
+            expect(await testToken.balanceOf(vaultToken.address)).to.be.equal(starting);
+        });
     });
 
     describe("Depositor interaction (1:4 ratio)", () => {
@@ -436,6 +498,36 @@ describe('VaultToken contract (simple test)', () => {
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(19.25e6);
             expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('19', 6));
         });
+        it('(BURN TEST) Successfully burn oTokens and redeem', async () => {
+            const starting = await testToken.balanceOf(vaultToken.address);
+
+            await vaultToken.connect(manager).adjustDepositFee(0);
+            await vaultToken.connect(manager).adjustWithdrawalFee(0);
+            await factory.connect(deployer).changeDepositFee(0);
+            await factory.connect(deployer).changeWithdrawalFee(0);
+
+            await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 6));
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 6));
+
+            await network.provider.send('evm_increaseTime', [86400]);
+            await pricer.connect(manager).setTestPrice(ethers.utils.parseUnits('1000', 18));
+            normalVaultToken = vaultToken;
+            vaultToken = new ethers.Contract(vaultToken.address, abi, manager);
+
+            await expect(
+                vaultToken.connect(manager)['writeOptions(uint256,address)'](
+                    ethers.utils.parseUnits('1', 6),
+                    mockOtokenAddr
+                )
+            ).to.not.be.reverted;
+            vaultToken = normalVaultToken;
+            
+            await vaultToken.connect(manager).burnOptions(ethers.utils.parseUnits('1', 8));
+
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('4', 18));
+
+            expect(await testToken.balanceOf(vaultToken.address)).to.be.equal(starting);
+        });
     });
 
     describe("Depositor interaction (20 decimal test token)", () => {
@@ -452,6 +544,37 @@ describe('VaultToken contract (simple test)', () => {
                 testToken.address,
                 86400, // 1 day
                 ethers.utils.parseUnits('500', 20)
+            );
+
+            pricer = await Pricer.connect(deployer).deploy(addressBook.getOracle(), testToken.address);
+            await oracle.connect(fake_multisig).setAssetPricer(testToken.address, pricer.address);
+
+            await whitelist.connect(fake_multisig).whitelistCollateral(testToken.address);
+
+            await whitelist.connect(fake_multisig).whitelistProduct(
+                testToken.address,
+                mockUSDC.address,
+                testToken.address,
+                false
+            )
+
+            // Prepare the oToken
+            mockOtokenTransaction = await otokenFactory.connect(fake_multisig).createOtoken(
+                testToken.address,
+                mockUSDC.address,
+                testToken.address,
+                ethers.utils.parseUnits('1000', 8),
+                1640937600 + 604800 , // 2022 Jan. 7 @ 8 UTC
+                false
+            );
+
+            const mockOtokenReceipt = await mockOtokenTransaction.wait();
+            mockOtokenAddr = mockOtokenReceipt.events[1].args[0];
+
+            mockOtoken = await ethers.getContractAt(
+                'Otoken',
+                mockOtokenAddr,
+                fake_multisig
             );
     
             const receipt = await vaultTokenTransaction.wait();
@@ -504,6 +627,35 @@ describe('VaultToken contract (simple test)', () => {
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('20', 20));
             expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('19', 20));
         });
+        it('(BURN TEST) Successfully burn oTokens and redeem', async () => {
+            const starting = await testToken.balanceOf(vaultToken.address);
+
+            await vaultToken.connect(manager).adjustDepositFee(0);
+            await vaultToken.connect(manager).adjustWithdrawalFee(0);
+            await factory.connect(deployer).changeDepositFee(0);
+            await factory.connect(deployer).changeWithdrawalFee(0);
+
+            await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 20));
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 20));
+
+            await network.provider.send('evm_increaseTime', [86400]);
+            await pricer.connect(manager).setTestPrice(ethers.utils.parseUnits('1000', 20));
+            normalVaultToken = vaultToken;
+            vaultToken = new ethers.Contract(vaultToken.address, abi, manager);
+
+            await expect(
+                vaultToken.connect(manager)['writeOptions(uint256,address)'](
+                    ethers.utils.parseUnits('1', 20),
+                    mockOtokenAddr
+                )
+            ).to.not.be.reverted;
+            vaultToken = normalVaultToken;
+            
+            await vaultToken.connect(manager).burnOptions(ethers.utils.parseUnits('1', 8));
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('1', 18));
+
+            expect(await testToken.balanceOf(vaultToken.address)).to.be.equal(starting);
+        });
     });
 
     describe("Depositor interaction (18 decimal test token)", () => {
@@ -528,6 +680,37 @@ describe('VaultToken contract (simple test)', () => {
                 'VaultToken',
                 receipt.events[0].args.vaultToken,
                 manager
+            );
+
+            pricer = await Pricer.connect(deployer).deploy(addressBook.getOracle(), testToken.address);
+            await oracle.connect(fake_multisig).setAssetPricer(testToken.address, pricer.address);
+
+            await whitelist.connect(fake_multisig).whitelistCollateral(testToken.address);
+
+            await whitelist.connect(fake_multisig).whitelistProduct(
+                testToken.address,
+                mockUSDC.address,
+                testToken.address,
+                false
+            )
+
+            // Prepare the oToken
+            mockOtokenTransaction = await otokenFactory.connect(fake_multisig).createOtoken(
+                testToken.address,
+                mockUSDC.address,
+                testToken.address,
+                ethers.utils.parseUnits('1000', 8),
+                1640937600 + 604800 , // 2022 Jan. 7 @ 8 UTC
+                false
+            );
+
+            const mockOtokenReceipt = await mockOtokenTransaction.wait();
+            mockOtokenAddr = mockOtokenReceipt.events[1].args[0];
+
+            mockOtoken = await ethers.getContractAt(
+                'Otoken',
+                mockOtokenAddr,
+                fake_multisig
             );
 
             await testToken.connect(depositor).transfer(manager.address, ethers.utils.parseUnits('1', 18));
@@ -571,6 +754,35 @@ describe('VaultToken contract (simple test)', () => {
             expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('20', 18));
             expect(await vaultToken.withheldProtocolFees()).to.equal(ethers.utils.parseUnits('19', 18));
+        });
+        it('(BURN TEST) Successfully burn oTokens and redeem', async () => {
+            const starting = await testToken.balanceOf(vaultToken.address);
+
+            await vaultToken.connect(manager).adjustDepositFee(0);
+            await vaultToken.connect(manager).adjustWithdrawalFee(0);
+            await factory.connect(deployer).changeDepositFee(0);
+            await factory.connect(deployer).changeWithdrawalFee(0);
+
+            await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 18));
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 18));
+
+            await network.provider.send('evm_increaseTime', [86400]);
+            await pricer.connect(manager).setTestPrice(ethers.utils.parseUnits('1000', 18));
+            normalVaultToken = vaultToken;
+            vaultToken = new ethers.Contract(vaultToken.address, abi, manager);
+
+            await expect(
+                vaultToken.connect(manager)['writeOptions(uint256,address)'](
+                    ethers.utils.parseUnits('1', 18),
+                    mockOtokenAddr
+                )
+            ).to.not.be.reverted;
+            vaultToken = normalVaultToken;
+            
+            await vaultToken.connect(manager).burnOptions(ethers.utils.parseUnits('1', 8));
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('1', 18));
+
+            expect(await testToken.balanceOf(vaultToken.address)).to.be.equal(starting);
         });
     });
 
