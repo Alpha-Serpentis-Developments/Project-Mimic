@@ -96,7 +96,7 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
         if(OtokenInterface(oToken).isPut()) {
             normalizedAmount = _normalize(_amount * OtokenInterface(oToken).strikePrice(), 16, ERC20(asset).decimals());
         } else {
-           normalizedAmount = _normalize(_amount, 8, 18);
+           normalizedAmount = _normalize(_amount, 8, ERC20(asset).decimals());
         }
 
         actions[0] = Actions.ActionArgs(

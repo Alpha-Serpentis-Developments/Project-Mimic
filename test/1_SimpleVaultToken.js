@@ -2,14 +2,26 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe('VaultToken contract (simple test)', () => {
-    let VaultToken, TestToken, TestWaiver, Factory, vaultToken, testToken, testWaiver, manager, depositor, fake_addressBook, fake_controller, fake_airswap;
+    let VaultToken, TestToken, TestWaiver, Factory, vaultToken, pricer, testToken, mockOtokenAddr, controller, testWaiver, manager, depositor, fake_multisig, fake_addressBook, fake_airswap;
+
+    let normalVaultToken;
+
+    const abi = [
+        "function writeOptions(uint256,address) external",
+        "function writeOptions(uint16,address) external",
+        "error Invalid()",
+        "error NotEnoughFunds()",
+        "error NotEnoughFunds_ReserveViolation()",
+        "error oTokenNotCleared()",
+        "error WithdrawalWindowActive()",
+    ];
 
     before(async () => {
         TestToken = await ethers.getContractFactory('TestToken');
         TestWaiver = await ethers.getContractFactory('TestWaiver');
         Factory = await ethers.getContractFactory('Factory');
         VaultToken = await ethers.getContractFactory('VaultToken');
-        [deployer, manager, depositor, fake_addressBook, fake_controller, fake_airswap] = await ethers.getSigners();
+        [deployer, manager, depositor, fake_addressBook, fake_multisig, fake_airswap] = await ethers.getSigners();
 
         vaultToken = await VaultToken.deploy();
 
@@ -23,7 +35,13 @@ describe('VaultToken contract (simple test)', () => {
             0,
             0
         );
-
+        
+        mockUSDC = await TestToken.connect(depositor).deploy(
+            "Mock USDC",
+            "USDC",
+            6,
+            100000e6
+        );
         testToken = await TestToken.connect(depositor).deploy(
             "Mock Asset",
             "MOCK",
@@ -31,9 +49,108 @@ describe('VaultToken contract (simple test)', () => {
             100000e6
         );
         testWaiver = await TestWaiver.connect(manager).deploy();
+
+        // Opyn stuff
+
+        Factory = await ethers.getContractFactory('Factory');
+        VaultToken = await ethers.getContractFactory("contracts\\mimic\\VaultToken.sol:VaultToken");
+        TestToken = await ethers.getContractFactory('TestToken');
+        OtokenFactory = await ethers.getContractFactory('OtokenFactory');
+        Otoken = await ethers.getContractFactory('Otoken');
+        Whitelist = await ethers.getContractFactory('Whitelist');
+        Oracle = await ethers.getContractFactory('Oracle');
+        MarginPool = await ethers.getContractFactory('MarginPool');
+        MarginCalculator = await ethers.getContractFactory('MarginCalculator');
+        MarginVault = await ethers.getContractFactory('MarginVault');
+        AddressBook = await ethers.getContractFactory('AddressBook');
+        Pricer = await ethers.getContractFactory('TestPricer');
+
+        // Deploy all the addresses
+        addressBook = await AddressBook.connect(deployer).deploy();
+        otokenFactory = await OtokenFactory.connect(deployer).deploy(addressBook.address);
+        otokenImpl = await Otoken.connect(deployer).deploy();
+        whitelist = await Whitelist.connect(deployer).deploy(addressBook.address);
+        oracle = await Oracle.connect(deployer).deploy();
+        marginPool = await MarginPool.connect(deployer).deploy(addressBook.address);
+        marginCalculator = await MarginCalculator.connect(deployer).deploy(oracle.address);
+        marginVault = await MarginVault.connect(deployer).deploy();
+
+        Controller = await ethers.getContractFactory(
+            'Controller',
+            {
+                libraries: {
+                    MarginVault: marginVault.address
+                }
+            }
+        );
+
+        controller = await Controller.connect(deployer).deploy();
+
+        // Assign the addresses in the AddressBook
+        await addressBook.connect(deployer).setOtokenFactory(otokenFactory.address);
+        await addressBook.connect(deployer).setOtokenImpl(otokenImpl.address);
+        await addressBook.connect(deployer).setWhitelist(whitelist.address);
+        await addressBook.connect(deployer).setOracle(oracle.address);
+        await addressBook.connect(deployer).setMarginPool(marginPool.address);
+        await addressBook.connect(deployer).setMarginCalculator(marginCalculator.address);
+        await addressBook.connect(deployer).setController(controller.address);
+
+        controller = await controller.attach(await addressBook.getController());
+
+        // Transfer ownership
+        await addressBook.connect(deployer).transferOwnership(fake_multisig.address);
+        await whitelist.connect(deployer).transferOwnership(fake_multisig.address);
+        await oracle.connect(deployer).transferOwnership(fake_multisig.address);
+        await marginPool.connect(deployer).transferOwnership(fake_multisig.address);
+        await controller.connect(deployer).transferOwnership(fake_multisig.address);
+
+        // Prepare pricer
+        pricer = await Pricer.connect(deployer).deploy(addressBook.getOracle(), testToken.address);
+
+        // Prepare the oracle
+        await oracle.connect(fake_multisig).setAssetPricer(testToken.address, pricer.address);
+        //await oracle.connect(fake_multisig).setAssetPricer(mockUSDC.address, pricer.address);
+        await oracle.connect(fake_multisig).setStablePrice(mockUSDC.address, 1e6)
+
+        // Prepare the whitelist
+        await whitelist.connect(fake_multisig).whitelistCollateral(testToken.address);
+        await whitelist.connect(fake_multisig).whitelistCollateral(mockUSDC.address);
+        await whitelist.connect(fake_multisig).whitelistProduct(
+            testToken.address,
+            mockUSDC.address,
+            testToken.address,
+            false
+        );
+
+        await whitelist.connect(fake_multisig).whitelistProduct(
+            testToken.address,
+            mockUSDC.address,
+            mockUSDC.address,
+            true
+        );
+
+        // Prepare the oToken
+        mockOtokenTransaction = await otokenFactory.connect(fake_multisig).createOtoken(
+            testToken.address,
+            mockUSDC.address,
+            testToken.address,
+            ethers.utils.parseUnits('1000', 18),
+            1640937600, // 2021 Dec. 31 @ 8 UTC
+            false
+        );
+
+        const mockOtokenReceipt = await mockOtokenTransaction.wait();
+        mockOtokenAddr = mockOtokenReceipt.events[1].args[0];
+
+        mockOtoken = await ethers.getContractAt(
+            'Otoken',
+            mockOtokenAddr,
+            fake_multisig
+        );
+
         factory = await Factory.connect(deployer).deploy(
             fake_airswap.address,
-            fake_addressBook.address,
+            addressBook.address,
             vaultToken.address,
             deployer.address,
             0,
@@ -153,6 +270,33 @@ describe('VaultToken contract (simple test)', () => {
 
             expect(await vaultToken.balanceOf(depositor.address)).to.equal(0);
             expect(await testToken.balanceOf(vaultToken.address)).to.equal(20e6);
+        });
+        it('(BURN TEST) Successfully burn oTokens and redeem', async () => {
+            const starting = await testToken.balanceOf(vaultToken.address);
+
+            await vaultToken.connect(manager).adjustDepositFee(0);
+            await vaultToken.connect(manager).adjustWithdrawalFee(0);
+
+            await testToken.connect(depositor).approve(vaultToken.address, ethers.utils.parseUnits('1', 6));
+            await vaultToken.connect(depositor).deposit(ethers.utils.parseUnits('1', 6));
+
+            await network.provider.send('evm_increaseTime', [86400]);
+            await pricer.connect(manager).setTestPrice(ethers.utils.parseUnits('1000', 18));
+            normalVaultToken = vaultToken;
+            vaultToken = new ethers.Contract(vaultToken.address, abi, manager);
+
+            await expect(
+                vaultToken.connect(manager)['writeOptions(uint256,address)'](
+                    ethers.utils.parseUnits('1', 6),
+                    mockOtokenAddr
+                )
+            ).to.not.be.reverted;
+            vaultToken = normalVaultToken;
+            
+            await vaultToken.connect(manager).burnOptions(ethers.utils.parseUnits('1', 8));
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('1', 18));
+
+            expect(await testToken.balanceOf(vaultToken.address)).to.be.equal(starting);
         });
     });
 
