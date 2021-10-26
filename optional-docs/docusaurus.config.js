@@ -71,6 +71,11 @@ const config = {
             position: 'left'
           },
           {
+            to: '/optional/gas-cost',
+            label: 'Gas Costs',
+            position: 'left'
+          },
+          {
             to: '/security',
             label: 'Security',
             position: 'left'

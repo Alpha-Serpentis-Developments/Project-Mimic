@@ -8,7 +8,6 @@ import {ReentrancyGuard} from "../oz/security/ReentrancyGuard.sol";
 contract Factory is ReentrancyGuard {
 
     error Unauthorized();
-    error Invalid();
     error TooHighFee();
     error ZeroAddress();
 
@@ -16,7 +15,7 @@ contract Factory is ReentrancyGuard {
     uint16 public depositFee;
     /// @notice Protocol-level fees for performance (sell calls) with two decimals of precision up to 50% (5000)
     uint16 public performanceFee;
-    /// @notice Protocol-level fees for withdrawals represented with two decimals of precision up to 50% (5000)
+    /// @notice Protocol-level fees for withdrawals represented with two decimals of precision up to 33.33% (3333)
     uint16 public withdrawalFee;
     /// @notice Current implementation of the VaultToken
     address public currentImplementation;

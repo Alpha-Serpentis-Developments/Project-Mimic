@@ -17,7 +17,7 @@ module.exports = {
     {
       type: 'category',
       label: 'Optional',
-      items: ['optional/factory', 'optional/vaulttoken']
+      items: ['optional/factory', 'optional/vaulttoken', 'optional/gas-cost']
     },
     {
       type: 'doc',

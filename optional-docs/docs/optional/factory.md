@@ -6,6 +6,8 @@ title: Factory
 
 The `Factory` is where `VaultToken`s get created. The factory utilizes minimal proxies (EIP1167) to enable cheap deployments. The factory has the ability to change the implementation it is pointing at, but cannot affect currently deployed proxies.
 
+The OpenZeppelin library used are of version `4.0.0`
+
 ## Factory
 
 ### Inherits
@@ -15,7 +17,6 @@ The `Factory` is where `VaultToken`s get created. The factory utilizes minimal p
 ### Custom Errors
 
 - `Unauthorized()`
-- `Invalid()`
 - `TooHighFee()`
 - `ZeroAddress()`
 

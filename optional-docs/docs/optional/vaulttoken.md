@@ -10,6 +10,8 @@ When a social trader deploys a new vault token, they are deploying a minimal pro
 
 The smart contract is split into two parts - ```VaultComponents``` and ```VaultToken``` - due to gas constraints.
 
+The OpenZeppelin libraries used are of version `4.0.0`
+
 ## VaultComponents
 
 ### Inherits
@@ -20,7 +22,6 @@ The smart contract is split into two parts - ```VaultComponents``` and ```VaultT
 ### Custom Errors
 
 - `ClosedPermanently()`
-- `WithdrawalWindowNotActive()`
 - `WithdrawalWindowActive()`
 - `oTokenNotCleared()`
 - `Unauthorized()`
@@ -71,6 +72,7 @@ struct Waiver {
 - `address public asset`
 - `uint16 public depositFee`
 - `uint16 public withdrawalFee`
+- `uint16 public earlyWithdrawalPenalty`
 - `uint16 public performanceFee`
 - `uint16 public withdrawalReserve`
 - `bool public closedPermanently`
@@ -87,6 +89,7 @@ struct Waiver {
 - `MaximumAssetsModified(uint256 newAUM)`
 - `DepositFeeModified(uint16 newFee)`
 - `WithdrawalFeeModified(uint16 newFee)`
+- `EarlyWithdrawalPenalty(uint16 newFee)`
 - `PerformanceFeeModified(uint16 newFee)`
 - `WithdrawalReserveModified(uint16 newReserve)`
 - `WaiverTokenModified(address token, uint16 depositDeduction, uint16 withdrawawlDeduction)`
@@ -124,6 +127,8 @@ modifier ifNotClosed {
     - Changes the deposit fee of the vault token
 - `function adjustWithdrawalFee(uint16 _newValue) external`
     - Changes the withdrawal fee of the vault token
+- `function adjustWithdrawalPenalty(uint16 _newValue) external`
+    - Changes the early withdrawal penalty of the vault token
 - `function adjustPerformanceFee(uint16 _newValue) external`
     - Changes the performance fee of the vault token
 - `function adjustWithdrawalReserve(uint16 _newValue) external`
