@@ -75,7 +75,6 @@ export default function VTList(props) {
         if (!include(addr, vTokenList)) {
           foundNewToken = true;
           let v = new VaultToken(web3, events[i].returnValues.vaultToken);
-          vTokenList.push(v);
           let allSellCalls = v.findAllSellCalls();
           allSellCalls.then((result) => {
             for(let a = 0; a < result.length; a++) {
@@ -93,25 +92,43 @@ export default function VTList(props) {
             v.setSoldOptionsEvents(result);
             let oArr = [];
             for (let h = 0; h < result.length; h++) {
-              web3.eth
-                .getStorageAt(v.address, 11, result[h].blockNumber)
-                .then((result) => {
-                  let oAddr = `0x${result.slice(-40)}`;
-
-                  let o = new Otoken(web3, oAddr);
-                  o.getName().then((result) => {
-                    o.setName(result);
-                    // oArr.push(result);
-                    oArr[h] = result;
-                    v.setAllOtokenName(oArr);
+              web3.eth.getBlock(result[h].blockNumber).then(() => {
+                v.getOT(result[h].blockNumber).then((result) => {
+                  let oToken = new Otoken(web3, result);
+                  oToken.getName().then((name) => {
+                    oToken.setName(name);
+                    oArr.push(name);
+                    v.oTokenNames.push(name);
+                    vTokenList.push(v);
                   });
-                  o.getStrike().then((result) => {
-                    o.setStrike(result);
+                  oToken.getStrike().then((strike) => {
+                    oToken.setStrike(strike);
                   });
-                  o.getIsPut().then((result) => {
-                    o.setIsPut(result);
+                  oToken.getIsPut().then((put) => {
+                    oToken.setIsPut(put);
                   });
                 });
+              });
+
+              // web3.eth
+              //   .getStorageAt(v.address, 11, result[h].blockNumber)
+              //   .then((result) => {
+              //     let oAddr = `0x${result.slice(-40)}`;
+
+              //     let o = new Otoken(web3, oAddr);
+              //     o.getName().then((result) => {
+              //       o.setName(result);
+              //       // oArr.push(result);
+              //       oArr[h] = result;
+              //       v.setAllOtokenName(oArr);
+              //     });
+              //     o.getStrike().then((result) => {
+              //       o.setStrike(result);
+              //     });
+              //     o.getIsPut().then((result) => {
+              //       o.setIsPut(result);
+              //     });
+              //   });
             }
           });
         }
