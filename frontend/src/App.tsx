@@ -51,6 +51,7 @@ export default function App() {
   const [homeNav, setHomeNav] = useState("#8b1bef");
   const [managerNav, setManagerNav] = useState("#8b1bef");
   const [tradeNav, setTradeNav] = useState("#8b1bef");
+  const [docsNav, setDocsNav] = useState("#8b1bef");
   const [mmColor, setMMColor] = useState("grey");
   const [showSidebar, setShowSidebar] = useState(false);
   const [showMMInstallModal, setShowMMInstallModal] = useState(false);
@@ -92,7 +93,7 @@ export default function App() {
   }, []);
 
   async function clickToVisit() {
-    await setVisited(false);
+    setVisited(false);
     localStorage.setItem("new", "false");
   }
 
@@ -120,7 +121,7 @@ export default function App() {
   // check if meta mask is installed
   async function hasMMInstall() {
     if (typeof window.ethereum !== "undefined") {
-      await setHasMM(true);
+      setHasMM(true);
       window.ethereum.on("chainChanged", (chainId: any) => {
         // setChainId(parseInt(chainId));
         if (parseInt(chainId, 16) !== 1 && parseInt(chainId, 16) !== 42) {
@@ -162,7 +163,7 @@ export default function App() {
     }
   }
 
-  function clickHome(e: any) {
+  function clickHome() {
     setRenderHome(true);
     setRenderManager(false);
     setRenderPortfolio(false);
@@ -170,9 +171,9 @@ export default function App() {
     setHomeNav("#9489ffba");
     setManagerNav("#8b1bef");
     setTradeNav("#8b1bef");
+    setDocsNav("#8b1bef");
   }
-  function clickTrade(e: any) {
-    console.log("clicked trade=======");
+  function clickTrade() {
     setRenderHome(false);
     setRenderManager(false);
     setRenderPortfolio(true);
@@ -180,8 +181,9 @@ export default function App() {
     setHomeNav("#8b1bef");
     setManagerNav("#8b1bef");
     setTradeNav("#9489ffba");
+    setDocsNav("#8b1bef");
   }
-  function clickManager(e: any) {
+  function clickManager() {
     setRenderHome(false);
     setRenderManager(true);
     setRenderPortfolio(false);
@@ -189,6 +191,7 @@ export default function App() {
     setHomeNav("#8b1bef");
     setManagerNav("#9489ffba");
     setTradeNav("#8b1bef");
+    setDocsNav("#8b1bef");
   }
 
   function openModal() {
@@ -325,6 +328,7 @@ export default function App() {
               homeNav={homeNav}
               tradeNav={tradeNav}
               managerNav={managerNav}
+              docsNav={docsNav}
               mmColor={mmColor}
               visited={visited}
               clickToVisit={clickToVisit}

@@ -38,7 +38,7 @@ export default function SuccessMessage(props) {
         {props.txHash !== "" && (
           <Message.Content size="small">
             TX Hash
-            <a href={makeLinkTx(props.txHash)} target="_blank">
+            <a href={makeLinkTx(props.txHash)} rel="noreferrer" target="_blank">
               {" "}
               {props.txHash}
             </a>{" "}

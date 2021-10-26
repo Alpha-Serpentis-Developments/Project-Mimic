@@ -1,6 +1,5 @@
-import React from "react";
 import VTCard from "../components/VTCard";
-import { Table, Divider, Button, Grid } from "semantic-ui-react";
+import { Table, Divider } from "semantic-ui-react";
 
 export default function Trade(props) {
   return (
@@ -11,6 +10,7 @@ export default function Trade(props) {
         borderStyle: "none",
         backgroundColor: "#070036",
         backgroundImage: "linear-gradient(#8b1bef,#20759D)",
+        minHeight: "100vh",
       }}
     >
       <Table.Body>

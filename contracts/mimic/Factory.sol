@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity =0.8.4;
+pragma solidity ^0.8.4;
 
 import {VaultToken} from "./VaultToken.sol";
 import {Clones} from "../oz/proxy/Clones.sol";
@@ -10,7 +10,6 @@ contract Factory is ReentrancyGuard {
     error Unauthorized();
     error Invalid();
     error TooHighFee();
-    error ContractCreationFailed();
     error ZeroAddress();
 
     /// @notice Protocol-level fees for deposits represented with two decimals of precision up to 50% (5000)
@@ -81,7 +80,7 @@ contract Factory is ReentrancyGuard {
     }
     
     function changeWithdrawalFee(uint16 _newFee) external nonReentrant() onlyAdmin {
-        if(_newFee > 5000)
+        if(_newFee > 3333)
             revert TooHighFee();
 
         withdrawalFee = _newFee;

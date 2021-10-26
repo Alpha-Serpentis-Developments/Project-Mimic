@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SOURCE: https://github.com/airswap/airswap-protocols/blob/master/source/swap/contracts/interfaces/ISwap.sol
-pragma solidity =0.8.4;
+pragma solidity ^0.8.4;
 pragma experimental ABIEncoderV2;
 
 import "../types/Types.sol";

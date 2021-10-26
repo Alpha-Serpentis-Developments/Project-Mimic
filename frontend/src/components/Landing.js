@@ -8,7 +8,6 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import StartManagingBtn from "./StartManagingBtn";
 import { Divider } from "semantic-ui-react";
-import optionalProfile from "../images/optionalProfile.png";
 
 const LandingContainer = styled.div`
   background-image: linear-gradient(#8b1bef, #20759d);
@@ -23,6 +22,7 @@ const LandingText = styled.div`
   padding-top: 41px;
   padding-bottom: 40px;
   color: white;
+  min-height: 100%;
   @media (max-width: 700px) {
     font-size: 25px;
   }
@@ -108,16 +108,6 @@ const PerformanceHeader = styled.div`
   font-size: 40px;
   line-height: 53px;
   margin-top: 92px;
-  text-align: center;
-  color: white;
-`;
-const Performancetext = styled.div`
-  font-family: Roboto Slab;
-  font-style: normal;
-  font-weight: bold;
-  font-size: 30px;
-  line-height: 53px;
-  margin-top: 30px;
   text-align: center;
   color: white;
 `;

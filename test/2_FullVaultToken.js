@@ -447,11 +447,19 @@ describe('VaultToken contract (full test)', () => {
             await pricer.connect(manager).setExpiryPriceInOracle(
                 1640937600,
             );
+            await vaultToken.connect(manager).adjustEarlyWithdrawalPenalty(1000);
+        });
+        it('Should NOT charge a penalty fee for withdrawing', async () => {
+            const depBal = (await mockWETH.balanceOf(depositor.address));
+
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('0.01', 18));
+
+            expect(await mockWETH.balanceOf(depositor.address)).to.be.equal(depBal.add(ethers.utils.parseUnits('0.01', 18)));
         });
         it('Should settle the vault with no exercise', async () => {
             await vaultToken.connect(manager).settleVault();
 
-            expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('108', 18));
+            expect(await mockWETH.balanceOf(vaultToken.address)).to.equal(ethers.utils.parseUnits('107.99', 18));
         });
         it('Should let people withdraw from the vault', async () => {
             const depBal = (await vaultToken.balanceOf(depositor.address)).add(await mockWETH.balanceOf(depositor.address));
@@ -589,7 +597,7 @@ describe('VaultToken contract (full test)', () => {
         it('Should allow someone to withdraw without oToken being written', async () => {
             await expect(
                 vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('1', 18))
-            );
+            ).to.not.be.reverted;
         });
         it("Shouldn't reopen the withdrawal window", async () => {
             await expect(
@@ -609,6 +617,7 @@ describe('VaultToken contract (full test)', () => {
         before(async () => {
             await vaultToken.connect(manager).adjustWithdrawalReserve(2000);
             await vaultToken.connect(manager).sweepFees();
+            await vaultToken.connect(manager).adjustEarlyWithdrawalPenalty(0);
 
             // Prepare the oToken
             mockOtokenTransaction = await otokenFactory.connect(fake_multisig).createOtoken(
@@ -682,13 +691,29 @@ describe('VaultToken contract (full test)', () => {
         });
         it('Should penalize the user for withdrawing early', async () => {
             const prevBalVaultWETH = await mockWETH.balanceOf(vaultToken.address);
+            const prevReserve = await vaultToken.currentReserves();
             const prevBal = await mockWETH.balanceOf(depositor.address);
 
             await pricer.connect(manager).setTestPrice(2000e8);
             await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('0.2', 18));
 
             expect(await mockWETH.balanceOf(depositor.address)).to.be.equal(prevBal.add(ethers.utils.parseUnits('0.1', 18)));
-            
+            expect(await vaultToken.currentReserves()).to.be.equal(prevReserve.sub(ethers.utils.parseUnits('0.1', 18)));
+            expect(await mockWETH.balanceOf(vaultToken.address)).to.be.equal(prevBalVaultWETH.sub(ethers.utils.parseUnits('0.1', 18)));
+        });
+        it('Should penalize the user for withdrawing early that is OTM', async () => {
+            const prevBalVaultWETH = await mockWETH.balanceOf(vaultToken.address);
+            const prevReserve = await vaultToken.currentReserves();
+            const prevBal = await mockWETH.balanceOf(depositor.address);
+
+            await vaultToken.connect(manager).adjustEarlyWithdrawalPenalty(1000);
+            await pricer.connect(manager).setTestPrice(999e8);
+
+            await vaultToken.connect(depositor).withdraw(ethers.utils.parseUnits('0.2', 18));
+
+            expect(await mockWETH.balanceOf(depositor.address)).to.be.equal(prevBal.add(ethers.utils.parseUnits('0.18', 18)));
+            expect(await vaultToken.currentReserves()).to.be.equal(prevReserve.sub(ethers.utils.parseUnits('0.18', 18)));
+            expect(await mockWETH.balanceOf(vaultToken.address)).to.be.equal(prevBalVaultWETH.sub(ethers.utils.parseUnits('0.18', 18)));
         });
     });
 

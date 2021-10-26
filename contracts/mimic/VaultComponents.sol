@@ -17,7 +17,6 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20 for IERC20;
 
     error ClosedPermanently();
-    error WithdrawalWindowNotActive();
     error WithdrawalWindowActive();
     error oTokenNotCleared();
     error Unauthorized();
@@ -77,6 +76,8 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     uint16 public depositFee;
     /// @notice Take profit fee
     uint16 public withdrawalFee;
+    /// @notice Early withdrawal penalty
+    uint16 public earlyWithdrawalPenalty;
     /// @notice Performance fee (taken when options are sold)
     uint16 public performanceFee;
     /// @notice Withdrawal reserve percentage
@@ -94,6 +95,7 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     event MaximumAssetsModified(uint256 newAUM);
     event DepositFeeModified(uint16 newFee);
     event WithdrawalFeeModified(uint16 newFee);
+    event EarlyWithdrawalPenalty(uint16 newFee);
     event PerformanceFeeModified(uint16 newFee);
     event WithdrawalReserveModified(uint16 newReserve);
     event WaiverTokenModified(address token, uint16 depositDeduction, uint16 withdrawawlDeduction);
@@ -112,10 +114,7 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     /// @dev Stops all activities on the vault (or reactivates them)
     /// @param _val true to pause the vault, false to unpause the vault
     function emergency(bool _val) external ifNotClosed onlyManager {
-        if(_val)
-            super._pause();
-        else
-            super._unpause();
+        _val ? super._pause() : super._unpause();
     }
 
     /// @notice Changes the maximum allowed deposits under management
@@ -137,7 +136,10 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
             revert oTokenNotCleared();
 
         closedPermanently = true;
-        currentReserves = IERC20(asset).balanceOf(address(this));
+        IERC20(asset).safeTransfer(factory.admin(), withheldProtocolFees);
+        IERC20(asset).safeTransfer(msg.sender, obligatedFees);
+        withheldProtocolFees = 0;
+        obligatedFees = 0;
 
         emit VaultClosedPermanently();
     }
@@ -162,15 +164,27 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     }
 
     /// @notice Changes the withdrawal fee
-    /// @dev Changes the withdrawalFee with two decimals of precision up to 50.00% (5000)
+    /// @dev Changes the withdrawalFee with two decimals of precision up to 33.33% (3333)
     /// @param _newValue new withdrawalFee with two decimals of precision
     function adjustWithdrawalFee(uint16 _newValue) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        if(_newValue > 5000)
+        if(_newValue > 3333)
             revert Invalid();
 
         withdrawalFee = _newValue;
 
         emit WithdrawalFeeModified(_newValue);
+    }
+
+    /// @notice Changes the early withdrawal penalty
+    /// @dev Changes the earlyWithdrawalPenalty with two decimals of precision up to 33.33% (3333)
+    /// @param _newValue new earlyWithdrawalFee with two decimals of precision
+    function adjustEarlyWithdrawalPenalty(uint16 _newValue) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
+        if(_newValue > 3333)
+            revert Invalid();
+
+        earlyWithdrawalPenalty = _newValue;
+
+        emit EarlyWithdrawalPenalty(_newValue);
     }
     
     /// @notice Changes the performance fee
@@ -212,13 +226,15 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     /// @param _withdrawalDeduction Fee deduction against the withdrawal represented in % form with two decimals of precision (100.00% = 10000)
     /// @param _standard WaiverType enum determining what ERC standard the waiver is (IMPORTANT)
     /// @param _idERC1155 If the standard is ERC1155, use this parameter to determine the ID necessary for the eligible waiver
+    /// @param _revokeId If the standard is ERC1155, use this parameter to determine if the ID needs to be revoked
     function adjustWaiver(
         address _token,
         uint256 _minimumAmount,
+        uint256 _idERC1155,
         uint16 _depositDeduction,
         uint16 _withdrawalDeduction,
         WaiverType _standard,
-        uint256 _idERC1155
+        bool _revokeId
     ) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
         if(_token == address(0))
             revert Invalid();
@@ -231,7 +247,11 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
         waiver.withdrawalDeduction = _withdrawalDeduction;
 
         if(_standard == WaiverType.ERC1155) {
-            waiver.isValidID[_idERC1155] = true;
+            if(_revokeId) {
+                waiver.isValidID[_idERC1155] = false;
+            } else {
+                waiver.isValidID[_idERC1155] = true;
+            }
         }
 
         emit WaiverTokenModified(_token, _depositDeduction, _withdrawalDeduction);
@@ -270,8 +290,6 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     /// @dev Performs a full RFQ trade via AirSwap
     /// @param _order A Types.Order struct that defines the AirSwap order (requires signature)
     function _sellOptions(Types.Order memory _order) internal {
-        if(!_withdrawalWindowCheck(false))
-            revert WithdrawalWindowActive();
         if(_order.sender.amount > IERC20(oToken).balanceOf(address(this)) || oToken == address(0))
             revert Invalid();
 
@@ -285,11 +303,11 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
 
         // Fee calculation + withheldProtocolFees 
         obligatedFees += _percentMultiply(_order.signer.amount, performanceFee);
-        IERC20(asset).transfer(address(factory), _percentMultiply(_order.signer.amount + withheldProtocolFees, factory.performanceFee()));
+        IERC20(asset).safeTransfer(address(factory), _percentMultiply(_order.signer.amount, factory.performanceFee()) + withheldProtocolFees);
         withheldProtocolFees = 0;
 
         // Withhold premiums temporarily
-        premiumsWithheld = _order.signer.amount;
+        premiumsWithheld += _order.signer.amount;
 
         emit OptionsSold(_order.sender.amount, _order.signer.amount);
     }
@@ -312,27 +330,26 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
     /// @dev Internal function that calculates the penalty of an ITM withdrawal and penalizes against the user
     /// @param _assetAmount is the amount of asset tokens being potentially withdrawn
     /// @return adjustedBal is the balance after penalizing the user for an ITM withdrawal
-    function _calculatePenalty(uint256 _assetAmount) internal view returns(uint256 adjustedBal) {
-        if(oToken == address(0))
+    function _calculatePenalty(uint256 _assetAmount) internal returns(uint256 adjustedBal) {
+        if(oToken == address(0) || (oToken != address(0) && block.timestamp >= OtokenInterface(oToken).expiryTimestamp()))
             return _assetAmount;
         
         uint256 strikePrice = OtokenInterface(oToken).strikePrice();
         uint256 oraclePrice = IOracle(addressBook.getOracle()).getPrice(OtokenInterface(oToken).underlyingAsset());
-        uint16 percentageForUser;
+        uint16 percentageForUser = 10000;
 
         if(OtokenInterface(oToken).isPut() && strikePrice > oraclePrice) {
             percentageForUser = uint16(
                 (10e22 * oraclePrice / strikePrice)/10e18
             );
-            adjustedBal = _percentMultiply(_assetAmount, percentageForUser);
         } else if(oraclePrice > strikePrice) {
             percentageForUser = uint16(
                 (10e22 * strikePrice / oraclePrice)/10e18
             );
-            adjustedBal = _percentMultiply(_assetAmount, percentageForUser);
-        } else {
-            adjustedBal = _assetAmount;
         }
+
+        adjustedBal = _percentMultiply(_assetAmount, percentageForUser - earlyWithdrawalPenalty);
+        premiumsWithheld += (_assetAmount - adjustedBal);
     }
     
     /// @notice Normalizes a value to the requested decimals
@@ -359,13 +376,9 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
 
     /// @notice Checks if the withdrawal window is active
     /// @dev A withdrawal window check that may either revert or return the status without revert
-    /// @param _revertIfClosed a boolean to determine if the transaction should revert or not if closed
     /// @return isActive true if the withdrawal window is open, otherwise false
-    function _withdrawalWindowCheck(bool _revertIfClosed) internal view returns(bool isActive) {
-        if(block.timestamp > withdrawalWindowExpires && _revertIfClosed)
-            revert WithdrawalWindowNotActive();
-        
-        return block.timestamp > withdrawalWindowExpires;
+    function _withdrawalWindowCheck() internal view returns(bool isActive) {
+        return block.timestamp < withdrawalWindowExpires;
     }
 
     /// @notice Multiplies a value by a percentage
@@ -398,11 +411,7 @@ contract VaultComponents is PausableUpgradeable, ReentrancyGuardUpgradeable {
         if(_waiver != address(0)) {
             Waiver storage waiver = waiverTokens[_waiver];
 
-            uint16 whichDeduction;
-            if(_isDeposit)
-                whichDeduction = waiver.depositDeduction;
-            else
-                whichDeduction = waiver.withdrawalDeduction;
+            uint16 whichDeduction = _isDeposit ? waiver.depositDeduction : waiver.withdrawalDeduction;
 
             if(whichDeduction > _vaultFee) // prevent underflow
                 whichDeduction = _vaultFee;

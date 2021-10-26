@@ -15,7 +15,7 @@ export default function MMInstallModal(props) {
         <Grid textAlign="center">
           <p>
             A{" "}
-            <a href="https://metamask.io/" target="_blank">
+            <a href="https://metamask.io/" rel="noreferrer" target="_blank">
               MetaMask
             </a>{" "}
             installation is required

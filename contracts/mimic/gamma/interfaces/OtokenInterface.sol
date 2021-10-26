@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 // SOURCE: https://github.com/opynfinance/GammaProtocol/blob/2fce44f04300aa5b79187269728aae3a736b4684/contracts/interfaces/OtokenInterface.sol
-pragma solidity =0.8.4;
+pragma solidity ^0.8.4;
 
 interface OtokenInterface {
     function addressBook() external view returns (address);

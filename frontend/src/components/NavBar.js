@@ -27,11 +27,6 @@ const NavRight = styled.div`
   flex-direction: row;
   justify-content: start;
 `;
-const TitleLogo = styled.img`
-  width: 21.08px;
-  margin-left: 53.67px;
-  margin-bottom: 8px;
-`;
 const TitleImg = styled.img`
   width: 150px;
 `;
@@ -69,6 +64,9 @@ export default function NavBar(props) {
     }
     &.navMgrLink {
       border-bottom: ${props.managerNav} 4px solid;
+    }
+    &.navDocsLink {
+      border-bottom: ${props.docsNav} 4px solid;
     }
     &:hover {
       border-bottom: #9489ffba 4px solid;
@@ -108,6 +106,13 @@ export default function NavBar(props) {
               Manager
             </NavLink>
           </Link>
+          <a href="https://docs.optional.finance" rel="noreferrer" target="_blank">
+            <NavLink
+              className="navDocsLink"
+            >
+              Docs
+            </NavLink>
+          </a>
         </NavLinkGroup>
 
         <Button

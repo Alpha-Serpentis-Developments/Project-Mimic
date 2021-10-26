@@ -1,17 +1,21 @@
 import { useState, useEffect } from "react";
 import StatusMessage from "./StatusMessage";
 import { nwConfig, currentChain } from "./NetworkConfig";
+import Slider from "react-slick";
 
+import { recoverTypedSignature_v4 as recoverTypedSignatureV4 } from "eth-sig-util";
 import {
-  Header,
   Button,
   Grid,
   Divider,
   Icon,
   Form,
   Accordion,
+  Input,
+  Dropdown,
 } from "semantic-ui-react";
 import { web3 } from "./Web3Handler";
+import VaultTokenIPFS from "./VaultTokenIPFS";
 import WethWrap from "./WethWrap";
 import Withdraw from "./Withdraw";
 import Deposit from "./Deposit";
@@ -65,25 +69,6 @@ const WIndicator = styled.div`
   }
 `;
 
-const MagmrCallsIndicator = styled.div`
-  display: flex;
-  flex-direction: row;
-  width: 80%;
-  height: 60px;
-
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 20px;
-`;
-const InitializeForm = styled.div`
-  width: 80%;
-  margin-left: auto;
-  margin-right: auto;
-  border-radius: 20px 20px 20px 20px;
-  background-color: #146ca4;
-  padding-bottom: 50px;
-`;
-
 const DWForm = styled.div`
   width: 80%;
   margin-left: auto;
@@ -93,7 +78,7 @@ const DWForm = styled.div`
   background-color: #9aa9ff63;
   padding-bottom: 50px;
 `;
-const MgmrCallForm = styled.div`
+const MgmrOptionForm = styled.div`
   width: 80%;
   margin-left: auto;
   margin-right: auto;
@@ -102,57 +87,10 @@ const MgmrCallForm = styled.div`
   border: 1px solid black;
   background-color: #9aa9ff63;
   padding-bottom: 50px;
+  margin-top: auto;
+  margin-bottom: auto;
 `;
 
-const ManagerTXBtns = styled.div`
-  width: 80%;
-  display: flex;
-  flex-direction: row;
-`;
-const WriteBtn = styled.div`
-  padding-top: 17px;
-  cursor: pointer;
-  border-radius: 20px 0px 0 20px;
-  background-color: #146ca4;
-  width: 50%;
-  text-align: center;
-  border-top: 1px solid black;
-  border-left: 1px solid black;
-  border-bottom: 1px solid black;
-  border-right: 1px solid black;
-  &:hover {
-    background-color: purple;
-  }
-`;
-const SellCallBtn = styled.div`
-  padding-top: 17px;
-  cursor: pointer;
-  border-radius: 0px 0px 0 0;
-  border-top: 1px solid black;
-  border-bottom: 1px solid black;
-  border-right: 1px solid black;
-  background-color: #146ca4;
-  width: 50%;
-  text-align: center;
-  &:hover {
-    background-color: purple;
-  }
-`;
-const SettleVaultBtn = styled.div`
-  padding-top: 17px;
-  cursor: pointer;
-  border-radius: 0px 20px 20px 0;
-
-  background-color: #146ca4;
-  border-top: 1px solid black;
-  border-right: 1px solid black;
-  border-bottom: 1px solid black;
-  width: 50%;
-  text-align: center;
-  &:hover {
-    background-color: purple;
-  }
-`;
 const ConfirmCancelBtns = styled.div`
   display: flex;
   flex-direction: row;
@@ -161,18 +99,20 @@ const ConfirmCancelBtns = styled.div`
 export default function VaultTokenInfo(props) {
   let ct = JSON.parse(localStorage.getItem("cVT") || "{}");
   let ctAddr = ct.address;
-  console.log(props);
   const [cVT, setcVT] = useState();
   const [depositAmt, setDeposit] = useState(0);
   const [withdrawAmt, setWithdrawAmt] = useState(0);
-  const [initializeAmt, setInitializeAmt] = useState(0);
 
   const [oTokenAddress, setOTokenaddress] = useState("");
   const [writeCallAmt, setWriteCallAmt] = useState(0);
-  const [sellCallAmt, setSellCallAmt] = useState(0);
-  const [premiumAmount, setPemiumAmount] = useState(0);
-  const [otherPartyAddress, setOtherPartyAddress] = useState(0);
+  const [writeCallPcent, setWriteCallPcent] = useState(0);
+  const [writeSellOptionAmt, setWriteSellOptionAmt] = useState(0);
+  const [writeSellOptionPcent, setWriteSellOptionPcent] = useState(0);
+  const [typeHash, setTypeHash] = useState("");
+  const [asHash, setASHash] = useState({});
+
   const [showWriteCall, setShowWriteCall] = useState(false);
+  const [showWriteSellOption, setShowWriteSellOption] = useState(false);
   const [showSellCall, setShowSellCall] = useState(false);
   const [writeColor, setWriteColor] = useState("teal");
   const [sellColor, setSellColor] = useState("teal");
@@ -191,23 +131,60 @@ export default function VaultTokenInfo(props) {
   //=======texting for eth to weth
   const [eToWethAmt, setEToWethAmt] = useState(0);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [showApproval, setShowApproval] = useState(false);
   const [showD, setShowD] = useState(false);
-  const [showW, setShowW] = useState(true);
+  const [onAmt, setOnAmt] = useState(1);
+  const [maxAsset, setMaxAsset] = useState(0);
+  const [depositFee, setDepositFee] = useState(0);
+  const [withdrawFee, setWithdrawFee] = useState(0);
+  const [wdReserve, setWDReserve] = useState(0);
+
+  const [IPFSModal, setIPFSModal] = useState(false);
 
   useEffect(() => {
-    createVT(ctAddr, ctAddr);
-  }, []);
+    createVT(ctAddr);
+  }, [ctAddr]);
 
-  function createVT(va, aa) {
+  async function createVT(va) {
     let t = new VaultToken(web3, va);
-    let a = new ERC20(web3, aa);
+    let a = new ERC20(web3, await t.getAsset());
+    await t.updateInfo();
+    await t.updateSelf();
+    await a.updateSelf();
     t.assetObject = a;
     setcVT(t);
   }
 
+  async function getTypeHash() {
+    const typeUrlPrefix = "https://dweb.link/ipfs/";
+    const typeUrl = typeUrlPrefix + typeHash;
+    fetch(typeUrl)
+      .then((response) => response.json())
+      .then((result) => setASHash(result))
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }
+
+  function sellOptions(e) {
+    if (typeHash === "") {
+      setSM("Error", "Form Input Error", true, true);
+      setIconStatus("error");
+      return;
+    }
+
+    //console.log("atsell");
+    getTypeHash();
+    startTX();
+    e.preventDefault();
+    //console.log("HERE: \n" + asHash);
+    let s = cVT.sellOptions(asHash, props.acct);
+    sendTX(s, "Sold Options");
+  }
+
   function ethInputAmt(event) {
     if (event.target.value > props.ethBal) {
-      setSM("Error", "Not enough ether", true, true);
+      setSM("Error", "Not Enough ether", true, true);
       setIconStatus("error");
       return;
     }
@@ -216,7 +193,7 @@ export default function VaultTokenInfo(props) {
 
   function ethToWeth(a) {
     if (a === 0) {
-      setSM("Error", "Form input Error", true, true);
+      setSM("Error", "Form Input Error", true, true);
       setIconStatus("error");
       return;
     }
@@ -238,16 +215,10 @@ export default function VaultTokenInfo(props) {
   }
 
   function sendTX(c, label) {
-    // eval[c]
-    c
-      // .on("receipt", function (receipt) {
-      //   console.log(receipt);
-      //   setSM("TX Receipt Received", "", true, false);
-      // })
-      .on("transactionHash", function (hash) {
-        setTxHash(hash);
-        setSM("TX Hash Received", hash, true, false);
-      })
+    c.on("transactionHash", function (hash) {
+      setTxHash(hash);
+      setSM("TX Hash Received", hash, true, false);
+    })
       .on("error", function (error, receipt) {
         let m = "";
         if (error !== null) {
@@ -259,13 +230,6 @@ export default function VaultTokenInfo(props) {
         setIconStatus("error");
       })
       .on("confirmation", function (confirmationNumber, receipt) {
-        // setSM(
-        //   label + " TX Confirmed",
-        //   confirmationNumber + " Confirmation Received",
-        //   true,
-        //   false
-        // );
-        // setIconStatus("confirmed");
         if (confirmationNumber === 1) {
           setSM(label + " TX Confirmed", "Confirmation Received", true, false);
           setIconStatus("confirmed");
@@ -276,7 +240,7 @@ export default function VaultTokenInfo(props) {
   function overAmount(a, b, c) {
     c = c * 1e18;
     if (a > b + c) {
-      setSM("Error", "You don't have enough balance", true, true);
+      setSM("Error", "You don't have enough Ether", true, true);
       setIconStatus("error");
       return;
     } else if (a > b && a < b + c) {
@@ -292,17 +256,16 @@ export default function VaultTokenInfo(props) {
   }
 
   function deposit(amt) {
-    console.log(props);
     startTX();
     if (amt === 0 || isNaN(amt)) {
-      setSM("Error", "Form input Error", true, true);
+      setSM("Error", "Form Input Error", true, true);
       setIconStatus("error");
       return;
     }
     // let amount = web3.utils.toWei(amt, dUnit);
-    let amount = web3.utils.toWei(amt, "ether");
+    let amount = amt * `1e${props.token.tDecimals}`;
     cVT
-      .approveAsset(amount, props.acct)
+      .deposit(amount.toString(), props.acct)
       .on("transactionHash", function (hash) {
         setTxHash(hash);
         setSM("TX Hash Received", hash, true, false);
@@ -328,53 +291,17 @@ export default function VaultTokenInfo(props) {
       });
   }
 
-  function initialize(amt) {
-    startTX();
-    if (amt === 0 || isNaN(amt)) {
-      setSM("Error", "Form input Error", true, true);
-      setIconStatus("error");
-
-      return;
-    }
-    let amount = web3.utils.toWei(amt, "ether");
-    cVT
-      .approveAsset(amount, props.acct)
-      .on("transactionHash", function (hash) {
-        setTxHash(hash);
-        setSM("TX Hash Received", hash, true, false);
-      })
-      .on("error", function (error, receipt) {
-        let m = "";
-        if (error !== null) {
-          let i = error.message.indexOf(":");
-          m = error.message.substring(0, i > 0 ? i : 40);
-        }
-        setSM(" TX Error", m, true, true);
-        setTxSent(false);
-        setIconStatus("error");
-      })
-      .on("confirmation", function (confirmationNumber, receipt) {
-        if (confirmationNumber === 1) {
-          let i = cVT.initialize(amount, props.acct);
-          sendTX(i, "initialize");
-          setSM("Approval TX Confirmed", " Confirmation Received", true, false);
-
-          setIconStatus("confirmed");
-        }
-      });
-  }
-
   function withDraw(amt) {
     startTX();
 
     if (amt === 0 || isNaN(amt)) {
-      setSM("Error", "Form input Error", true, true);
+      setSM("Error", "Form Input Error", true, true);
       setIconStatus("error");
       return;
     }
 
     // let amount = web3.utils.toWei(amt, wUnit);
-    let amount = web3.utils.toWei(amt, "ether");
+    let amount = web3.utils.toWei(amt);
     let w = cVT.withdraw(amount, props.acct);
     sendTX(w, "Withdraw");
   }
@@ -385,47 +312,87 @@ export default function VaultTokenInfo(props) {
     sendTX(s, "Settle Vault");
   }
 
-  function writeCall(amt, oTAddress) {
+  function writeCallAmtF(amt, oTAddress) {
     startTX();
     //  let amount = web3.utils.toWei(amt, writeCallUnit);
     let amount = web3.utils.toWei(amt, "ether");
-    let wc = cVT.writeCalls(amount, oTAddress, props.mpAddress, props.acct);
+    let wc = cVT.writeOptionsAmt(amount, oTAddress, props.acct);
     sendTX(wc, "Write Call");
   }
 
-  function sellCall(amt, premiumAmount, otherPartyAddress) {
-    //let amount = web3.utils.toWei(amt, sellCallUnit);
-    let amount = parseInt(amt) * (1e8).toString();
-    // let pAmount = web3.utils.toWei(premiumAmount, pemiumUnit);
-    let pAmount = web3.utils.toWei(premiumAmount, "ether");
-    let sc = cVT.sellCalls(amount, pAmount, otherPartyAddress, props.acct);
-    sendTX(sc, "Sell Call");
+  function writeCallPcentF(pcent, oTAddress) {
+    startTX();
+
+    let wc = cVT.writeOptionsPcent(pcent, oTAddress, props.acct);
+    sendTX(wc, "Write Call");
   }
 
-  function confirmWriteCall(e) {
+  function writeSellOptionsAmt(pcent, oTAddress, order) {
+    startTX();
+
+    let wc = cVT.writeAndSellOptionsAmt(pcent, oTAddress, order, props.acct);
+    sendTX(wc, "Write and sell ");
+  }
+
+  function writeSellOptionsPcent(pcent, oTAddress, order) {
+    startTX();
+
+    let wc = cVT.writeAndSellOptionsPcent(pcent, oTAddress, order, props.acct);
+    sendTX(wc, "Write and sell");
+  }
+
+  function comfirmWriteSellOptionsPcent(e) {
+    startTX();
+    e.preventDefault();
+    if (writeSellOptionAmt === 0 || txHash === "") {
+      setSM("Error", "Form Input Error", true, true);
+      setIconStatus("error");
+
+      return;
+    }
+
+    writeSellOptionsPcent(writeCallAmt, oTokenAddress, asHash);
+  }
+  function comfirmWriteSellOptionsAmt(e) {
+    startTX();
+    e.preventDefault();
+    if (writeSellOptionPcent === 0 || txHash === "") {
+      setSM("Error", "Form Input Error", true, true);
+      setIconStatus("error");
+
+      return;
+    }
+    getTypeHash();
+    writeSellOptionsAmt(writeCallAmt, oTokenAddress, asHash);
+  }
+
+  function confirmWriteCallAmt(e) {
     startTX();
     e.preventDefault();
     if (writeCallAmt === 0 || oTokenAddress === "") {
-      setSM("Error", "Form input Error", true, true);
+      setSM("Error", "Form Input Error", true, true);
       setIconStatus("error");
 
       return;
     }
 
-    writeCall(writeCallAmt, oTokenAddress);
+    writeCallAmtF(writeCallAmt, oTokenAddress);
   }
-
-  function confirmSellCall(e) {
+  function confirmWriteCallPcent(e) {
     startTX();
     e.preventDefault();
-    if (sellCallAmt === 0 || premiumAmount === 0 || otherPartyAddress === "") {
-      setSM("Error", "Form input Error", true, true);
+    if (writeCallPcent === 0 || oTokenAddress === "") {
+      setSM("Error", "Form Input Error", true, true);
       setIconStatus("error");
 
       return;
     }
 
-    sellCall(sellCallAmt, premiumAmount, otherPartyAddress);
+    writeCallPcentF(writeCallPcent, oTokenAddress);
+  }
+
+  function openIPFSModal(e) {
+    setIPFSModal(e);
   }
 
   function startTX() {
@@ -446,6 +413,106 @@ export default function VaultTokenInfo(props) {
     const newIndex = activeIndex === index ? -1 : index;
 
     setActiveIndex(newIndex);
+  }
+
+  function updateMaxAssetNum(e) {
+    let n = e.target.value * 10 ** props.token.assetObject.tDecimals;
+    let a = web3.utils.toBN(n).toString();
+    setMaxAsset(a);
+  }
+
+  function adjustMaxAsset() {
+    startTX();
+    if (maxAsset <= 0 || isNaN(maxAsset)) {
+      setSM("Error", "Form Input Error", true, true);
+      setIconStatus("error");
+
+      return;
+    }
+    let wc = cVT.adjustTheMaxAssets(maxAsset, props.acct);
+    sendTX(wc, "Adjust Max Asset");
+  }
+
+  function updateDepositFee(e) {
+    setDepositFee(e.target.value * 100);
+  }
+
+  function adjustDepositFee() {
+    startTX();
+
+    if (depositFee === 0) {
+      setSM("Error", "Form Input Error", true, true);
+      setIconStatus("error");
+
+      return;
+    }
+
+    let wc = cVT.adjustDepositFee(depositFee, props.acct);
+    sendTX(wc, "Deposit Fee Adjusted");
+  }
+
+  function sweepFee() {
+    startTX();
+
+    let wc = cVT.sweepFees(props.acct);
+    sendTX(wc, "Sweep Fee");
+  }
+
+  function updateWithdrawFee(e) {
+    setWithdrawFee(e.target.value * 100);
+  }
+
+  function adjustWithdrawFee() {
+    startTX();
+
+    if (withdrawFee === 0) {
+      setSM("Error", "Form Input Error", true, true);
+      setIconStatus("error");
+
+      return;
+    }
+
+    let wc = cVT.adjustWithdrawalFee(withdrawFee, props.acct);
+    sendTX(wc, "Withdraw Fee Adjusted");
+  }
+
+  function updateWDReserve(e) {
+    setWDReserve(e.target.value * 100);
+  }
+
+  function adjustWDReserveFee() {
+    startTX();
+
+    if (wdReserve === 0) {
+      setSM("Error", "Form Input Error", true, true);
+      setIconStatus("error");
+
+      return;
+    }
+
+    let wc = cVT.adjustWDReserve(wdReserve, props.acct);
+    sendTX(wc, "Withdraw Reserve Fee Adjusted");
+  }
+
+  function approveAsset(amount, f) {
+    cVT.approveAsset(amount, f);
+  }
+
+  function overPcent(a) {
+    if (a > 100) {
+      setSM("Error", "You cannot enter number over 100", true, true);
+      setIconStatus("error");
+      return;
+    }
+  }
+
+  async function checkApprovalAmount() {
+    let currentApprovalAmt = await cVT.assetObject.allowance(
+      props.acct,
+      cVT.address
+    );
+
+    return currentApprovalAmt;
   }
 
   function convertForm() {
@@ -479,9 +546,14 @@ export default function VaultTokenInfo(props) {
     );
   }
 
+  const options = [
+    { key: 1, text: props.token.assetObject.tSymbol, value: 1 },
+    { key: 2, text: "%", value: 2 },
+  ];
+
   function writeCallRender() {
     return (
-      <MgmrCallForm>
+      <MgmrOptionForm>
         <Form>
           <Divider hidden />
 
@@ -494,28 +566,49 @@ export default function VaultTokenInfo(props) {
               justifyContent: "center",
             }}
           >
-            <div style={{ marginTop: "10px" }}>Amount</div>
+            {/* <div style={{ marginTop: "10px" }}>Amount</div> */}
+
             <input
-              style={{ width: " 60%", marginLeft: "15px", marginRight: "15px" }}
-              value={writeCallAmt}
+              style={{
+                width: " 60%",
+                marginLeft: "15px",
+                marginRight: "15px",
+              }}
               // onChange={(e) => setWriteCallAmt(e.target.value)}
               onChange={(e) => {
                 if (e.target.value > 0) {
-                  let a = web3.utils.toWei(e.target.value, "ether");
-                  overAmount(
-                    a,
-                    props.token.assetObject.myBalance,
-                    props.ethBal
-                  );
-                  setWriteCallAmt(e.target.value);
-                } else {
-                  setWriteCallAmt(e.target.value);
+                  if (onAmt === 1) {
+                    let a = web3.utils.toWei(e.target.value, "ether");
+                    overAmount(
+                      a,
+                      props.token.assetObject.myBalance,
+                      props.ethBal
+                    );
+                    setWriteCallAmt(e.target.value);
+                  } else {
+                    let a = e.target.value;
+                    overPcent(a);
+                    setWriteCallPcent(e.target.value * 100);
+                  }
                 }
               }}
             />
-            <div style={{ marginTop: "10px" }}>
+            <Dropdown
+              item
+              simple
+              direction="right"
+              compact
+              selection
+              options={options}
+              style={{ width: "80px" }}
+              onChange={async (e, data) => {
+                setOnAmt(data.value);
+              }}
+            />
+
+            {/* <div style={{ marginTop: "10px" }}>
               {props.token.assetObject.tSymbol}
-            </div>
+            </div> */}
           </Form.Group>
 
           <Form.Field
@@ -527,20 +620,17 @@ export default function VaultTokenInfo(props) {
               onChange={(e) => setOTokenaddress(e.target.value)}
             />
           </Form.Field>
-          <Form.Field
-            style={{ width: "90%", marginRight: "auto", marginLeft: "auto" }}
-          >
-            <label>Margin Pool Address</label>
-            <input placeholder={props.mpAddress} value={props.mpAddress} />
-          </Form.Field>
+
           <ConfirmCancelBtns>
             <Button
               style={{ width: "40%" }}
               color="teal"
-              onClick={confirmWriteCall}
+              onClick={
+                onAmt === 1 ? confirmWriteCallAmt : confirmWriteCallPcent
+              }
               disabled={btnDisabled}
             >
-              Write Call
+              Write Options
             </Button>
             <Button
               style={{ width: "40%" }}
@@ -559,166 +649,73 @@ export default function VaultTokenInfo(props) {
             </Button>
           </ConfirmCancelBtns>
         </Form>
-      </MgmrCallForm>
+      </MgmrOptionForm>
     );
   }
 
-  // vault tokens / (asset tokens + collateral amount)
-  //props.token.assetObject
-  function showRatio() {
-    // let vtBN = new BigNumber(props.token.totalSupply);
-    // let atBN = new BigNumber(props.token.vaultBalance);
-
-    // let denominator = atBN.plus(props.token.collateralAmount);
-
-    // let pairRatio = parseInt(vtBN.dividedBy(denominator).toString());
+  function renderWriteSellOptions() {
     return (
-      <Grid textAlign="center" stackable>
-        <Grid.Column>
-          <Header
-            size="large"
-            style={{
-              padding: "3px 10px",
-              border: "1px solid black",
-              width: "80%",
-              borderRadius: "5px",
-              marginRight: "auto",
-              marginLeft: "auto",
-              fontFamily: "system-ui;",
-              color: "white",
-            }}
-          >
-            1 {props.token.assetObject.tSymbol} ={" "}
-            {Number(props.token.totalSupply) /
-              (Number(props.token.vaultBalance) +
-                Number(props.token.collateralAmount))}{" "}
-            Vault Tokens
-            {/* {pairRatio} */}
-          </Header>
-          {/* <Header.Subheader># vault tokens/ vault assets</Header.Subheader> */}
-          <Header.Subheader>
-            Vault Tokens / (Asset Tokens + Collateral Amount)
-          </Header.Subheader>
-        </Grid.Column>
-      </Grid>
-    );
-  }
-
-  function showInitialize() {
-    return (
-      <div>
-        {" "}
-        <Divider />
-        <Divider hidden />
-        <InitializeForm>
-          <Grid textAlign="center">
-            <Form>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  width: "100%",
-                  marginLeft: "auto",
-                  marginRight: "right",
-                }}
-              >
-                {" "}
-                <input
-                  style={{ marginRight: "10px", marginTop: "20px" }}
-                  value={initializeAmt}
-                  // onChange={(e) => setInitializeAmt(e.target.value)}
-                  onChange={(e) => {
-                    if (e.target.value > 0) {
-                      let a = web3.utils.toWei(e.target.value, "ether");
-                      overAmount(
-                        a,
-                        props.token.assetObject.myBalance,
-                        props.ethBal
-                      );
-                      setInitializeAmt(e.target.value);
-                    } else {
-                      setInitializeAmt(e.target.value);
-                    }
-                  }}
-                />
-                <div style={{ marginTop: "30px", marginRight: "20px" }}>
-                  {props.token.assetObject.tSymbol}
-                </div>
-              </div>
-              <Button
-                style={{ marginTop: "30px", width: "100%" }}
-                onClick={() => initialize(initializeAmt)}
-                color="teal"
-                disabled={btnDisabled}
-              >
-                Initialize
-              </Button>
-            </Form>
-          </Grid>
-        </InitializeForm>
-      </div>
-    );
-  }
-
-  function renderSellCall() {
-    return (
-      <MgmrCallForm>
+      <MgmrOptionForm>
         <Form>
           <Divider hidden />
           <Form.Group
             style={{
               display: "flex",
               flexDirection: "row",
+              marginTop: "30px",
+              marginBottom: "50px",
               justifyContent: "center",
             }}
           >
-            {/* <label>Amount</label> */}
-            <input
-              style={{ width: "60%", marginRight: "10px" }}
-              value={sellCallAmt}
-              onChange={(e) => setSellCallAmt(e.target.value)}
-            />
+            {/* <div style={{ marginTop: "10px" }}>Amount</div> */}
 
-            <div style={{ marginTop: "10px" }}>oToken</div>
-          </Form.Group>
-          <Form.Group
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "center",
-            }}
-          >
-            {/* <label>Premium Amount</label> */}
             <input
-              style={{ width: "60%", marginRight: "10px" }}
-              value={premiumAmount}
-              // onChange={(e) => setPemiumAmount(e.target.value)}
+              style={{
+                width: " 60%",
+                marginLeft: "15px",
+                marginRight: "15px",
+              }}
+              // onChange={(e) => setWriteCallAmt(e.target.value)}
               onChange={(e) => {
                 if (e.target.value > 0) {
-                  let a = web3.utils.toWei(e.target.value, "ether");
-                  overAmount(
-                    a,
-                    props.token.assetObject.myBalance,
-                    props.ethBal
-                  );
-                  setPemiumAmount(e.target.value);
-                } else {
-                  setPemiumAmount(e.target.value);
+                  if (onAmt === 1) {
+                    let a = web3.utils.toWei(e.target.value, "ether");
+                    overAmount(
+                      a,
+                      props.token.assetObject.myBalance,
+                      props.ethBal
+                    );
+                    setWriteSellOptionAmt(e.target.value);
+                  } else {
+                    let a = e.target.value;
+                    overPcent(a);
+                    setWriteSellOptionPcent(e.target.value * 100);
+                  }
                 }
               }}
             />
+            <Dropdown
+              item
+              simple
+              direction="right"
+              compact
+              selection
+              options={options}
+              style={{ width: "80px" }}
+              onChange={(e, data) => setOnAmt(data.value)}
+            />
 
-            <div style={{ marginTop: "10px" }}>
+            {/* <div style={{ marginTop: "10px" }}>
               {props.token.assetObject.tSymbol}
-            </div>
+            </div> */}
           </Form.Group>
           <Form.Field
             style={{ width: "90%", marginRight: "auto", marginLeft: "auto" }}
           >
-            <label>Other party address</label>
+            <label>AirSwap Hash</label>
             <input
-              placeholder="Other party address"
-              onChange={(e) => setOtherPartyAddress(e.target.value)}
+              value={typeHash}
+              onChange={(e) => setTypeHash(e.target.value)}
             />
           </Form.Field>
           <ConfirmCancelBtns>
@@ -726,101 +723,265 @@ export default function VaultTokenInfo(props) {
             <Button
               style={{ width: "40%" }}
               color="teal"
-              onClick={confirmSellCall}
+              onClick={
+                onAmt === 1
+                  ? comfirmWriteSellOptionsAmt
+                  : comfirmWriteSellOptionsPcent
+              }
               disabled={btnDisabled}
             >
-              Sell Call
-            </Button>
-            <Button
-              style={{ width: "40%" }}
-              onClick={() => {
-                setShowSellCall(false);
-                setWriteColor("teal");
-                setSettleColor("teal");
-                setManagerClick(false);
-              }}
-              disabled={btnDisabled}
-            >
-              Cancel
+              Write & Sell Options{" "}
             </Button>
           </ConfirmCancelBtns>
         </Form>
-      </MgmrCallForm>
+      </MgmrOptionForm>
+    );
+  }
+
+  function renderSellCall() {
+    return (
+      <MgmrOptionForm>
+        <Form>
+          <Divider hidden />
+          <Form.Field
+            style={{ width: "90%", marginRight: "auto", marginLeft: "auto" }}
+          >
+            <label>AirSwap Hash</label>
+            <input
+              value={typeHash}
+              onChange={(e) => setTypeHash(e.target.value)}
+            />
+          </Form.Field>
+          <ConfirmCancelBtns>
+            {" "}
+            <Button
+              style={{ width: "40%" }}
+              color="teal"
+              onClick={sellOptions}
+              disabled={btnDisabled}
+            >
+              Sell Options
+            </Button>
+          </ConfirmCancelBtns>
+        </Form>
+      </MgmrOptionForm>
+    );
+  }
+  function renderAdjustMaxAsset() {
+    return (
+      <MgmrOptionForm>
+        <Form>
+          <Form.Field
+            style={{
+              width: "90%",
+              marginRight: "auto",
+              marginLeft: "auto",
+              marginTop: "30px",
+            }}
+          >
+            <label>Adjust Max Asset</label>
+            <input placeholder="Amt" onChange={updateMaxAssetNum} />
+          </Form.Field>
+          <ConfirmCancelBtns>
+            <Button
+              type="submit"
+              style={{ width: "40%" }}
+              onClick={adjustMaxAsset}
+            >
+              Confirm
+            </Button>
+          </ConfirmCancelBtns>
+        </Form>
+      </MgmrOptionForm>
+    );
+  }
+  function renderAdujstDepositFee() {
+    return (
+      <MgmrOptionForm>
+        <Form>
+          <Form.Field
+            style={{
+              width: "90%",
+              marginRight: "auto",
+              marginLeft: "auto",
+              marginTop: "30px",
+            }}
+          >
+            <label>Adjust Deposit Fee(up to 50%)</label>
+            <Input
+              placeholder="Percentage"
+              onChange={updateDepositFee}
+              label={{ content: "%" }}
+              labelPosition="right"
+            />
+          </Form.Field>
+          <ConfirmCancelBtns>
+            <Button
+              type="submit"
+              style={{ width: "40%" }}
+              onClick={adjustDepositFee}
+            >
+              Confirm
+            </Button>
+          </ConfirmCancelBtns>
+        </Form>
+      </MgmrOptionForm>
+    );
+  }
+  function renderAdjustWithdrawFee() {
+    return (
+      <MgmrOptionForm>
+        <Form>
+          <Form.Field
+            style={{
+              width: "90%",
+              marginRight: "auto",
+              marginLeft: "auto",
+              marginTop: "30px",
+            }}
+          >
+            {" "}
+            <label>Adjust Withdraw Fee(up to 50%)</label>
+            <Input
+              placeholder="percentage"
+              onChange={updateWithdrawFee}
+              label={{ content: "%" }}
+              labelPosition="right"
+            />
+          </Form.Field>
+          <ConfirmCancelBtns>
+            <Button
+              type="submit"
+              style={{ width: "40%" }}
+              onClick={adjustWithdrawFee}
+            >
+              Confirm
+            </Button>
+          </ConfirmCancelBtns>
+        </Form>
+      </MgmrOptionForm>
+    );
+  }
+  function renderWDServe() {
+    return (
+      <MgmrOptionForm>
+        <Form>
+          <Form.Field
+            style={{
+              width: "90%",
+              marginRight: "auto",
+              marginLeft: "auto",
+              marginTop: "30px",
+            }}
+          >
+            {" "}
+            <label>Adjust Withdraw Reserve Fee(up to 50%)</label>
+            <Input
+              placeholder="percentage"
+              onChange={updateWDReserve}
+              label={{ content: "%" }}
+              labelPosition="right"
+            />
+          </Form.Field>
+          <ConfirmCancelBtns>
+            <Button
+              type="submit"
+              style={{ width: "40%" }}
+              onClick={adjustWDReserveFee}
+            >
+              Confirm
+            </Button>
+          </ConfirmCancelBtns>
+        </Form>
+      </MgmrOptionForm>
     );
   }
 
   function managerMenu() {
+    const settings = {
+      dots: true,
+      infinite: true,
+      speed: 500,
+      slidesToShow: 1,
+      slidesToScroll: 1,
+      adaptiveHeight: true,
+    };
     return (
       <div>
         <Divider hidden />
-        <MagmrCallsIndicator>
-          <WriteBtn
-            labelPosition="right"
-            color={writeColor}
-            onClick={() => {
-              setShowWriteCall(true);
-              setWriteColor("teal");
-              setShowSellCall(false);
-              setSellColor("grey");
-              setSettleColor("grey");
-              setManagerClick(true);
-            }}
-            disabled={btnDisabled}
-          >
-            Write Call
-          </WriteBtn>
 
-          <SellCallBtn
-            color={sellColor}
-            labelPosition="right"
-            onClick={() => {
-              setShowSellCall(true);
-              setShowWriteCall(false);
-              setSellColor("teal");
-              setWriteColor("grey");
-              setSettleColor("grey");
-              setManagerClick(true);
-            }}
-            disabled={btnDisabled}
-          >
-            Sell Call
-          </SellCallBtn>
+        <Slider {...settings}>
+          <div> {writeCallRender()} </div>
+          <div> {renderSellCall()} </div>
+          <div> {renderWriteSellOptions()} </div>
 
-          <SettleVaultBtn
-            color={settleColor}
-            onClick={settleVault}
-            disabled={btnDisabled}
-          >
-            Settle Vault
-          </SettleVaultBtn>
-        </MagmrCallsIndicator>
-        {showWriteCall && writeCallRender()}
-        {showSellCall && renderSellCall()}
+          <div> {renderAdjustMaxAsset()}</div>
+          <div> {renderAdujstDepositFee()}</div>
+          <div> {renderAdjustWithdrawFee()}</div>
+          <div> {renderWDServe()}</div>
+          <div>
+            <Button
+              type="submit"
+              onClick={sweepFee}
+              style={{
+                width: "70%",
+                display: "block",
+                marginLeft: "auto",
+                marginRight: "auto",
+              }}
+            >
+              Sweep Fee
+            </Button>
+          </div>
+          <div>
+            <Button
+              style={{
+                width: "70%",
+                display: "block",
+                marginLeft: "auto",
+                marginRight: "auto",
+                top: "50%",
+                // justifyContent: "center",
+              }}
+              icon="plus circle"
+              size="medium"
+              color="purple"
+              onClick={() => openIPFSModal(true)}
+            >
+              Submit Vault Token Info
+            </Button>
+          </div>
+        </Slider>
+        <Divider hidden />
       </div>
     );
   }
-  
+
   function updateWDAmt(e) {
     setWithdrawAmt(e.target.value);
   }
 
-  function updateDAmt(e) {
+  async function updateDAmt(e) {
     if (e.target.value > 0) {
       let a = web3.utils.toWei(e.target.value, "ether");
       overAmount(a, props.token.assetObject.myBalance, props.ethBal);
     }
     setDeposit(e.target.value);
+    let apprvAmt = await checkApprovalAmount();
+
+    if (apprvAmt < e.target.value * `1e${props.token.assetObject.tDecimals}`) {
+      setShowApproval(true);
+    } else {
+      setShowApproval(false);
+    }
   }
   function clickShowD() {
     setShowD(true);
-    setShowW(false);
   }
   function clickShowW() {
     setShowD(false);
-    setShowW(true);
   }
   function showTokenPair() {
-    console.log(props.token.assetObject);
     return (
       <>
         <DWIndicator>
@@ -843,10 +1004,14 @@ export default function VaultTokenInfo(props) {
             <Deposit
               token={props.token}
               deposit={deposit}
+              approveAsset={approveAsset}
               depositAmt={depositAmt}
               updateDAmt={updateDAmt}
+              showApproval={showApproval}
               managerClick={managerClick}
               btnDisabled={btnDisabled}
+              acct={props.acct}
+              web3={web3}
             />
           </DWForm>
         )}
@@ -865,7 +1030,6 @@ export default function VaultTokenInfo(props) {
               txHash={txHash}
               iconStatus={iconStatus}
               resetForm={resetForm}
-              iconStatus={iconStatus}
             />
           </Grid.Column>
           {/* <Grid.Column width={2} verticalAlign="middle">
@@ -878,14 +1042,16 @@ export default function VaultTokenInfo(props) {
       {/* {showConvertForm && convertForm()} */}
       <Divider hidden />
       <Divider hidden />
-      {props.token.totalSupply !== 0 && showTokenPair()}
-
-
-      {props.token.totalSupply === 0 && showInitialize()}
-
-      {props.token.manageToken && managerMenu()}
+      {props.token.totalSupply !== -1 && showTokenPair()}
       <Divider hidden />
       {props.token.assetObject.tSymbol === "WETH" && convertForm()}
+      {props.token.manageToken && managerMenu()}
+      <VaultTokenIPFS
+        IPFSModal={IPFSModal}
+        setIPFSModal={setIPFSModal}
+        web3={web3}
+        cVT={cVT}
+      />
     </div>
   );
 }

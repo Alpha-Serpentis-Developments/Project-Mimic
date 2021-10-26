@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity =0.8.4;
+pragma solidity ^0.8.4;
 
 import {VaultComponents} from "./VaultComponents.sol";
 import {IFactory} from "./interfaces/IFactory.sol";
@@ -63,7 +63,7 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
     /// @param _amount amount of VAULT TOKENS to burn
     /// @param _waiver address of the waiver token msg.sender is trying to redeem
     /// @param _waiverId if the waiver is an ERC1155, the ID of the ERC1155
-    function discountWithdraw(uint256 _amount, address _waiver, uint256 _waiverId) external ifNotClosed nonReentrant() whenNotPaused() {
+    function discountWithdraw(uint256 _amount, address _waiver, uint256 _waiverId) external nonReentrant() whenNotPaused() {
         _withdraw(_amount, _waiver, _waiverId);
     }
 
@@ -85,7 +85,7 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
     /// @dev Operation to burn away the oTOkens in redemption of the asset collateral
     /// @param _amount Amount of options to burn
     function burnOptions(uint256 _amount) external ifNotClosed onlyManager nonReentrant() whenNotPaused() {
-        if(!_withdrawalWindowCheck(false))
+        if(_withdrawalWindowCheck())
             revert WithdrawalWindowActive();
         if(_amount > IERC20(oToken).balanceOf(address(this)))
             revert Invalid();
@@ -96,7 +96,7 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
         if(OtokenInterface(oToken).isPut()) {
             normalizedAmount = _normalize(_amount * OtokenInterface(oToken).strikePrice(), 16, ERC20(asset).decimals());
         } else {
-           normalizedAmount = _normalize(_amount, 8, 18);
+           normalizedAmount = _normalize(_amount, 8, ERC20(asset).decimals());
         }
 
         actions[0] = Actions.ActionArgs(
@@ -139,9 +139,6 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
     /// @notice Operation to settle the vault
     /// @dev Settles the currently open vault and opens the withdrawal window
     function settleVault() external ifNotClosed nonReentrant() whenNotPaused() {
-        if(!_withdrawalWindowCheck(false))
-            revert WithdrawalWindowActive();
-
         IController controller = IController(addressBook.getController());
 
         // Check if ready to settle otherwise revert
@@ -254,7 +251,7 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
     /// @param _amount Amount of the asset to collateralize (no margin) for the oToken
     /// @param _oToken Address of the oToken to write with
     function _writeOptions(uint256 _amount, address _oToken) internal {
-        if(!_withdrawalWindowCheck(false))
+        if(_withdrawalWindowCheck())
             revert WithdrawalWindowActive();
         if(_amount == 0 || _oToken == address(0))
             revert Invalid();
@@ -413,7 +410,7 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
 
         uint256 assetAmount = _amount * (IERC20(asset).balanceOf(address(this)) + collateralAmount - premiumsWithheld - obligatedFees - withheldProtocolFees) / totalSupply();
         (uint256 protocolFee, uint256 vaultFee) = _calculateFees(assetAmount, factory.withdrawalFee(), withdrawalFee, _waiver, _waiverId, false);
-        
+
         withheldProtocolFees += protocolFee;
         obligatedFees += vaultFee;
 
@@ -426,7 +423,7 @@ contract VaultToken is ERC20Upgradeable, VaultComponents {
             revert Invalid();
 
         // (Reserve) safety check
-        if(_withdrawalWindowCheck(false) && oToken != address(0)) {
+        if(!_withdrawalWindowCheck() && oToken != address(0) && block.timestamp < OtokenInterface(oToken).expiryTimestamp()) {
             if(assetAmount > currentReserves)
                 revert NotEnoughFunds_ReserveViolation();
             else
