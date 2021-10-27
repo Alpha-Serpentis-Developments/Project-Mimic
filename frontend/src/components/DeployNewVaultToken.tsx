@@ -44,7 +44,7 @@ export default function DeployNewVaultToken(props: {
   const [tokenName, setTokenName] = useState<string>("");
   const [tokenSymbol, setTokenSymbol] = useState<string>("");
   const [assetTokenAddr, setAssetTokenAddr] = useState<string>("");
-  const [maxAmt, setMaxAmt] = useState<string>("10");
+  const [maxAmt, setMaxAmt] = useState<string>("1");
 
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [showStatus, setShowStatus] = useState<boolean>(false);
@@ -58,7 +58,6 @@ export default function DeployNewVaultToken(props: {
   const [miniute, setMinute] = useState(0);
   const [second, setSecond] = useState(0);
   const [winExpirLen, setWinExpirLen] = useState(0);
-  const [atDecimal, setATDecimal] = useState(-1);
 
   let factory = new Factory(web3);
 
@@ -100,16 +99,18 @@ export default function DeployNewVaultToken(props: {
       });
   }
   async function handleClick(e: any) {
-    getATDecimal(assetTokenAddr);
+    let atDecimal = await getATDecimal(assetTokenAddr);
     startTX();
     e.preventDefault();
     if (tokenName === "" || tokenSymbol === "" || assetTokenAddr === "") {
-      setSM("Error", "Form input Error", true, true);
+      setSM("Error", "Form Input Error", true, true);
       setIconStatus("error");
       return;
     }
 
     let amount = (10 ** atDecimal * parseFloat(maxAmt)).toString();
+    console.log(amount);
+    console.log(atDecimal);
     let c = factory.deployNewVT(
       tokenName,
       tokenSymbol,
@@ -120,7 +121,7 @@ export default function DeployNewVaultToken(props: {
       amount,
       props.acctNum
     );
-    sendTX(c, "Deploy New Token");
+    sendTX(c, "Deploy New Vault");
   }
 
   function resetSM() {
@@ -142,16 +143,9 @@ export default function DeployNewVaultToken(props: {
     setShowStatus(false);
   }
 
-  function getATDecimal(atAddr: string) {
+  async function getATDecimal(atAddr: string) {
     let at = new ERC20(web3, atAddr);
-    at.getDecimals()
-      .then((result) => {
-        at.setDecimals(result);
-        setATDecimal(result);
-      })
-      .catch((error) => {
-        at.ercStatus = false;
-      });
+    return await at.getDecimals();
   }
 
   return (
@@ -171,8 +165,8 @@ export default function DeployNewVaultToken(props: {
           <Form>
             <Form.Field
               control={Input}
-              label="Token Name"
-              placeholder="Token Name"
+              label="Vault Name"
+              placeholder="Vault Name"
               value={tokenName}
               onChange={(e: any) => setTokenName(e.target.value)}
               required
@@ -180,15 +174,15 @@ export default function DeployNewVaultToken(props: {
 
             <Form.Field
               control={Input}
-              label="Token Symbol"
-              placeholder="Token Symbbol"
+              label="Vault Symbol"
+              placeholder="Vault Symbbol"
               value={tokenSymbol}
               onChange={(e: any) => setTokenSymbol(e.target.value)}
               required
             />
             <Form.Field
               control={Input}
-              label="Maximum Amount (Ether)"
+              label="Maximum Amount"
               placeholder="1"
               value={maxAmt}
               onChange={(e: any) => setMaxAmt(e.target.value)}
@@ -202,7 +196,7 @@ export default function DeployNewVaultToken(props: {
               // onChange={(e: any) => setManagerAddr(e.target.value)}
               required
             />
-            <Header size="small">Window Expire length</Header>
+            <Header size="small">Withdrawal Window Length</Header>
             <Form.Group>
               <Form.Field
                 control={Input}
@@ -212,7 +206,7 @@ export default function DeployNewVaultToken(props: {
                 // value={hour}
                 onChange={async (e: any) => {
                   setHour(parseInt(e.target.value));
-                  let totalLen = await (parseInt(e.target.value) * 3600 +
+                  let totalLen = (parseInt(e.target.value) * 3600 +
                     miniute * 60 +
                     second);
                   setWinExpirLen(totalLen);
@@ -226,7 +220,7 @@ export default function DeployNewVaultToken(props: {
                 // value={hour}
                 onChange={async (e: any) => {
                   setMinute(parseInt(e.target.value));
-                  let totalLen = await (hour * 3600 +
+                  let totalLen = (hour * 3600 +
                     parseInt(e.target.value) * 60 +
                     second);
                   setWinExpirLen(totalLen)
@@ -240,7 +234,7 @@ export default function DeployNewVaultToken(props: {
                 // value={second}
                 onChange={async (e: any) => {
                   setSecond(parseInt(e.target.value));
-                  let totalLen = await (hour * 3600 +
+                  let totalLen = (hour * 3600 +
                     miniute * 60 +
                     parseInt(e.target.value));
                   setWinExpirLen(totalLen);

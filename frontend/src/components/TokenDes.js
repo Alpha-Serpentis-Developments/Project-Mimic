@@ -68,8 +68,16 @@ export default function TokenDes(props) {
           <TokenName>{props.token.tName}</TokenName>
           <Divider />
           <VaultDescript>
-            The Strategy consist of a weekly call-write on $WETH calls with
-            strike selection being based on +20% spot at the moment.
+            This vault writes covered options against ${props.token.assetObject.tSymbol}
+            {/* <br />
+            <h1>Vault Fees:</h1>
+            Deposit: {props.token.depositFee === -1 ? <>0%</> : <>{props.token.depositFee/10000}%</>}
+            <br />
+            Withdrawal: {props.token.withdrawalFee === -1 ? <>0%</> : <>{props.token.withdrawalFee/10000}%</>}
+            <br />
+            Performance: {props.token.performanceFee === -1 ? <>0%</> : <>{props.token.performanceFee/10000}%</>}
+            <br />
+            Early Withdrawal Penalty: {props.token.earlyWithdrawalPenalty === -1 ? <>0%</> : <>{props.token.earlyWithdrawalPenalty/10000}%</>} */}
           </VaultDescript>
           <CoveredCallsList
             sellCallList={props.sellCallList}

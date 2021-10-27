@@ -26,6 +26,10 @@ export class VaultToken extends ERC20 {
     this.twitterLink = "";
     this.twitterHandle = "";
     this.vtStrategy = "";
+    this.depositFee = -1;
+    this.withdrawalFee = -1;
+    this.performanceFee = -1;
+    this.earlyWithdrawalPenalty = -1;
   }
 
   async getManager() {
@@ -47,6 +51,10 @@ export class VaultToken extends ERC20 {
   async updateInfo() {
     this.setAsset(await this.getAsset())
     this.setManager(await this.getManager());
+    this.setDepositFee(await this.getDepositFee());
+    this.setWithdrawalFee(await this.getWithdrawalFee());
+    this.setPerformanceFee(await this.getPerformanceFee());
+    this.setEarlyWithdrawalPenalty(await this.getEarlyWithdrawalPenalty());
   }
 
   updateStatus() {
@@ -135,6 +143,38 @@ export class VaultToken extends ERC20 {
   }
   setOT(a) {
     this.oTokenAddr = a;
+  }
+
+  async getDepositFee() {
+    return this.vt.methods.depositFee().call();
+  }
+
+  setDepositFee(fee) {
+    this.depositFee = fee;
+  }
+
+  async getWithdrawalFee() {
+    return this.vt.methods.withdrawalFee().call();
+  }
+
+  setWithdrawalFee(fee) {
+    this.withdrawalFee = fee;
+  }
+
+  async getPerformanceFee() {
+    return this.vt.methods.performanceFee().call();
+  }
+
+  setPerformanceFee(fee) {
+    this.performanceFee = fee;
+  }
+
+  async getEarlyWithdrawalPenalty() {
+    return this.vt.methods.earlyWithdrawalPenalty().call();
+  }
+
+  setEarlyWithdrawalPenalty(fee) {
+    this.earlyWithdrawalPenalty = fee;
   }
 
   setNAV(amt) {
