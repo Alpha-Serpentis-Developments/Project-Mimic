@@ -3,6 +3,7 @@ import StatusMessage from "./StatusMessage";
 import { nwConfig, currentChain } from "./NetworkConfig";
 import Slider from "react-slick";
 
+import { recoverTypedSignature_v4 as recoverTypedSignatureV4 } from "eth-sig-util";
 import {
   Button,
   Grid,

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity =0.8.4;
+pragma solidity ^0.8.4;
 
 import "../interfaces/ITransferHandler.sol";
 import "../../../oz/access/Ownable.sol";

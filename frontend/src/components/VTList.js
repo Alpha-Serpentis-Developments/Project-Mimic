@@ -54,6 +54,13 @@ export default function VTList(props) {
   }
 
   function getAllVT() {
+    fetch(
+      "https://raw.githubusercontent.com/Alpha-Serpentis-Developments/Mimic-Token-Info/main/tokenInfo.json"
+    )
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+      });
     let factoryObj = new Factory(web3);
 
     let p = factoryObj.findAllVT();
