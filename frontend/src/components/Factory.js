@@ -13,6 +13,9 @@ export class Factory {
     let factoryContractAddr = nwConfig[currentChain].factoryAddress;
     this.address = factoryContractAddr;
     this.factory = new web3.eth.Contract(abi, factoryContractAddr);
+    this.depositFee = -1;
+    this.withdrawalFee = -1;
+    this.performanceFee = -1;
   }
 
   // function deployNewVaultToken(string memory _name, string memory _symbol,
@@ -35,7 +38,7 @@ export class Factory {
       amount
     ).send({ from: f });
   }
-  findAllVT() {
+  async findAllVT() {
     return this.factory.getPastEvents("NewVaultToken", {
       fromBlock: 0,
       toBlock: "latest",

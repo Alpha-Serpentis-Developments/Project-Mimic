@@ -109,8 +109,6 @@ export default function DeployNewVaultToken(props: {
     }
 
     let amount = (10 ** atDecimal * parseFloat(maxAmt)).toString();
-    console.log(amount);
-    console.log(atDecimal);
     let c = factory.deployNewVT(
       tokenName,
       tokenSymbol,

@@ -94,6 +94,20 @@ export default function Withdraw(props) {
           <div
             style={{
               marginTop: "25px",
+              marginBottom: "25px",
+              textAlign: "center",
+              fontSize: "18px",
+              fontFamily: "'Lato', sans-serif",
+              marginLeft: "15px",
+              marginRight: "15px",
+            }}
+          >
+            Withdrawal Fee: {props.token.withdrawalFee === -1 ? <>0%</> : <>{props.token.withdrawalFee/10000}%</>}
+          </div>
+          <Divider />
+          <div
+            style={{
+              marginTop: "25px",
               textAlign: "center",
               fontSize: "12px",
               fontFamily: "'Gill Sans', sans-serif",

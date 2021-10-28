@@ -3,7 +3,6 @@ import StatusMessage from "./StatusMessage";
 import { nwConfig, currentChain } from "./NetworkConfig";
 import Slider from "react-slick";
 
-import { recoverTypedSignature_v4 as recoverTypedSignatureV4 } from "eth-sig-util";
 import {
   Button,
   Grid,
@@ -112,9 +111,9 @@ export default function VaultTokenInfo(props) {
   const [asHash, setASHash] = useState({});
 
   const [showWriteCall, setShowWriteCall] = useState(false);
-  const [showWriteSellOption, setShowWriteSellOption] = useState(false);
-  const [showSellCall, setShowSellCall] = useState(false);
-  const [writeColor, setWriteColor] = useState("teal");
+  // const [showWriteSellOption, setShowWriteSellOption] = useState(false);
+  // const [showSellCall, setShowSellCall] = useState(false);
+  // const [writeColor, setWriteColor] = useState("teal");
   const [sellColor, setSellColor] = useState("teal");
   const [settleColor, setSettleColor] = useState("teal");
 
@@ -495,7 +494,10 @@ export default function VaultTokenInfo(props) {
   }
 
   function approveAsset(amount, f) {
-    cVT.approveAsset(amount, f);
+    startTX();
+
+    let tx = cVT.approveAsset(amount, f);
+    sendTX(tx, "Approving Asset");
   }
 
   function overPcent(a) {

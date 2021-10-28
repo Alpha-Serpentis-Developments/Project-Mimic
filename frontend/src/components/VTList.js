@@ -28,9 +28,9 @@ export default function VTList(props) {
   // const [currentTokenAddr, setCurrentTokenAddr] = useState(cVTAddr);
 
   async function showTokenInfo(e, i) {
-//     console.log("clicked");
-//     console.log(e);
-//     console.log(i.value);
+    // console.log("clicked");
+    // console.log(e);
+    // console.log(i.value);
     setClickedItem(i.value);
     //  await setCurrentTokenAddr(i.value.address);
 
@@ -54,13 +54,13 @@ export default function VTList(props) {
   }
 
   function getAllVT() {
-    fetch(
-      "https://raw.githubusercontent.com/Alpha-Serpentis-Developments/Mimic-Token-Info/main/tokenInfo.json"
-    )
-      .then((response) => response.json())
-      .then((result) => {
-        console.log(result);
-      });
+    // fetch(
+    //   "https://raw.githubusercontent.com/Alpha-Serpentis-Developments/Mimic-Token-Info/main/tokenInfo.json"
+    // )
+    //   .then((response) => response.json())
+    //   .then((result) => {
+    //     console.log(result);
+    //   });
     let factoryObj = new Factory(web3);
 
     let p = factoryObj.findAllVT();
@@ -75,6 +75,7 @@ export default function VTList(props) {
         if (!include(addr, vTokenList)) {
           foundNewToken = true;
           let v = new VaultToken(web3, events[i].returnValues.vaultToken);
+          vTokenList.push(v);
           let allSellCalls = v.findAllSellCalls();
           allSellCalls.then((result) => {
             for(let a = 0; a < result.length; a++) {
@@ -99,7 +100,6 @@ export default function VTList(props) {
                     oToken.setName(name);
                     oArr.push(name);
                     v.oTokenNames.push(name);
-                    vTokenList.push(v);
                   });
                   oToken.getStrike().then((strike) => {
                     oToken.setStrike(strike);
@@ -151,29 +151,6 @@ export default function VTList(props) {
     return false;
   }
 
-  function populateManager(i) {
-    let v = vtList[i];
-    if (v.tName === "") {
-      return;
-    }
-    if (v.manager === "") {
-      v.getManager().then((result) => {
-        v.setManager(result);
-        // if the result === my addr
-        // append the v to the managed list
-        if (
-          result.toLowerCase() === props.acctNum &&
-          !include(result, managedList) &&
-          (v.tName !== "t" || v.tName !== "token")
-        ) {
-          managedList.push(v);
-          setManagedList(managedList);
-          v.manageToken = true;
-        }
-      });
-    }
-  }
-
   function populateAsset(k) {
     let v = vtList[k];
     let found = false;
@@ -218,6 +195,18 @@ export default function VTList(props) {
     // v.getName().then((result) => {
     // });
     let v = vtList[i];
+    v.updateInfo().then(() => {
+      if(v.manager.toLowerCase() === props.acctNum) {
+        for(let h = 0; h < managedList.length; h++) {
+          if(managedList[h].manager.toLowerCase() === v.manager.toLowerCase()) {
+            return;
+          }
+        }
+        managedList.push(v);
+        setManagedList(managedList);
+        v.manageToken = true;
+      }
+    });
     if (v.tName === "") {
       v.getName(props.acctNum).then((result) => {
         v.setName(result);
@@ -382,7 +371,6 @@ export default function VTList(props) {
     for (let i = 0; i < vtList.length; i++) {
       // if (vtList[i].name() === "Name") {
       populateName(i, vtList, setVTList);
-      populateManager(i);
       populateAsset(i);
       //getting my balance for all the tokens in the list
       vtList[i].getBalance(props.acctNum).then((result) => {

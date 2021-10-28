@@ -100,6 +100,20 @@ export default function Deposit(props) {
           <div
             style={{
               marginTop: "25px",
+              marginBottom: "25px",
+              textAlign: "center",
+              fontSize: "18px",
+              fontFamily: "'Lato', sans-serif",
+              marginLeft: "15px",
+              marginRight: "15px",
+            }}
+          >
+            Deposit Fee: {props.token.depositFee === -1 ? <>0%</> : <>{props.token.depositFee/10000}%</>}
+          </div>
+          <Divider />
+          <div
+            style={{
+              marginTop: "25px",
               textAlign: "center",
               fontSize: "12px",
               fontFamily: "'Gill Sans', sans-serif",
