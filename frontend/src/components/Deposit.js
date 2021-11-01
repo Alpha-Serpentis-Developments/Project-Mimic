@@ -1,7 +1,32 @@
 import { Button, Form, Divider } from "semantic-ui-react";
+import web3 from "web3";
 import Approval from "./Approval";
 
 export default function Deposit(props) {
+
+  function calculateReceived() {
+    let received;
+    let vaultBalance = new web3.utils.BN(props.token.vaultBalance);
+    let collateralAmount = new web3.utils.BN(props.token.collateralAmount);
+    let obligatedFees = new web3.utils.BN(props.token.obligatedFees);
+    let withheldProtocolFees = new web3.utils.BN(props.token.withheldProtocolFees);
+    let totalSupply = new web3.utils.BN(props.token.totalSupply);
+
+    let totalFeePercentage = ((props.token.depositFee) + (props.factory.depositFee))/100000;
+    let reducedDeposit = props.depositAmt * (1 - totalFeePercentage);
+
+    if(totalSupply.toString() === '0') {
+      received = props.depositAmt;
+    } else {
+      received = reducedDeposit * Number(totalSupply.div(collateralAmount.add(vaultBalance).sub(obligatedFees).sub(withheldProtocolFees)));
+    }
+
+    if(isNaN(received) || received === '')
+      return 0;
+
+    return received;
+  }
+
   let wBalance = parseFloat(
     props.token.assetObject.myBalance / `1e${props.token.assetObject.tDecimals}`
   ).toFixed(6);
@@ -53,26 +78,40 @@ export default function Deposit(props) {
             </div>
           </div>
           {!props.showApproval ? (
-            <Button
-            style={{
-              width: "80%",
-              display: "block",
-              marginLeft: "auto",
-              marginRight: "auto",
-            }}
-            onClick={() => {
-              props.deposit(props.depositAmt);
-            }}
-            size="large"
-            // labelPosition="left"
-            disabled={
-              Number(props.depositAmt) === 0 ||
-              props.token.assetObject.myBalance === 0 ||
-              props.btnDisabled
-            }
-          >
-            Deposit
-          </Button>
+            <div>
+              <Button
+              style={{
+                width: "80%",
+                display: "block",
+                marginLeft: "auto",
+                marginRight: "auto",
+              }}
+              onClick={() => {
+                props.deposit(props.depositAmt);
+              }}
+              size="large"
+              // labelPosition="left"
+              disabled={
+                Number(props.depositAmt) === 0 ||
+                props.token.assetObject.myBalance === 0 ||
+                props.btnDisabled
+              }
+            >
+              Deposit
+            </Button>
+            <div
+              style={{
+                marginTop: "10px",
+                marginBottom: "10px",
+                fontSize: "13px",
+                textAlign: "center"
+              }}
+            >
+              If you deposit {props.depositAmt} {props.token.assetObject.tSymbol}, you will receive 
+              {" " + calculateReceived()}  {props.token.tSymbol}
+            </div>
+          </div>
+            
           ) : (
             <Approval
               token={props.token}

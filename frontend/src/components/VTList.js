@@ -140,9 +140,9 @@ export default function VTList(props) {
         setVTList(vTokenList);
       }
     });
-    setTimeout(() => {
-      getAllVT();
-    }, 10000);
+    // setTimeout(() => {
+    //   getAllVT();
+    // }, 10000);
   }
 
   function include(address, list) {

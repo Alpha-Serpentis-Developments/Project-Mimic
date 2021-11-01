@@ -1,13 +1,31 @@
 import { Button, Divider, Form } from "semantic-ui-react";
+import web3 from "web3";
 
 export default function Withdraw(props) {
-  console.log(props);
 
   function calculateReceived() {
-    let received = props.withdrawAmt;
+    let vaultBalance = new web3.utils.BN(props.token.vaultBalance);
+    let collateralAmount = new web3.utils.BN(props.token.collateralAmount);
+    let premiumsWithheld = new web3.utils.BN(props.token.premiumsWithheld);
+    let obligatedFees = new web3.utils.BN(props.token.obligatedFees);
+    let withheldProtocolFees = new web3.utils.BN(props.token.withheldProtocolFees);
+    let totalSupply = new web3.utils.BN(props.token.totalSupply);
+
+    let totalFeePercentage = (props.token.withdrawalFee + props.factory.withdrawalFee)/100000;
+    // console.log(received);
+    // console.log(vaultBalance);
+    // console.log(collateralAmount);
+    // console.log(premiumsWithheld);
+    // console.log(obligatedFees);
+    // console.log(withheldProtocolFees);
+    // console.log(totalSupply);
+
 
     // uint256 assetAmount = _amount * (IERC20(asset).balanceOf(address(this)) + collateralAmount - premiumsWithheld - obligatedFees - withheldProtocolFees) / totalSupply();
-    received *= (props.token.collateralAmount - props.token.premiumsWithheld - props.token.obligatedFees - props.token.withheldProtocolFees);
+    let received = Number(vaultBalance.add(collateralAmount).sub(premiumsWithheld).sub(obligatedFees).sub(withheldProtocolFees).div(totalSupply)) * props.withdrawAmt * (1 - totalFeePercentage);
+
+    if(isNaN(received) || received === '') 
+      return 0;
 
     return received;
   }
@@ -109,7 +127,7 @@ export default function Withdraw(props) {
               marginRight: "15px",
             }}
           >
-            Vault Balance: {props.token.myBalance/1e18 + " " + props.token.tSymbol} 
+            {props.token.tSymbol} Balance: {props.token.myBalance/1e18 + " " + props.token.tSymbol} 
           </div>
           <Divider />
           <div
