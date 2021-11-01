@@ -19,7 +19,7 @@ export default function Trade(props) {
               <h1 style={{ fontSize: "40px", color: "white" }}>Portfolio</h1>
               {
                 props.pList.length === 0 ? (
-                  <h1 style={{ fontSize: "20px", color: "white" }}>Not Following Any Vault</h1>
+                  <h1 style={{ fontSize: "20px", color: "white" }}>Not Following Any Vaults</h1>
                 ) : (
                   <VTCard
                     tList={props.pList}

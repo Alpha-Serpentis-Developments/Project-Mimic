@@ -93,6 +93,7 @@ export default function TokenDes(props) {
             openIPFSModal={props.openIPFSModal}
             setUnverifiedDesc={props.setUnverifiedDesc}
             unverifiedDesc={props.unverifiedDesc}
+            factory={props.factory}
           />
         </DWContainer>
       </DesContainer>

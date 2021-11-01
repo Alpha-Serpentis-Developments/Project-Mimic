@@ -25,6 +25,7 @@ export default function VTList(props) {
 
   const [clickedItem, setClickedItem] = useState(cVT);
   const [sellCallList, setSellCallList] = useState([]);
+  const [factory, setFactory] = useState('');
   // const [currentTokenAddr, setCurrentTokenAddr] = useState(cVTAddr);
 
   async function showTokenInfo(e, i) {
@@ -62,6 +63,8 @@ export default function VTList(props) {
     //     console.log(result);
     //   });
     let factoryObj = new Factory(web3);
+    factoryObj.updateInfo();
+    setFactory(factoryObj);
 
     let p = factoryObj.findAllVT();
     let vTokenList = vtList;
@@ -503,6 +506,7 @@ export default function VTList(props) {
           <TokenDes
             //  currentTokenAddr={currentTokenAddr}
             token={clickedItem}
+            factory={factory}
             acct={props.acctNum}
             mpAddress={props.mpAddress}
             ethBal={props.ethBal}

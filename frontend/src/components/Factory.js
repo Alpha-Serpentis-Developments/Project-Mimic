@@ -1,11 +1,6 @@
 import { nwConfig, currentChain } from "./NetworkConfig";
 
 const abi = require("../abi/factoryabi.json");
-// the kovan network
-// const factoryContractAddr = "0xa7CD2F79F9aebc0E0fe9bd33Ebf3ce9bD1eBE20c";
-
-// the ropsten network
-// const factoryContractAddr = "0x7A6828eF4AB3Cb9c08c40D0a05ad2416C8335C5c";
 
 export class Factory {
   constructor(web3) {
@@ -18,10 +13,36 @@ export class Factory {
     this.performanceFee = -1;
   }
 
-  // function deployNewVaultToken(string memory _name, string memory _symbol,
-  // address _controller, address _asset, uint256 _maximumAssets) external {
+  async updateInfo() {
+    this.setDepositFee(await this.getDepositFee());
+    this.setWithdrawalFee(await this.getWithdrawalFee());
+    this.setPerformanceFee(await this.getPerformanceFee());
+  }
 
-  // add the 10e18 to the frontend
+  async getDepositFee() {
+    return this.factory.methods.depositFee().call();
+  }
+
+  setDepositFee(a) {
+    this.depositFee = a;
+  }
+
+  async getWithdrawalFee() {
+    return this.factory.methods.withdrawalFee().call();
+  }
+
+  setWithdrawalFee(a) {
+    this.withdrawalFee = a;
+  }
+
+  async getPerformanceFee() {
+    return this.factory.methods.performanceFee().call();
+  }
+
+  setPerformanceFee(a) {
+    this.performanceFee = a;
+  }
+
   deployNewVT(
     tokenName,
     tokenSymble,
@@ -45,4 +66,3 @@ export class Factory {
     });
   }
 }
-// module.exports = Factory;

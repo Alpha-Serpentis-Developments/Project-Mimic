@@ -17,6 +17,9 @@ export class VaultToken extends ERC20 {
     this.manageToken = false;
     this.expireTime = -1;
     this.collateralAmount = -1;
+    this.premiumsWithheld = -1;
+    this.obligatedFees = -1;
+    this.withheldProtocolFees = -1;
     this.oTokenAddr = "";
     this.oTokenObj = null;
     this.soldOptionsEvents = [];
@@ -55,6 +58,9 @@ export class VaultToken extends ERC20 {
     this.setWithdrawalFee(await this.getWithdrawalFee());
     this.setPerformanceFee(await this.getPerformanceFee());
     this.setEarlyWithdrawalPenalty(await this.getEarlyWithdrawalPenalty());
+    this.setPremiumsWithheld(await this.getPremiumsWithheld());
+    this.setObligatedFees(await this.getObligatedFees());
+    this.setWithheldProtocolFees(await this.getWithheldProtocolFees());
   }
 
   updateStatus() {
@@ -136,6 +142,30 @@ export class VaultToken extends ERC20 {
   }
   setCA(a) {
     this.collateralAmount = a;
+  }
+
+  async getPremiumsWithheld() {
+    return this.vt.methods.premiumsWithheld().call();
+  }
+
+  setPremiumsWithheld(a) {
+    this.premiumsWithheld = a;
+  }
+
+  async getObligatedFees() {
+    return this.vt.methods.obligatedFees().call();
+  }
+
+  setObligatedFees(a) {
+    this.obligatedFees = a;
+  }
+
+  async getWithheldProtocolFees() {
+    return this.vt.methods.withheldProtocolFees().call();
+  }
+
+  setWithheldProtocolFees(a) {
+    this.withheldProtocolFees = a;
   }
 
   async getOT(blockNum) {

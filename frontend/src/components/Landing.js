@@ -128,8 +128,8 @@ const CardItem = styled.div`
   background-color: #c80ad994;
   border-radius: 10px;
   margin-bottom: 20px;
-  margin-right: 10px;
-  margin-left: 10px;
+  margin-right: 15px;
+  margin-left: 15px;
 `;
 
 const AboutIconCard = styled.i`

@@ -957,7 +957,10 @@ export default function VaultTokenInfo(props) {
   }
 
   function updateWDAmt(e) {
-    setWithdrawAmt(e.target.value);
+    if(e.target.value === '')
+      setWithdrawAmt(0);
+    else
+      setWithdrawAmt(e.target.value.replace(/^0/, ''));
   }
 
   async function updateDAmt(e) {
@@ -965,7 +968,11 @@ export default function VaultTokenInfo(props) {
       let a = web3.utils.toWei(e.target.value, "ether");
       overAmount(a, props.token.assetObject.myBalance, props.ethBal);
     }
-    setDeposit(e.target.value);
+    if(e.target.value === '')
+      setDeposit(0);
+    else
+      setDeposit(e.target.value.replace(/^0/, ''));
+    
     let apprvAmt = await checkApprovalAmount();
 
     if (apprvAmt < e.target.value * `1e${props.token.assetObject.tDecimals}`) {
@@ -991,6 +998,7 @@ export default function VaultTokenInfo(props) {
           <DWForm>
             <Withdraw
               token={props.token}
+              factory={props.factory}
               withDraw={withDraw}
               withdrawAmt={withdrawAmt}
               updateWDAmt={updateWDAmt}
@@ -1002,6 +1010,7 @@ export default function VaultTokenInfo(props) {
           <DWForm>
             <Deposit
               token={props.token}
+              factory={props.factory}
               deposit={deposit}
               approveAsset={approveAsset}
               depositAmt={depositAmt}

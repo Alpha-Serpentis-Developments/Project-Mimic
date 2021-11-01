@@ -14,7 +14,7 @@ export default function Deposit(props) {
               display: "flex",
               flexDirection: "row",
               marginTop: "30px",
-              marginBottom: "40px",
+              marginBottom: "30px",
               justifyContent: "left",
             }}
           >
@@ -122,7 +122,7 @@ export default function Deposit(props) {
             }}
           >
             {" "}
-            When depositing, you will deposit the vault's asset token in
+            When depositing, you will deposit {props.token.assetObject.tSymbol} in
             redemption for vault tokens to represent your fair share of the
             vault. Depositing is open anytime whether the withdrawal window is
             closed or not.

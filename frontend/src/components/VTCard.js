@@ -133,6 +133,7 @@ export default function VTCard(props) {
 
   function oneCard(item) {
     let path = `/vault/${item.address}`;
+    console.log(item);
     return (
       <VTCardContainer>
         <VTNameContainer>
@@ -142,6 +143,9 @@ export default function VTCard(props) {
               href={makeEtherscanLink(item.address)}
               rel="noreferrer noopener"
               target="_blank"
+              style={{
+                color: "#35E9EA"
+              }}
             >
               {item.address}
             </a>
@@ -155,6 +159,9 @@ export default function VTCard(props) {
                 href="https://twitter.com/OptionalFinance"
                 rel="noreferrer noopener"
                 target="_blank"
+                style={{
+                  color: "#35E9EA"
+                }}
               >
                 @OptionalFinance
               </a>
@@ -185,7 +192,7 @@ export default function VTCard(props) {
                   marginTop: "30px",
                   borderRadius: "30px",
                   padding: "10px 30px",
-                  backgroundColor: "#7950EE",
+                  backgroundColor: "#a333c8",
                   color: "white",
                 }}
               >

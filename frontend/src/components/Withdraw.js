@@ -1,6 +1,16 @@
 import { Button, Divider, Form } from "semantic-ui-react";
 
 export default function Withdraw(props) {
+  console.log(props);
+
+  function calculateReceived() {
+    let received = props.withdrawAmt;
+
+    // uint256 assetAmount = _amount * (IERC20(asset).balanceOf(address(this)) + collateralAmount - premiumsWithheld - obligatedFees - withheldProtocolFees) / totalSupply();
+    received *= (props.token.collateralAmount - props.token.premiumsWithheld - props.token.obligatedFees - props.token.withheldProtocolFees);
+
+    return received;
+  }
 
   // console.log("info");
   // console.log(props.withdrawAmt);
@@ -18,7 +28,7 @@ export default function Withdraw(props) {
               display: "flex",
               flexDirection: "row",
               marginTop: "30px",
-              marginBottom: "40px",
+              marginBottom: "30px",
               justifyContent: "left",
             }}
           >
@@ -76,6 +86,17 @@ export default function Withdraw(props) {
           >
             Withdraw
           </Button>
+          <div
+            style={{
+              marginTop: "10px",
+              marginBottom: "10px",
+              fontSize: "13px",
+              textAlign: "center"
+            }}
+          >
+            If you withdraw {props.withdrawAmt} {props.token.tSymbol}, you will receive 
+            {" " + calculateReceived()}  {props.token.assetObject.tSymbol}
+          </div>
           <Divider />
           <div
             style={{
@@ -115,10 +136,9 @@ export default function Withdraw(props) {
               marginRight: "15px",
             }}
           >
-            When withdrawing, you will burn away your vault tokens to redeem the
-            underlying asset token. Withdrawing from the vault can only be done
-            if the vault's withdrawal window has opened up after the manager has
-            settled the vault.
+            When withdrawing, you will burn away your vault tokens to redeem {props.token.assetObject.tSymbol}. 
+            Withdrawing from the vault can only be done
+            if the vault's withdrawal window has opened up after the vault has been settled or there are reserves to exit early.
           </div>
         </Form>
       )}
