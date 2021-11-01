@@ -96,7 +96,7 @@ const ItemText = styled.div`
   font-style: normal;
   font-weight: bold;
   font-size: 18px;
-  line-height: 24px;
+  line-height: 30px;
   align-items: center;
   text-align: center;
   color: white;
@@ -122,38 +122,16 @@ const CardGroup = styled.div`
   }
 `;
 
-const CardItem1 = styled.div`
+const CardItem = styled.div`
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
   height: 308px;
-  // background-color: #5c2ef3;
-  background-color: grey;
+  background-color: #c80ad994;
   border-radius: 10px;
+  margin-bottom: 20px;
   margin-right: 10px;
   margin-left: 10px;
 `;
 
-const CardItem2 = styled.div`
-  height: 308px;
-
-  background-color: #880a94;
-  border-radius: 10px;
-  margin-right: 10px;
-  margin-left: 10px;
-`;
-const CardItem3 = styled.div`
-  height: 308px;
-
-  background-color: #0091f0;
-  border-radius: 10px;
-  margin-right: 10px;
-  margin-left: 10px;
-`;
-const CardItem4 = styled.div`
-  height: 308px;
-  background-color: #fa991c;
-  border-radius: 10px;
-  margin-right: 10px;
-  margin-left: 10px;
-`;
 const AboutIconCard = styled.i`
   color: white;
   margin-left: auto;
@@ -178,35 +156,21 @@ const AboutIconCard = styled.i`
 `;
 const CardHeader = styled.div`
   font-family: Roboto Slab;
-  font-size: 20px;
+  font-size: 24px;
+  color: white;
   text-align: center;
   padding-top: 25px;
   margin-bottom: 25px;
   font-weight: bold;
 `;
-const CardHeader1 = styled.div`
-  font-family: Roboto Slab;
-  font-size: 20px;
-  text-align: center;
-  padding-top: 25px;
-  margin-bottom: 25px;
-  font-weight: bold;
-  color: white;
-`;
-const CardContent2 = styled.div`
-  font-family: Roboto Slab;
-  font-size: 16px;
-  margin-left: 20px;
-  margin-right: 20px;
-  color: white;
-`;
-
 const CardContent = styled.div`
   font-family: Roboto Slab;
   font-size: 16px;
+  color: white;
+  line-height: 25px;
   // text-align: center;
-  margin-left: 20px;
-  margin-right: 20px;
+  margin-left: 32px;
+  margin-right: 32px;
 `;
 const ButtonContainer = styled.div`
   display: flex;
@@ -284,7 +248,7 @@ export default function Landing(props) {
       <CardGroup>
         <Slider {...settings}>
           <div>
-            <CardItem1>
+            <CardItem>
               <CardHeader>What is a social token?</CardHeader>
               <Divider
                 style={{
@@ -298,31 +262,12 @@ export default function Landing(props) {
                 respective asset and the social trader (manager) uses that to
                 collateralize call options to create covered call options.
               </CardContent>
-            </CardItem1>
+            </CardItem>
           </div>
           <div>
-            <CardItem2>
+            <CardItem>
               {" "}
-              <CardHeader1>What are options?</CardHeader1>
-              <Divider
-                style={{
-                  width: "80%",
-                  marginLeft: "auto",
-                  marginRight: "auto",
-                }}
-              />
-              <CardContent2>
-                Options are derivatives and essentially provide buyers a way to
-                hedge against their assets (or place bets). Sellers can use
-                options to make passive income with the premiums earned for
-                writing options.
-              </CardContent2>
-            </CardItem2>
-          </div>
-          <div>
-            <CardItem3>
-              {" "}
-              <CardHeader>What is a covered call?</CardHeader>
+              <CardHeader>What are options?</CardHeader>
               <Divider
                 style={{
                   width: "80%",
@@ -331,14 +276,33 @@ export default function Landing(props) {
                 }}
               />
               <CardContent>
-                Covered calls is a type of strategy in options trading where
-                call options are sold, but own the underlying to cover for an
-                exercise.
+                Options are derivatives and essentially provide buyers a way to
+                hedge against their assets (or place bets). Sellers can use
+                options to make passive income with the premiums earned for
+                writing options.
               </CardContent>
-            </CardItem3>
+            </CardItem>
           </div>
           <div>
-            <CardItem4>
+            <CardItem>
+              {" "}
+              <CardHeader>What is a covered option?</CardHeader>
+              <Divider
+                style={{
+                  width: "80%",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                }}
+              />
+              <CardContent>
+                Covered options is a type of strategy in options trading where
+                options (calls or puts) are sold, but own the underlying to cover for an
+                exercise. Buyers pay a premium to obtain an option, and writers earn the premium to sell an option.
+              </CardContent>
+            </CardItem>
+          </div>
+          <div>
+            <CardItem>
               {" "}
               <CardHeader>What is an exercise?</CardHeader>
               <Divider
@@ -353,9 +317,9 @@ export default function Landing(props) {
                 in portions of the collateral being surrendered to the long
                 holder. As a result, this may cause a social token to be down in
                 the underlying asset (e.g., ETH, WBTC, etc.), but technically up
-                in USD.
+                in USD and vice versa.
               </CardContent>
-            </CardItem4>
+            </CardItem>
           </div>
         </Slider>
       </CardGroup>

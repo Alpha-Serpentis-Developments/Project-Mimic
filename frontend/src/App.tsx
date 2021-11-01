@@ -33,7 +33,6 @@ let nC: any = nwConfig;
 export default function App() {
   let addr: string = JSON.parse(localStorage.getItem("account") || "false");
   let isVisit: boolean = JSON.parse(localStorage.getItem("new") || "true");
-  console.log(isVisit);
   const [visited, setVisited] = useState(isVisit);
 
   const [hasMM, setHasMM] = useState<boolean>(false);
@@ -100,7 +99,6 @@ export default function App() {
   async function getAccountDetail() {
     getChainID();
     const weiBal = await web3.eth.getBalance(acctNum);
-    console.log(weiBal);
     const ethBal = parseInt(weiBal) / 1000000000000000000;
     // setChainId(chain_Id);
     setEthBal(ethBal);

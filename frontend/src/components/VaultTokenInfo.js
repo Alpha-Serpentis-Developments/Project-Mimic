@@ -110,12 +110,12 @@ export default function VaultTokenInfo(props) {
   const [typeHash, setTypeHash] = useState("");
   const [asHash, setASHash] = useState({});
 
-  const [showWriteCall, setShowWriteCall] = useState(false);
+  // const [showWriteCall, setShowWriteCall] = useState(false);
   // const [showWriteSellOption, setShowWriteSellOption] = useState(false);
   // const [showSellCall, setShowSellCall] = useState(false);
   // const [writeColor, setWriteColor] = useState("teal");
-  const [sellColor, setSellColor] = useState("teal");
-  const [settleColor, setSettleColor] = useState("teal");
+  // const [sellColor, setSellColor] = useState("teal");
+  // const [settleColor, setSettleColor] = useState("teal");
 
   const [statusMessage, setStatusMessage] = useState("");
   const [showStatus, setShowStatus] = useState(false);
@@ -637,12 +637,9 @@ export default function VaultTokenInfo(props) {
             <Button
               style={{ width: "40%" }}
               onClick={() => {
-                setShowWriteCall(false);
                 setSM("", "", false, false);
                 setTxHash("");
                 setTxSent(false);
-                setSellColor("teal");
-                setSettleColor("teal");
                 setManagerClick(false);
               }}
               disabled={btnDisabled}
