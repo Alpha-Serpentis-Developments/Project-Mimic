@@ -133,7 +133,6 @@ export default function VTCard(props) {
 
   function oneCard(item) {
     let path = `/vault/${item.address}`;
-    console.log(item);
     return (
       <VTCardContainer>
         <VTNameContainer>

@@ -236,10 +236,18 @@ export default function VaultTokenInfo(props) {
       });
   }
 
-  function overAmount(a, b, c) {
+  function overAmount(input, balance) {
+    if(input > balance) {
+      setSM("Error", "You don't have enough " + props.token.assetObject.tSymbol, true, true);
+      setIconStatus("error");
+      return;
+    }
+  }
+
+  function overAmountETH(a, b, c) {
     c = c * 1e18;
     if (a > b + c) {
-      setSM("Error", "You don't have enough Ether", true, true);
+      setSM("Error", "You don't have enough ETH", true, true);
       setIconStatus("error");
       return;
     } else if (a > b && a < b + c) {
@@ -572,8 +580,7 @@ export default function VaultTokenInfo(props) {
 
             <input
               style={{
-                width: " 60%",
-                marginLeft: "15px",
+                width: "60%",
                 marginRight: "15px",
               }}
               // onChange={(e) => setWriteCallAmt(e.target.value)}
@@ -581,7 +588,7 @@ export default function VaultTokenInfo(props) {
                 if (e.target.value > 0) {
                   if (onAmt === 1) {
                     let a = web3.utils.toWei(e.target.value, "ether");
-                    overAmount(
+                    overAmountETH(
                       a,
                       props.token.assetObject.myBalance,
                       props.ethBal
@@ -601,6 +608,7 @@ export default function VaultTokenInfo(props) {
               direction="right"
               compact
               selection
+              defaultSelectedLabel={options[0]}
               options={options}
               style={{ width: "80px" }}
               onChange={async (e, data) => {
@@ -634,7 +642,7 @@ export default function VaultTokenInfo(props) {
             >
               Write Options
             </Button>
-            <Button
+            {/* <Button
               style={{ width: "40%" }}
               onClick={() => {
                 setSM("", "", false, false);
@@ -645,7 +653,7 @@ export default function VaultTokenInfo(props) {
               disabled={btnDisabled}
             >
               Cancel
-            </Button>
+            </Button> */}
           </ConfirmCancelBtns>
         </Form>
       </MgmrOptionForm>
@@ -679,7 +687,7 @@ export default function VaultTokenInfo(props) {
                 if (e.target.value > 0) {
                   if (onAmt === 1) {
                     let a = web3.utils.toWei(e.target.value, "ether");
-                    overAmount(
+                    overAmountETH(
                       a,
                       props.token.assetObject.myBalance,
                       props.ethBal
@@ -965,8 +973,14 @@ export default function VaultTokenInfo(props) {
 
   async function updateDAmt(e) {
     if (e.target.value > 0) {
-      let a = web3.utils.toWei(e.target.value, "ether");
-      overAmount(a, props.token.assetObject.myBalance, props.ethBal);
+      let a = 0;
+      if(props.token.assetObject.tSymbol === 'WETH') {
+        a = web3.utils.toWei(e.target.value, "ether");
+        overAmountETH(a, props.token.assetObject.myBalance, props.ethBal);
+      } else {
+        a = new web3.utils.BN(e.target.value * 10 ** props.token.assetObject.tDecimals);
+        overAmount(a, props.token.assetObject.myBalance);
+      }
     }
     if(e.target.value === '')
       setDeposit(0);
