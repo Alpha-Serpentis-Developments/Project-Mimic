@@ -22,7 +22,13 @@ export default function Withdraw(props) {
 
 
     // uint256 assetAmount = _amount * (IERC20(asset).balanceOf(address(this)) + collateralAmount - premiumsWithheld - obligatedFees - withheldProtocolFees) / totalSupply();
-    let received = Number(vaultBalance.add(collateralAmount).sub(premiumsWithheld).sub(obligatedFees).sub(withheldProtocolFees).div(totalSupply)) * props.withdrawAmt * (1 - totalFeePercentage);
+    let received;
+
+    if(totalSupply.toString() === '0') {
+      received = props.withdrawAmt;
+    } else {
+      received = Number(vaultBalance.add(collateralAmount).sub(premiumsWithheld).sub(obligatedFees).sub(withheldProtocolFees).div(totalSupply)) * props.withdrawAmt * (1 - totalFeePercentage);
+    }
 
     if(isNaN(received) || received === '') 
       return 0;
