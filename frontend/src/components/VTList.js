@@ -201,7 +201,7 @@ export default function VTList(props) {
     v.updateInfo().then(() => {
       if(v.manager.toLowerCase() === props.acctNum) {
         for(let h = 0; h < managedList.length; h++) {
-          if(managedList[h].manager.toLowerCase() === v.manager.toLowerCase()) {
+          if(managedList[h].manager.toLowerCase() === v.manager.toLowerCase() && managedList[h].address.toLowerCase() === v.address.toLowerCase()) {
             return;
           }
         }
