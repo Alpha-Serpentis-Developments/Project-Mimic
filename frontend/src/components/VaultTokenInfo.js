@@ -802,7 +802,7 @@ export default function VaultTokenInfo(props) {
       </MgmrOptionForm>
     );
   }
-  function renderAdujstDepositFee() {
+  function renderAdjustDepositFee() {
     return (
       <MgmrOptionForm>
         <Form>
@@ -923,7 +923,7 @@ export default function VaultTokenInfo(props) {
           <div> {renderWriteSellOptions()} </div>
 
           <div> {renderAdjustMaxAsset()}</div>
-          <div> {renderAdujstDepositFee()}</div>
+          <div> {renderAdjustDepositFee()}</div>
           <div> {renderAdjustWithdrawFee()}</div>
           <div> {renderWDServe()}</div>
           <div>

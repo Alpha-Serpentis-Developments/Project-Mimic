@@ -11,6 +11,8 @@ export default function Trade(props) {
           backgroundColor: "#070036",
           backgroundImage: "linear-gradient(#8b1bef,#20759D)",
           minHeight: "100vh",
+          tableLayout: "fixed",
+          whiteSpace: 'nowrap'
         }}
       >
         <Table.Body>
@@ -50,7 +52,7 @@ export default function Trade(props) {
               </h1>
               {
                 props.fList.length === 0 ? (
-                  <h1 style={{ fontSize: "20px", color: "white" }}>No Vaults Launched</h1>
+                  <h1 style={{ fontSize: "20px", color: "white" }}>No Other Vaults Launched</h1>
                 ) : (
                   <VTCard
                     tList={props.fList}
