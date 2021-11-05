@@ -8,7 +8,7 @@ export let nwConfig = {
     addressBookAddr: "0x1E31F2DCBad4dc572004Eae6355fB18F9615cBe4",
     controllerAddress: "0x4ccc2339F87F6c59c6893E1A678c2266cA58dC72",
     wethContractAddr: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-    swab: "0x4572f2554421Bd64Bef1c22c8a81840E8D496BeA",
+    swap: "0x4572f2554421Bd64Bef1c22c8a81840E8D496BeA",
     aTokenAddrs: [
       {
         key: "1",
@@ -22,6 +22,17 @@ export let nwConfig = {
       },
     ],
   },
+  42161: {
+    name: "Arbitrum",
+    chainId: 42161,
+    color: "blue",
+    prefix: "https://arbiscan.io/",
+    factoryAddress: "PLACEHOLDER",
+    addressBookAddr: "0x9a33230f59Cc7Cc9A084E0098A2b2934FC7BF7c0",
+    controllerAddress: "0xee30f92cc9bf896679567d1acd551f0e179756fc", // might be wrong?
+    wethContractAddr: "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+    swap: "" // not yet available
+  },
   42: {
     name: "Kovan",
     chainId: 42,
@@ -31,7 +42,7 @@ export let nwConfig = {
     addressBookAddr: "0x8812f219f507e8cfe9d2f1e790164714c5e06a73",
     controllerAddress: "0xdee7d0f8ccc0f7ac7e45af454e5e7ec1552e8e4e",
     wethContractAddr: "0xd0a1e359811322d97991e03f863a0c30c2cf029c",
-    swab: "0x79fb4604f2D7bD558Cda0DFADb7d61D98b28CA9f",
+    swap: "0x79fb4604f2D7bD558Cda0DFADb7d61D98b28CA9f",
     aTokenAddrs: [
       {
         key: "1",
@@ -53,7 +64,7 @@ export let nwConfig = {
     factoryAddress: "0x7a6828ef4ab3cb9c08c40d0a05ad2416c8335c5c",
     addressBookAddr: "0xE71417EEfC794C9B83Fc494861981721e26db0E9",
     controllerAddress: "0x7e9beaccdccee88558aaa2dc121e52ec6226864e",
-    swab: "",
+    swap: "",
     aTokenAddrs: [
       {
         key: "1",

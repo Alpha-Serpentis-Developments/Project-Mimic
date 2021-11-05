@@ -8,7 +8,7 @@ export default function ChainAlert(props) {
       </Header>
       <Modal.Content>
         <Grid textAlign="center">
-          <p>We only supprt Mainnet and Kovan</p>
+          <p>We only supprt Arbitrum and Kovan</p>
         </Grid>
       </Modal.Content>
     </Modal>

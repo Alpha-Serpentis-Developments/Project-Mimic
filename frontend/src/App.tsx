@@ -122,12 +122,13 @@ export default function App() {
       setHasMM(true);
       window.ethereum.on("chainChanged", (chainId: any) => {
         // setChainId(parseInt(chainId));
-        if (parseInt(chainId, 16) !== 1 && parseInt(chainId, 16) !== 42) {
+        let id = parseInt(chainId, 16);
+        if (id !== 42 && id !== 42161) {
           setShowChainAlert(true);
           return;
         }
 
-        setChain(parseInt(chainId, 16));
+        setChain(id);
         setReload(true);
         // Handle the new chain.
         // Correctly handling chain changes can be complicated.
