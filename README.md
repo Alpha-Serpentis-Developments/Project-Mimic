@@ -1,6 +1,6 @@
 # Project Mimic (Optional)
 
-**(This branch is a testing/development branch for v0.2!)**
+**(This branch is a testing/development branch for v0.3!)**
 
 Project Mimic (Optional) is a decentralized social trading platform that uses [Opyn v1](https://v1.opyn.co) and [Opyn v2](https://opyn.co) as the underlying on the Ethereum network. 
 
