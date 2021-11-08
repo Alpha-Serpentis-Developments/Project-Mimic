@@ -10,12 +10,9 @@ contract Factory is ReentrancyGuard {
 
     /// @notice Address of the ProtocolManager
     address public protocolManager;
-    /// @notice Address of the SocialToken implementation
-    address public implementation;
 
-    constructor(address _protocolManager, address _implementation) {
+    constructor(address _protocolManager) {
         protocolManager = _protocolManager;
-        implementation = _implementation;
     }
 
     modifier onlyProtocol {
