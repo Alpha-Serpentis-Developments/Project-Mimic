@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-interface IOptionAdapter {
+import { GeneralActions } from "../interfaces/mimic/GeneralActions.sol";
+
+interface IOptionAdapter is GeneralActions {
     /// -- USER-DEFINED TYPES --
 
     type Collateral is address;
@@ -13,7 +15,7 @@ interface IOptionAdapter {
 
     error Invalid_ActionDNE();
     
-    /// -- ENUMS --
+    /// -- ENUMS & STRUCTS --
 
     /**
      @notice Option protocols may use the following types to define their option tokens
@@ -22,28 +24,6 @@ interface IOptionAdapter {
      - OTHER represents a non-conforming 'option' token (e.g., Squeeth)
      */
     enum OptionType { CALL, PUT, OTHER }
-
-    /**
-     @notice Option protocols may use the following actions
-     - ADD_COLLATERAL adds collateral to the protocol
-     - REMOVE_COLLATERAL removes collateral from the protocol
-     - OPEN_VAULT opens up a 'vault'
-     - WRITE_OPTION writes options
-     - BURN_OPTION burns options
-     - SETTLE settles options
-     - EXERCISE exercies options
-     - BATCH tells the adapter to not individually call the functions
-     */
-    enum Action {
-        ADD_COLLATERAL,
-        REMOVE_COLLATERAL,
-        OPEN_VAULT,
-        WRITE_OPTION,
-        BURN_OPTION,
-        SETTLE,
-        EXERCISE,
-        BATCH
-    }
 
     /**
      @notice Option protocols may use the following struct to define their option token
@@ -62,5 +42,20 @@ interface IOptionAdapter {
         address token;
         OptionType optionType;
     }
+
+    /// -- FUNCTIONS --
+
+    function getCollateral(address _option) external view returns(Collateral);
+    function getUnderlying(address _option) external view returns(Underlying);
+    function getExpirationDate(address _option) external view returns(ExpirationDate);
+    function getStrikePrice(address _option) external view returns(StrikePrice);
+    function getIsPut(address _option) external view returns(bool);
+    function getOptionDetails(address _option) external view returns(
+        Collateral,
+        Underlying,
+        ExpirationDate,
+        StrikePrice,
+        bool
+    );
 
 }

@@ -12,6 +12,22 @@ contract OpynAdapter is OptionAdapter {
     /// @notice Address of Opyn Gamma's AddressBook
     IAddressBook public addressBook;
 
+    function getCollateral(address _option) external view override returns(Collateral) {
+        return Collateral.wrap(OtokenInterface(_option).collateralAsset());
+    }
+    function getUnderlying(address _option) external view override returns(Underlying) {
+        return Underlying.wrap(OtokenInterface(_option).underlyingAsset());
+    }
+    function getExpirationDate(address _option) external view override returns(ExpirationDate) {
+        return ExpirationDate.wrap(OtokenInterface(_option).expiryTimestamp());
+    }
+    function getStrikePrice(address _option) external view override returns(StrikePrice) {
+        return StrikePrice.wrap(OtokenInterface(_option).strikePrice());
+    }
+    function getIsPut(address _option) external view override returns(bool) {
+        return OtokenInterface(_option).isPut();
+    }
+
     function batchOperation(bytes memory _args) internal override {
         Actions.ActionArgs[] memory actions = abi.decode(_args, (Actions.ActionArgs[]));
 

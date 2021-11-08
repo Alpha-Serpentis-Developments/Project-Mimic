@@ -12,25 +12,24 @@ contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
 
     /// -- USER-DEFINED TYPES --
 
-    type DenominationAsset is address;
     type DenomAmt is uint256; // shorthand for DenominationAmount
     type SocialTokenAmt is uint256;
+    type FeePercentage is uint16;
 
     /// -- MODIFIERS & FUNCTIONS --
 
     function deposit(DenomAmt _amt) external nonReentrant {
-
+        _deposit(_amt);    
     }
-
     function withdraw(SocialTokenAmt _amt) external nonReentrant {
-
+        _withdraw(_amt);
     }
 
-    function _deposit(DenomAmt _amt) internal virtual {
+    function _deposit(DenomAmt _amt) internal virtual returns(SocialTokenAmt) {
 
     }
-    function _withdraw(SocialTokenAmt _amt) external nonReentrant {
-        
+    function _withdraw(SocialTokenAmt _amt) internal virtual returns(DenomAmt) {
+
     }
 
     function _feeCalculation(uint256 _amount) internal {
