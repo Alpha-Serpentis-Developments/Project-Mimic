@@ -10,10 +10,6 @@ interface IOptionAdapter is GeneralActions {
     type Underlying is address;
     type ExpirationDate is uint256;
     type StrikePrice is uint256;
-
-    /// -- CUSTOM ERRORS --
-
-    error Invalid_ActionDNE();
     
     /// -- ENUMS & STRUCTS --
 
@@ -44,6 +40,15 @@ interface IOptionAdapter is GeneralActions {
     }
 
     /// -- FUNCTIONS --
+
+    function batchOperation(bytes memory _arguments) external;
+    function addCollateral(bytes memory _arguments) external;
+    function removeCollateral(bytes memory _arguments) external;
+    function openVault(bytes memory _arguments) external;
+    function writeOption(bytes memory _arguments) external;
+    function burnOption(bytes memory _arguments) external;
+    function settle(bytes memory _arguments) external;
+    function exercise(bytes memory _arguments) external;
 
     function getCollateral(address _option) external view returns(Collateral);
     function getUnderlying(address _option) external view returns(Underlying);
