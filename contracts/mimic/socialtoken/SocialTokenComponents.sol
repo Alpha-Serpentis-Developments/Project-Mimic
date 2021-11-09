@@ -53,8 +53,10 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
 
     /// @notice Storage of all positions
     mapping(bytes => Position) public positions;
-    /// @notice Currently active positions
+    /// @notice Currently active positions - recommended to not have more than TEN active positions
     bytes[] public activePositions;
+    /// @notice The protocol manager
+    address public protocolManager;
     /// @notice The token's denomination
     address public denominationAsset;
     /// @notice The option adapter
@@ -63,6 +65,8 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
     address public exchangeAdapter;
     /// @notice The lending adapter
     address public lendingAdapter;
+    /// @notice The token's current uncollected fees
+    uint256 public unredeemedFees;
     /// @notice The token's maximum allowed assets in the denomination asset
     uint256 public maximumAssets;
     /// @notice The token-level deposit fee

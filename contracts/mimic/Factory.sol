@@ -33,6 +33,7 @@ contract Factory is ReentrancyGuard {
 
     function deployNewSocialToken(
         address _scImplementation,
+        address _protocolManager,
         address _optionAdapter,
         address _exchangeAdapter,
         address _lendingAdapter,
