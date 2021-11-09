@@ -2,13 +2,16 @@
 pragma solidity ^0.8.9;
 
 import { GeneralActions } from "../interfaces/mimic/GeneralActions.sol";
-import { IOptionAdapter } from "../adapters/OpynAdapter.sol";
+import { IOptionAdapter } from "../adapters/IOptionAdapter.sol";
 import { IExchangeAdapter } from "../adapters/IExchangeAdapter.sol";
 
+import { ERC20, IERC20 } from "../../oz/token/ERC20/ERC20.sol";
+import { SafeERC20 } from "../../oz/token/ERC20/utils/SafeERC20.sol";
 import { ReentrancyGuardUpgradeable } from "../../oz/security/ReentrancyGuardUpgradeable.sol";
 import { OwnableUpgradeable } from "../../oz/access/OwnableUpgradeable.sol";
 
 contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable {
+    using SafeERC20 for IERC20;
 
     /// -- USER-DEFINED TYPES --
     type PositionSize is uint256;
@@ -16,6 +19,7 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
     /// -- CUSTOM ERRORS --
     error Invalid_ZeroValue();
     error Position_AlreadyOpen();
+    error Position_DidNotClose();
 
     /// -- STRUCTS --
 
@@ -29,6 +33,14 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
         IOptionAdapter.Option option;
         PositionSize size;
         bool isLong;
+    }
+
+    /**
+     @notice The lending position represents what the social trader has decided to execute
+     - size represents the size of the position
+     */
+    struct LendingPosition {
+        PositionSize size;
     }
 
     /// -- CONSTANTS --
@@ -80,9 +92,6 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
 
         if(PositionSize.unwrap(pos.size) != 0)
             revert Position_AlreadyOpen();
-        else {
-            
-        }
 
         _operateActions(_actions, _args);
         
@@ -90,13 +99,32 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
         pos.option = _position.option;
         pos.size = _position.size;
         pos.isLong = _position.isLong;
+
+        emit PositionOpened(posId);
     }
 
     function closePosition(
         GeneralActions.Action[] memory _actions,
-        bytes memory _position
+        bytes memory _position,
+        bytes[] memory _args
     ) external onlyOwner() nonReentrant {
-        
+        Position storage pos = positions[_position];
+
+        _operateActions(_actions, _args);
+
+        if(PositionSize.unwrap(pos.size) != 0) {
+            revert Position_DidNotClose();
+        } else {
+            for(uint256 i; i < activePositions.length; i++) {
+                if(keccak256(abi.encode(activePositions[i])) == keccak256(_position)) {
+                    activePositions[i] = activePositions[activePositions.length - 1];
+                    activePositions.pop();
+                    break;
+                }
+            }
+        }
+
+        emit PositionClosed(_position);
     }
 
     function modifyPosition(bytes memory _position) external onlyOwner() nonReentrant {
@@ -112,7 +140,15 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
         IExchangeAdapter ea = IExchangeAdapter(exchangeAdapter);
         
         for(uint256 i; i < _actions.length; i++) {
-            if(_actions[i] == GeneralActions.Action.BATCH) {
+            if(_actions[i] == GeneralActions.Action.INCREASE_ALLOWANCE) {
+                (address assetToApprove, address approveTo, uint256 amount) = abi.decode(_arguments[i], (address,address,uint256));
+
+                IERC20(assetToApprove).safeIncreaseAllowance(approveTo, amount);
+            } else if(_actions[i] == GeneralActions.Action.DECREASE_ALLOWANCE) {
+                (address assetToDecrease, address approveTo, uint256 amount) = abi.decode(_arguments[i], (address,address,uint256));
+
+                IERC20(assetToDecrease).safeDecreaseAllowance(approveTo, amount);
+            } else if(_actions[i] == GeneralActions.Action.BATCH) {
                 oa.batchOperation(_arguments[i]);
                 return;
             } else if(_actions[i] == GeneralActions.Action.ADD_COLLATERAL) {

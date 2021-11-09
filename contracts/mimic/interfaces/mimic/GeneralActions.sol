@@ -23,7 +23,9 @@ interface GeneralActions {
      - SELL executes a sell order (with some other asset)
      - LEND executes to lend out deposits
      - WITHDRAW_LEND executes to withdraw lent out assets
-     - BATCH tells the adapter to not individually call the functions
+     - INCREASE_ALLOWANCE executes an increase in approval (PRIORITY IN THE ARRAY OF ACTIONS)
+     - DECREASE_ALLOWANCE executes a decrease in approval
+     - BATCH tells the adapter to not individually call the functions (SECOND PRIORITY IN THE ARRAY OF ACTIONS) - WILL END EXECUTION AFTER BATCH CALL
      */
     enum Action {
         ADD_COLLATERAL,
@@ -38,6 +40,8 @@ interface GeneralActions {
         SELL,
         LEND,
         WITHDRAW_LEND,
+        INCREASE_ALLOWANCE,
+        DECREASE_ALLOWANCE,
         BATCH
     }
 }
