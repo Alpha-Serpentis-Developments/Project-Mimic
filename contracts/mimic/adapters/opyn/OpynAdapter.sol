@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import { IOptionAdapter } from "./IOptionAdapter.sol";
+import { IOptionAdapter } from "../IOptionAdapter.sol";
 
-import { OtokenInterface } from "../interfaces/gamma/OtokenInterface.sol";
-import { IAddressBook } from "../interfaces/gamma/IAddressBook.sol";
-import { Actions, GammaTypes, IController } from "../interfaces/gamma/IController.sol";
+import { OtokenInterface } from "../../interfaces/gamma/OtokenInterface.sol";
+import { IAddressBook } from "../../interfaces/gamma/IAddressBook.sol";
+import { Actions, GammaTypes, IController } from "../../interfaces/gamma/IController.sol";
 
 contract OpynAdapter is IOptionAdapter {
 
