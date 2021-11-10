@@ -22,6 +22,37 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
 
     /// -- MODIFIERS & FUNCTIONS --
 
+    function initialize(
+        string memory _name,
+        string memory _symbol,
+        address _protocolManager,
+        address _denominationAsset,
+        address _optionAdapter,
+        address _exchangeAdapter,
+        address _lendingAdapter,
+        address _trader,
+        uint16 _depositFee,
+        uint16 _withdrawalFee,
+        uint16 _managementFee,
+        uint16 _performanceFee,
+        bytes memory _otherInitData
+    ) external virtual initializer {
+        _initialize(
+            _name,
+            _symbol,
+            _protocolManager,
+            _denominationAsset,
+            _optionAdapter,
+            _exchangeAdapter,
+            _lendingAdapter,
+            _trader,
+            _depositFee,
+            _withdrawalFee,
+            _managementFee,
+            _performanceFee
+        );
+    }
+
     function deposit(DenomAmt _amt) external nonReentrant {
         uint256 mint = SocialTokenAmt.unwrap(_deposit(_amt));
         if(mint == 0 || DenomAmt.unwrap(_amt) == 0)
@@ -55,7 +86,6 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
             (SocialTokenAmt.unwrap(_amt) * (IERC20(denominationAsset).balanceOf(address(this)) - unredeemedFees)) / totalSupply()
         );
     }
-
     function _initialize(
         string memory _name,
         string memory _symbol,
@@ -69,7 +99,7 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
         uint16 _withdrawalFee,
         uint16 _managementFee,
         uint16 _performanceFee
-    ) internal initializer {
+    ) internal virtual {
         __ERC20_init(_name, _symbol);
         __Ownable_init();
         if(msg.sender != _trader)
@@ -85,6 +115,7 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
         managementFee = _managementFee;
         performanceFee = _performanceFee;
     }
+
     function _feeCalculation(
         uint16 _rate,
         uint256 _amount,

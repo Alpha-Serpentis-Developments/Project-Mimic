@@ -133,7 +133,7 @@ contract ProtocolManager is ReentrancyGuard {
     /// @param _tag is a bytes(string) value that specifies what the address is for
     /// @param _check is an address to check if it is whitelisted under the tag
     function isWhitelisted(bytes memory _tag, address _check) external view returns(bool) {
-        return whitelist[_tag][_check];
+        return whitelist[_tag][_check] || !useWhitelist;
     }
 
     function _onlyAdmin() internal view {
