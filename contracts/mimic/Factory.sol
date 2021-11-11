@@ -12,7 +12,7 @@ contract Factory is ReentrancyGuard {
     /// -- CUSTOM ERRORS --
     
     error ZeroAddress();
-    error NotWhitelisted();
+    error NotTrusted();
     error Unauthorized();
 
     /// -- CONSTANTS --
@@ -57,10 +57,10 @@ contract Factory is ReentrancyGuard {
         uint16 _performanceFee
     ) external nonReentrant {
         if(
-            protocolManager.isWhitelisted(SC_TAG, _scImplementation) &&
-            protocolManager.isWhitelisted(OA_TAG, _optionAdapter) &&
-            protocolManager.isWhitelisted(EA_TAG, _exchangeAdapter) &&
-            protocolManager.isWhitelisted(L_TAG, _lendingAdapter)
+            protocolManager.isTrusted(SC_TAG, _scImplementation) &&
+            protocolManager.isTrusted(OA_TAG, _optionAdapter) &&
+            protocolManager.isTrusted(EA_TAG, _exchangeAdapter) &&
+            protocolManager.isTrusted(L_TAG, _lendingAdapter)
         ) {
             if(_trader == address(0)) {
                 revert ZeroAddress();
@@ -83,7 +83,7 @@ contract Factory is ReentrancyGuard {
                 _performanceFee
             );
         } else {
-            revert NotWhitelisted();
+            revert NotTrusted();
         }
     }
 

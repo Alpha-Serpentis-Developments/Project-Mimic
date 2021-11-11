@@ -34,8 +34,7 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
         uint16 _depositFee,
         uint16 _withdrawalFee,
         uint16 _managementFee,
-        uint16 _performanceFee,
-        bytes memory _otherInitData
+        uint16 _performanceFee
     ) external virtual initializer {
         _initialize(
             _name,

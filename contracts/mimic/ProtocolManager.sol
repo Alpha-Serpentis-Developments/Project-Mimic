@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 import { ReentrancyGuard } from "../oz/security/ReentrancyGuard.sol";
 
 /**
- @notice Non-upgradeable protocol manager contract that contains the protocol-level fees and whitelist
+ @notice Non-upgradeable protocol manager contract that contains the protocol-level fees and trusted list
  */
 contract ProtocolManager is ReentrancyGuard {
 
@@ -15,10 +15,10 @@ contract ProtocolManager is ReentrancyGuard {
 
     /// -- STATE VARIABLES --
 
-    /// @notice Mapping of whitelisted addresses for each specific tag
-    mapping(bytes => mapping(address => bool)) internal whitelist;
-    /// @notice Determines if the whitelist is in active use or not
-    bool internal useWhitelist;
+    /// @notice Mapping of trusted addresses for each specific tag
+    mapping(bytes => mapping(address => bool)) internal trustedList;
+    /// @notice Determines if the trustedList is in active use or not
+    bool public useTrustedList;
     /// @notice Protocol-level fees for deposits represented with two decimals of precision up to 50% (5000)
     uint16 public depositFee;
     /// @notice Protocol-level fees for withdrawals represented with two decimals of precision up to 50% (5000)
@@ -46,8 +46,8 @@ contract ProtocolManager is ReentrancyGuard {
 
     /// -- EVENTS --
 
-    event UseWhitelistModified(bool status);
-    event WhitelistModified(bytes tag, address addr, bool status);
+    event UseTrustedList(bool status);
+    event TrustedListModified(bytes tag, address addr, bool status);
     event DepositFeeModified(uint16 fee);
     event WithdrawalFeeModified(uint16 fee);
     event PerformanceFeeModified(uint16 fee);
@@ -61,28 +61,28 @@ contract ProtocolManager is ReentrancyGuard {
         _;
     }
     
-    function modifyUseWhitelist(bool _status) external onlyAdmin {
-        useWhitelist = _status;
+    function modifyUseTrustedList(bool _status) external onlyAdmin {
+        useTrustedList = _status;
 
-        emit UseWhitelistModified(_status);
+        emit UseTrustedList(_status);
     }
-    /// @notice Adds an address to the whitelist
-    /// @dev Address added to the whitelist under the provider tag
+    /// @notice Adds an address to the trustedList
+    /// @dev Address added to the trustedList under the provider tag
     /// @param _tag is a bytes(string) representing the purpose of the address
-    /// @param _add is an address being whitelisted
-    function addToWhitelist(bytes memory _tag, address _add) external onlyAdmin {
-        whitelist[_tag][_add] = true;
+    /// @param _add is an address being trusted
+    function addToTrustedList(bytes memory _tag, address _add) external onlyAdmin {
+        trustedList[_tag][_add] = true;
 
-        emit WhitelistModified(_tag, _add, true);
+        emit TrustedListModified(_tag, _add, true);
     }
-    /// @notice Removes an address from the whitelist
-    /// @dev Address removed from the whitelist under the provided tag
+    /// @notice Removes an address from the trustedList
+    /// @dev Address removed from the trustedList under the provided tag
     /// @param _tag is a bytes(string) representing the purpose of the address
-    /// @param _remove is an address being removed from the whitelist
-    function removeFromWhitelist(bytes memory _tag, address _remove) external onlyAdmin {
-        whitelist[_tag][_remove] = false;
+    /// @param _remove is an address being removed from the trustedList
+    function removeFromTrustedList(bytes memory _tag, address _remove) external onlyAdmin {
+        trustedList[_tag][_remove] = false;
 
-        emit WhitelistModified(_tag, _remove, false);
+        emit TrustedListModified(_tag, _remove, false);
     }
     /// @notice Modifies the protocol-level deposit fee
     /// @dev Modifies the protocol-level deposit fee up to 5000 (50%)
@@ -128,12 +128,12 @@ contract ProtocolManager is ReentrancyGuard {
         
         emit ManagementFeeModified(_fee);
     }
-    /// @notice Checks if an address is whitelisted under a tag
-    /// @dev Returns the whitelist status of an address under provided tag
+    /// @notice Checks if an address is trusted under a tag
+    /// @dev Returns the trusted status of an address under provided tag
     /// @param _tag is a bytes(string) value that specifies what the address is for
-    /// @param _check is an address to check if it is whitelisted under the tag
-    function isWhitelisted(bytes memory _tag, address _check) external view returns(bool) {
-        return whitelist[_tag][_check] || !useWhitelist;
+    /// @param _check is an address to check if it is trusted under the tag
+    function isTrusted(bytes memory _tag, address _check) external view returns(bool) {
+        return trustedList[_tag][_check] || !useTrustedList;
     }
 
     function _onlyAdmin() internal view {

@@ -19,7 +19,7 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
     type CostBasis is uint256;
 
     /// -- CUSTOM ERRORS --
-    error AdapterNotWhitelisted();
+    error Adapter_NotTrusted();
     error Invalid_ZeroValue();
     error Invalid_TagDNE();
     error Position_AlreadyOpen();
@@ -88,6 +88,7 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
 
     /// -- EVENTS --
 
+    event AdapterChanged(bytes tag, address adapter);
     event PositionOpened(bytes id);
     event PositionModified(bytes id);
     event PositionClosed(bytes id);
@@ -98,10 +99,13 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
         bytes memory _tag,
         address _newAdapter
     ) external onlyOwner() nonReentrant {
-        if(!ProtocolManager(protocolManager).isWhitelisted(_tag, _newAdapter))
-            revert AdapterNotWhitelisted();
+        if(!ProtocolManager(protocolManager).isTrusted(_tag, _newAdapter))
+            revert Adapter_NotTrusted();
 
         if(bytes32(_tag) == bytes32(OA_TAG)) {
+            if(activePositions.length != 0)
+                revert Position_DidNotClose();
+
             optionAdapter = _newAdapter;
         } else if(bytes32(_tag) == bytes32(EA_TAG)) {
             exchangeAdapter = _newAdapter;
