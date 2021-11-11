@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.10;
 
-import { OptionAdapter } from "../adapters/OptionAdapter.sol";
+import { IOptionAdapter } from "../adapters/IOptionAdapter.sol";
 
-contract TestOptionAdapter is OptionAdapter {
+abstract contract TestOptionAdapter is IOptionAdapter {
     
 }

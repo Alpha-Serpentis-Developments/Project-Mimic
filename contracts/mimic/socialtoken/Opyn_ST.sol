@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.10;
 
 import { SocialToken } from "./SocialToken.sol";
 import { IOptionAdapter } from "../adapters/IOptionAdapter.sol";
@@ -28,7 +28,7 @@ contract Opyn_ST is SocialToken {
         Position storage position = positions[_position];
 
         // Check if position is active and short
-        if(PositionSize.unwrap(position.size) == 0 || !position.isLong) {
+        if(PositionSize.unwrap(position.size) == 0 || position.isLong) {
             revert Position_CannotSettle();
         }
 

@@ -3,6 +3,7 @@
  */
 require('@nomiclabs/hardhat-waffle');
 require("@nomiclabs/hardhat-etherscan");
+require("hardhat-gas-reporter");
 
 const INFURA_URL = '';
 const PRIVATE_KEY = '';
@@ -14,7 +15,7 @@ module.exports = {
   solidity: {
     compilers: [
       {
-        version: "0.8.4",
+        version: "0.8.10",
         settings: {
           optimizer: {
             enabled: true,
