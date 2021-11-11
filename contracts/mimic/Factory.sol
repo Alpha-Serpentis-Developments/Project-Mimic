@@ -54,8 +54,7 @@ contract Factory is ReentrancyGuard {
         uint16 _depositFee,
         uint16 _withdrawalFee,
         uint16 _managementFee,
-        uint16 _performanceFee,
-        bytes memory _otherInitData
+        uint16 _performanceFee
     ) external nonReentrant {
         if(
             protocolManager.isWhitelisted(SC_TAG, _scImplementation) &&
@@ -81,8 +80,7 @@ contract Factory is ReentrancyGuard {
                 _depositFee,
                 _withdrawalFee,
                 _managementFee,
-                _performanceFee,
-                _otherInitData
+                _performanceFee
             );
         } else {
             revert NotWhitelisted();
