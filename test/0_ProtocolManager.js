@@ -1,8 +1,8 @@
 const { expect } = require("chai");
-const { ethers } = require("ethers");
+const { ethers } = require("hardhat");
 
 describe('Protocol Manager', () => {
-    let ProtocolManager, Factory, TestSocialToken, OpynAdapter, protocolManager, factory, testSocialToken, opynAdapter, deployer, manager;
+    let ProtocolManager, Factory, TestSocialToken, OpynAdapter, protocolManager, factory, testSocialToken, testSocialTokenImpl, opynAdapter, deployer, manager;
 
     beforeEach(async () => {
         ProtocolManager = await ethers.getContractFactory('ProtocolManager');
@@ -26,8 +26,8 @@ describe('Protocol Manager', () => {
 
     describe("Add new social token implementation to the trusted list", () => {
         it('Should add the social token implementation to the trusted list', async () => {
-            testSocialToken = await TestSocialToken.deploy();
-            await testSocialToken.initialize(
+            testSocialTokenImpl = await TestSocialToken.deploy();
+            await testSocialTokenImpl.initialize(
                 "",
                 "",
                 "0x0000000000000000000000000000000000000000",
@@ -35,7 +35,7 @@ describe('Protocol Manager', () => {
                 "0x0000000000000000000000000000000000000000",
                 "0x0000000000000000000000000000000000000000",
                 "0x0000000000000000000000000000000000000000",
-                "0x0000000000000000000000000000000000000001",
+                "0x0000000000000000000000000000000000000001", // due to zero address
                 0,
                 0,
                 0,
@@ -44,12 +44,27 @@ describe('Protocol Manager', () => {
 
             await protocolManager.connect(deployer).addToTrustedList(
                 "0x534f4349414c544f4b454e494d504c",
-                testSocialToken.address
+                testSocialTokenImpl.address
             );
 
             expect(await protocolManager.isTrusted(
                 "0x534f4349414c544f4b454e494d504c",
-                testSocialToken.address
+                testSocialTokenImpl.address
+            )).to.be.equal(true);
+        });
+        it('Should add the Opyn adapter to the trusted list', async () => {
+            opynAdapter = await OpynAdapter.deploy(
+                "0x0000000000000000000000000000000000000000" // doesn't have to be the actual address book for this test
+            );
+
+            await protocolManager.connect(deployer).addToTrustedList(
+                "0x4f5054494f4e41444150544552",
+                opynAdapter.address
+            );
+
+            expect(await protocolManager.isTrusted(
+                "0x4f5054494f4e41444150544552",
+                opynAdapter.address
             )).to.be.equal(true);
         });
     });
