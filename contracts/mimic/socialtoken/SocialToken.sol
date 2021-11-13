@@ -53,8 +53,10 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
         );
     }
 
+    /// @notice Deposits some asset in exchange for social tokens
+    /// @dev Deposit the denominationAsset in which new social tokens get minted
+    /// @param _amt Is the deposit amount 
     function deposit(DenomAmt _amt) external nonReentrant {
-        // Calculate the mint amount before fees
         uint256 mint;
 
         // Calculate both the protocol and social token fees
@@ -63,6 +65,7 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
             _feeCalculation(depositFee, mint, denominationAsset, address(this))
         );
         
+        // Calculate the minting amount
         mint = SocialTokenAmt.unwrap(_deposit(DenomAmt.wrap(DenomAmt.unwrap(_amt) - protocolFee - tokenFee)));
 
         // Zero-value safety checks
@@ -72,9 +75,12 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
         // Mint new social tokens
         _mint(msg.sender, mint);
 
-        // Deposit the 
+        // Deposit the denomination asset to the vault
         IERC20(denominationAsset).safeTransferFrom(msg.sender, address(this), DenomAmt.unwrap(_amt) - protocolFee - tokenFee);
     }
+    /// @notice Withdraw some asset in exchange for the social token
+    /// @dev Burns the social tokens and redeems the denomination asset
+    /// @param _amt is the amount of social tokens being burned
     function withdraw(SocialTokenAmt _amt) external nonReentrant {
         uint256 share = DenomAmt.unwrap(_withdraw(_amt));
         if(share == 0 || SocialTokenAmt.unwrap(_amt) == 0)
