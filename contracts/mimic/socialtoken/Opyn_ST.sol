@@ -51,20 +51,20 @@ contract Opyn_ST is SocialToken {
             _share = SocialTokenAmt.wrap(DenomAmt.unwrap(_amt));
         } else {
             _share = SocialTokenAmt.wrap(
-                (totalSupply() * DenomAmt.unwrap(_amt)) / (IERC20(denominationAsset).balanceOf(address(this)) + _calculateCollateralAmount() - unredeemedFees)
+                (totalSupply() * DenomAmt.unwrap(_amt)) / (IERC20(denominationAsset).balanceOf(address(this)) + _calculateTempWithheld() - unredeemedFees)
             );
         }
     }
 
     function _withdraw(SocialTokenAmt _amt) internal view override returns(DenomAmt _value) {
         _value = DenomAmt.wrap(
-            (SocialTokenAmt.unwrap(_amt) * (IERC20(denominationAsset).balanceOf(address(this)) + _calculateCollateralAmount() - unredeemedFees)) / totalSupply()
+            (SocialTokenAmt.unwrap(_amt) * (IERC20(denominationAsset).balanceOf(address(this)) + _calculateTempWithheld() - unredeemedFees)) / totalSupply()
         );
     }
 
-    function _calculateCollateralAmount() internal view returns(uint256 collat) {
+    function _calculateTempWithheld() internal view returns(uint256 tempWithheld) {
         for(uint256 i; i < activePositions.length; i++) {
-            collat += CostBasis.unwrap(positions[activePositions[i]].costBasis);
+            tempWithheld += CostBasis.unwrap(positions[activePositions[i]].costBasis);
         }
     }
 

@@ -17,10 +17,10 @@ contract Factory is ReentrancyGuard {
 
     /// -- CONSTANTS --
 
-    bytes public constant SC_TAG = "0x534f4349414c544f4b454e494d504c"; // bytes("SOCIALTOKENIMPL")
-    bytes public constant OA_TAG = "0x4f5054494f4e41444150544552"; // bytes("OPTIONADAPTER")
-    bytes public constant EA_TAG = "0x45584348414e474541444150544552"; // bytes("EXCHANGEADAPTER")
-    bytes public constant L_TAG = "0x4c454e44494e4741444150544552"; // bytes("LENDINGADAPTER")
+    bytes public constant SC_TAG = "SOCIALTOKENIMPL"; // 0x534f4349414c544f4b454e494d504c
+    bytes public constant OA_TAG = "OPTIONADAPTER"; // 0x4f5054494f4e41444150544552
+    bytes public constant EA_TAG = "EXCHANGEADAPTER"; // 0x45584348414e474541444150544552
+    bytes public constant L_TAG = "LENDINGADAPTER"; // 0x4c454e44494e4741444150544552
 
     /// -- STATE VARIABLES --
 
