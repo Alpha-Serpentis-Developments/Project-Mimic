@@ -32,11 +32,16 @@ export default function Home() {
           </p>
           
         </div>
-
+        <button className={styles.launchbtn}>
+          Launch App
+        </button>
         <div className={styles.cardscontainer}>
           <div className={styles.cards}>
             <p>Venus</p>
             <p>@Venus</p>
+            <div className={styles.venusicon}>
+              <img className={styles.venus}src="/venus_square 1.png" ></img>
+            </div>
           </div>
           <div className={styles.cards}>
             <p>AAAA</p>
@@ -45,8 +50,28 @@ export default function Home() {
             <p>AAAA</p>
           </div>
         </div>
+        <p className={styles.title}>About Optional</p>
+        <div>
+          <div className={styles.optionsdesc}>
+            <div>
+              <p className={styles.optionstitle}> Exposure to Options</p>
+              <p>Optional allows both social traders and their followers to expose themselves to the options market utilizing decentralized option protocols like Opyn.</p>
+            </div>
+            <div className={styles.optionsicon}>
+              <img className={styles.opyn}src="/image 5.png" ></img>
+            </div>
+          </div>
+          <div className={styles.earndesc}>
+            <div className={styles.earnicon}>
+              <img className={styles.earn}src="/Vector.png" ></img>
+            </div>
+            <div>
+              <p className={styles.optionstitle}> Earn Yield for Followers,<br></br> Earn Fees for Yourself</p>
+              <p>Social traders can earn fees for themselves in a variety of ways, especially if their performance is exceptional!</p>
+            </div>
+          </div>
+        </div>
       </main>
-
     </div>
   )
 }

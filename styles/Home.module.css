@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100;200;300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Corben&display=swap');
 .nav {
   margin: 0 auto;
   width: 100%;
@@ -27,10 +29,29 @@
   align-items: center;
   display: flex;
 }
+
+.launchbtn:active{
+  background-color: #9b46b8;
+}
+.launchbtn{
+  background-color: #CC49F7;
+  filter: drop-shadow(0px 4px 9px rgba(0, 0, 0, 0.25));
+  margin-top: 30px;
+  margin-bottom: 30px;
+  font-size: 26px;
+  padding: 0.4% 1.5% 0.4% 1.5% ;
+  font-weight: 700; 
+  color: #FFFFFF;
+  font-family: 'Corben' cursive;
+  border-radius: 10%;
+  margin-left: 45%;
+  border-width: 0px;
+}
 .connectbtn:active{
   background-color: #9b46b8;
 }
 .connectbtn {
+  filter: drop-shadow(0px 4px 9px rgba(0, 0, 0, 0.25));
   margin-top: 30px;
   margin-left: 60%;
   width: 150px;
@@ -53,6 +74,20 @@
 .icon {
   margin-top: 20px;
   margin-left: 50px;
+}
+.opyn {
+  margin-top: 15%;
+  margin-left: 5%;
+}
+.earn {
+  margin-top: 30%;
+  margin-left: 2.5%;
+}
+.venus{
+  width: 75%;
+  height: 75%;
+  margin-left: 15%;
+  margin-top: 10%;
 }
 .title {
   padding-top: 5%;
@@ -82,17 +117,80 @@
   overflow: visible;
 }
 .cards{
-  width: 75%;
+  width: 396px;
   display: flex;
-  height: 150%;
   flex-direction: row;
-  align-items: flex-start;
-  padding: 30px;
+  margin-left: 10;
   margin-left: 10%;
+  font-family: 'Roboto Slab' serif;
+  font-weight: 400;
   color: #FFFFFF;
-  background-color: #cc49f7c4;
+  background-color: rgba(196, 196, 196, 0.5);
+  height: 279px;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 25px;
 }
-@font-face {
-  font-family: 'Roboto Slab', serif;
-  src: url("https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@500&display=swap");
+.optionstitle{
+  text-align: center;
+  color: #FFFFFF;
+  font-family: 'Roboto Slab' serif;
+  font-size: 40px;
+  margin: 0 auto;
+  font-weight: 500;
+}
+.line {
+  border: 1px solid #FFFFFF;
+  width: 85%;
+  height: 0px;
+}
+.optionsdesc{
+  text-align: center;
+  padding-right: 20%;
+  margin-left: 16%;
+  margin-top: 10%;
+  display: grid;
+  grid-auto-flow: column;
+  overflow: visible;
+  color: #FFFFFF;
+  font-family: 'Roboto Slab' serif;
+  font-size: 24px;
+  font-weight: 400;
+}
+.earndesc{
+  text-align: center;
+  padding-left: 10%;
+  margin-right: 15%;
+  margin-top: 10%;
+  display: grid;
+  grid-auto-flow: column;
+  overflow: visible;
+  color: #FFFFFF;
+  font-family: 'Roboto Slab' serif;
+  font-size: 24px;
+  font-weight: 400;
+}
+.optionsicon{
+  height: 125px;
+  width: 125px;
+  margin-left: 40%;
+  margin-right: 40%;
+  background: #FFFFFF;
+  border-radius: 62.5px;
+
+}
+.venusicon{
+
+  margin-left: 40%;
+  background: #FFFFFF;
+  border-radius: 62.5px;
+  height: 125px;
+  width: 125px;
+}
+.earnicon{
+  height: 125px;
+  width: 125px;
+  margin-right: 50%;
+  background: #FFFFFF;
+  border-radius: 62.5px;
+
 }
