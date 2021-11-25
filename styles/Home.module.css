@@ -42,7 +42,7 @@
   padding: 0.4% 1.5% 0.4% 1.5% ;
   font-weight: 700; 
   color: #FFFFFF;
-  font-family: 'Corben' cursive;
+  font-family: 'Corben' ;
   border-radius: 10%;
   margin-left: 45%;
   border-width: 0px;
@@ -113,16 +113,29 @@
 }
 .cardscontainer{
   display: grid;
-  grid-auto-flow: column;
+  grid-auto-flow: row;
   overflow: visible;
+}
+.cardname{
+  width: fit-content;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  font-size: 36px;
+  display: inline;
+  height: fit-content;
+}
+.cardat{
+
+  width: fit-content;
+  margin-top: 0px;
+  font-size: 20px;
 }
 .cards{
   width: 396px;
   display: flex;
   flex-direction: row;
-  margin-left: 10;
   margin-left: 10%;
-  font-family: 'Roboto Slab' serif;
+  font-family: 'Corben';
   font-weight: 400;
   color: #FFFFFF;
   background-color: rgba(196, 196, 196, 0.5);
@@ -180,7 +193,7 @@
 }
 .venusicon{
 
-  margin-left: 40%;
+  
   background: #FFFFFF;
   border-radius: 62.5px;
   height: 125px;

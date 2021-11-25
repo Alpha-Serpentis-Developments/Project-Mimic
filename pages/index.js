@@ -37,19 +37,17 @@ export default function Home() {
         </button>
         <div className={styles.cardscontainer}>
           <div className={styles.cards}>
-            <p>Venus</p>
-            <p>@Venus</p>
             <div className={styles.venusicon}>
               <img className={styles.venus}src="/venus_square 1.png" ></img>
             </div>
-          </div>
-          <div className={styles.cards}>
-            <p>AAAA</p>
-          </div>
-          <div className={styles.cards}>
-            <p>AAAA</p>
+            <div>
+              <p className={styles.cardname}>Venus</p>
+              <p className={styles.cardat}>@Venus</p>
+            </div>
+            
           </div>
         </div>
+
         <p className={styles.title}>About Optional</p>
         <div>
           <div className={styles.optionsdesc}>
