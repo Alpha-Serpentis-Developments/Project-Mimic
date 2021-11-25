@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100;200;300;400;500;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Corben&display=swap');
+
 .nav {
   margin: 0 auto;
   width: 100%;
@@ -15,7 +16,7 @@
 .links a{
   padding-left: 5%;
   padding-top: 10%;
-  color: #FFFFFF;
+  color: var(--white);
   font-family: 'Roboto Slab' serif;
   font-weight: 500;
   font-size: 26px;
@@ -31,24 +32,24 @@
 }
 
 .launchbtn:active{
-  background-color: #9b46b8;
+  background-color: var(--active);
 }
 .launchbtn{
-  background-color: #CC49F7;
+  background-color: var(--regular);
   filter: drop-shadow(0px 4px 9px rgba(0, 0, 0, 0.25));
   margin-top: 30px;
   margin-bottom: 30px;
   font-size: 26px;
   padding: 0.4% 1.5% 0.4% 1.5% ;
   font-weight: 700; 
-  color: #FFFFFF;
+  color: var(--white);
   font-family: 'Corben' ;
   border-radius: 10%;
   margin-left: 45%;
   border-width: 0px;
 }
 .connectbtn:active{
-  background-color: #9b46b8;
+  background-color: var(--active);
 }
 .connectbtn {
   filter: drop-shadow(0px 4px 9px rgba(0, 0, 0, 0.25));
@@ -57,8 +58,8 @@
   width: 150px;
   height: 44px;
   border-width: 0px;
-  background-color: #CC49F7;
-  color: #FFFFFF;
+  background-color: var(--regular);;
+  color: var(--white);
   font-size: 26px;
   font-weight: 500;
   font-family: 'Roboto Slab' serif;
@@ -92,22 +93,21 @@
 .title {
   padding-top: 5%;
   text-align: center;
-  color: #FFFFFF;
+  color: var(--white);
   font-family: 'Roboto Slab' serif;
   font-size: 70px;
   font-weight: 500;
 }
 .desc{
   margin-left: 30%;
-  color: #FFFFFF;
+  color: var(--white);
   font-family: 'Roboto Slab' serif;
   font-size: 40px;
   font-weight: 340;
 }
 .purp {
-  color: #9b46b8;
+  color:  var(--active);
   
-  font-family: 'Roboto Slab' serif;
   font-size: 40px;
   font-weight: 550;
 }
@@ -124,8 +124,8 @@
   display: inline;
   height: fit-content;
 }
-.cardat{
 
+.cardat{
   width: fit-content;
   margin-top: 0px;
   font-size: 20px;
@@ -137,7 +137,7 @@
   margin-left: 10%;
   font-family: 'Corben';
   font-weight: 400;
-  color: #FFFFFF;
+  color: var(--white);
   background-color: rgba(196, 196, 196, 0.5);
   height: 279px;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
@@ -145,14 +145,14 @@
 }
 .optionstitle{
   text-align: center;
-  color: #FFFFFF;
+  color: var(--white);
   font-family: 'Roboto Slab' serif;
   font-size: 40px;
   margin: 0 auto;
   font-weight: 500;
 }
 .line {
-  border: 1px solid #FFFFFF;
+  border: 1px solid var(--white);
   width: 85%;
   height: 0px;
 }
@@ -164,7 +164,7 @@
   display: grid;
   grid-auto-flow: column;
   overflow: visible;
-  color: #FFFFFF;
+  color: var(--white);
   font-family: 'Roboto Slab' serif;
   font-size: 24px;
   font-weight: 400;
@@ -177,7 +177,7 @@
   display: grid;
   grid-auto-flow: column;
   overflow: visible;
-  color: #FFFFFF;
+  color: var(--white);
   font-family: 'Roboto Slab' serif;
   font-size: 24px;
   font-weight: 400;
@@ -187,14 +187,14 @@
   width: 125px;
   margin-left: 40%;
   margin-right: 40%;
-  background: #FFFFFF;
+  background: var(--white);
   border-radius: 62.5px;
 
 }
 .venusicon{
 
   
-  background: #FFFFFF;
+  background: var(--white);
   border-radius: 62.5px;
   height: 125px;
   width: 125px;
@@ -203,7 +203,7 @@
   height: 125px;
   width: 125px;
   margin-right: 50%;
-  background: #FFFFFF;
+  background: var(--white);
   border-radius: 62.5px;
 
 }

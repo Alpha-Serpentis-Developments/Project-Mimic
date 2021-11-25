@@ -5,4 +5,10 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
-
+:root{
+  --bitcoin: #FFA857;
+  --white: #FFFFFF;
+  --dtokens: #8151E6;
+  --active: #9b46b8;
+  --regular: #CC49F7;
+}

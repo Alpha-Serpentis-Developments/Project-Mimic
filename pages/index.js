@@ -44,10 +44,10 @@ export default function Home() {
               <p className={styles.cardname}>Venus</p>
               <p className={styles.cardat}>@Venus</p>
             </div>
+            <p>Social Rating: <strong><u>B</u></strong></p>
             
           </div>
         </div>
-
         <p className={styles.title}>About Optional</p>
         <div>
           <div className={styles.optionsdesc}>
