@@ -10,13 +10,13 @@ export default function Navbar() {
 				<Link href="/">
 					<a>Home</a>
 				</Link>
-				<Link href="">
+				<Link href="/trade">
 					<a>Trade</a>
 				</Link>
-				<Link href="">
+				<Link href="/manager">
 					<a>Manager</a>
 				</Link>
-				<Link href="">
+				<Link href="/docs">
 					<a>Docs</a>
 				</Link>
 			</div>
