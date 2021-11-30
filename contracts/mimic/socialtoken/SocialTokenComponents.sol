@@ -54,9 +54,9 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
 
     /// -- CONSTANTS --
 
-    bytes public constant OA_TAG = "0x4f5054494f4e41444150544552"; // bytes("OPTIONADAPTER")
-    bytes public constant EA_TAG = "0x45584348414e474541444150544552"; // bytes("EXCHANGEADAPTER")
-    bytes public constant L_TAG = "0x4c454e44494e4741444150544552"; // bytes("LENDINGADAPTER")
+    bytes public constant OA_TAG = "OPTIONADAPTER"; // 0x4f5054494f4e41444150544552
+    bytes public constant EA_TAG = "EXCHANGEADAPTER"; // 0x45584348414e474541444150544552
+    bytes public constant L_TAG = "LENDINGADAPTER"; // 0x4c454e44494e4741444150544552
 
     /// -- STATE VARIABLES --
 
@@ -118,8 +118,32 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
     function openPosition(
         GeneralActions.Action[] memory _actions,
         Position memory _position,
-        bytes[] memory _args
+        bytes[] calldata _args
     ) external onlyOwner() nonReentrant {
+        _openPosition(_actions, _position, _args);
+    }
+
+    function closePosition(
+        GeneralActions.Action[] memory _actions,
+        bytes memory _position,
+        bytes[] calldata _args
+    ) external onlyOwner() nonReentrant {
+        _closePosition(_actions, _position, _args);
+    }
+
+    function modifyPosition(
+        GeneralActions.Action[] memory _actions,
+        bytes memory _position,
+        bytes[] calldata _args
+    ) external onlyOwner() nonReentrant {
+        _modifyPosition(_actions, _position, _args);
+    }
+
+    function _openPosition(
+        GeneralActions.Action[] memory _actions,
+        Position memory _position,
+        bytes[] calldata _args
+    ) internal virtual {
         bytes memory posId = abi.encode(_position);
         Position storage pos = positions[posId];
 
@@ -137,32 +161,24 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
         emit PositionOpened(posId);
     }
 
-    function closePosition(
+    function _modifyPosition(
         GeneralActions.Action[] memory _actions,
         bytes memory _position,
-        bytes[] memory _args
-    ) external onlyOwner() nonReentrant {
-        _closePosition(_actions, _position, _args);
-    }
-
-    function modifyPosition(
-        GeneralActions.Action[] memory _actions,
-        bytes memory _position,
-        bytes[] memory _args
-    ) external onlyOwner() nonReentrant {
+        bytes[] calldata _args
+    ) internal virtual {
 
     }
 
     function _closePosition(
         GeneralActions.Action[] memory _actions,
         bytes memory _position,
-        bytes[] memory _args
+        bytes[] calldata _args
     ) internal virtual {
         Position storage pos = positions[_position];
 
         _operateActions(_actions, _args);
 
-        if(PositionSize.unwrap(pos.size) != 0) {
+        if(!_didPositionClose(pos)) {
             revert Position_DidNotClose();
         } else {
             for(uint256 i; i < activePositions.length; i++) {
@@ -177,11 +193,16 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
         emit PositionClosed(_position);
     }
 
+    function _didPositionClose(Position storage _position) internal view virtual returns(bool) {
+        return PositionSize.unwrap(_position.size) == 0;
+    }
+
     /// @notice Operates the specified action(s)
     /// @dev Allows to execute the specified actions with said arguments
     /// @param _actions is an array of the provided actions
     /// @param _arguments is an array of encoded data of the arguments being passed that coincides with the action
-    function _operateActions(GeneralActions.Action[] memory _actions, bytes[] memory _arguments) internal returns(bytes memory returnData) {
+    /// @return returnData is the data returned by the operations concatenated together in order of their operation
+    function _operateActions(GeneralActions.Action[] memory _actions, bytes[] calldata _arguments) internal returns(bytes memory returnData) {
         IOptionAdapter oa = IOptionAdapter(optionAdapter);
         IExchangeAdapter ea = IExchangeAdapter(exchangeAdapter);
         ILendingAdapter la = ILendingAdapter(lendingAdapter);

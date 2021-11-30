@@ -41,14 +41,14 @@ interface IOptionAdapter is GeneralActions {
 
     /// -- FUNCTIONS --
 
-    function batchOperation(bytes memory _arguments) external returns(bytes memory);
-    function addCollateral(bytes memory _arguments) external returns(bytes memory);
-    function removeCollateral(bytes memory _arguments) external returns(bytes memory);
-    function openVault(bytes memory _arguments) external returns(bytes memory);
-    function writeOption(bytes memory _arguments) external returns(bytes memory);
-    function burnOption(bytes memory _arguments) external returns(bytes memory);
-    function settle(bytes memory _arguments) external returns(bytes memory);
-    function exercise(bytes memory _arguments) external returns(bytes memory);
+    function batchOperation(bytes calldata _arguments) external returns(bytes memory);
+    function addCollateral(bytes calldata _arguments) external returns(bytes memory);
+    function removeCollateral(bytes calldata _arguments) external returns(bytes memory);
+    function openVault(bytes calldata _arguments) external returns(bytes memory);
+    function writeOption(bytes calldata _arguments) external returns(bytes memory);
+    function burnOption(bytes calldata _arguments) external returns(bytes memory);
+    function settle(bytes calldata _arguments) external returns(bytes memory);
+    function exercise(bytes calldata _arguments) external returns(bytes memory);
 
     function getCollateral(address _option) external view returns(Collateral);
     function getUnderlying(address _option) external view returns(Underlying);

@@ -23,6 +23,6 @@ interface IExchangeAdapter {
         Exchange exchange;
     }
 
-    function buy(bytes memory _arguments) external returns(bytes memory);
-    function sell(bytes memory _arguments) external returns(bytes memory);
+    function buy(bytes calldata _arguments) external returns(bytes memory);
+    function sell(bytes calldata _arguments) external returns(bytes memory);
 }

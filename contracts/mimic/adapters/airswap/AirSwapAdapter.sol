@@ -14,10 +14,10 @@ contract AirSwapAdapter is IExchangeAdapter {
         airswapExchange = _exchange;
     }
 
-    function buy(bytes memory _arguments) external override returns(bytes memory) {
+    function buy(bytes calldata _arguments) external override returns(bytes memory) {
         _swap(_arguments);
     }
-    function sell(bytes memory _arguments) external override returns(bytes memory) {
+    function sell(bytes calldata _arguments) external override returns(bytes memory) {
         _swap(_arguments);
     }
 
