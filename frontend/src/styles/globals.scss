@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100;200;300;400;500;600&display=swap');
+
+* {
+	padding: 0;
+	margin: 0;
+	box-sizing: border-box;
+  color: #ffffff
+}
+
+html,
+body {
+	font-family: "Roboto Slab";
+	background: linear-gradient(287.56deg, #5d86ef 0%, #f2b6f3 100%);
+}
+
+.container {
+	margin: 40px auto;
+	width: 1280px;
+}
+
+:root {
+	--bitcoin: #ffa857;
+	--white: #ffffff;
+	--dtokens: #8151e6;
+	--active: #9b46b8;
+	--regular: #cc49f7;
+}
