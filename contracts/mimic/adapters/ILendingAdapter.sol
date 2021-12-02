@@ -11,5 +11,6 @@ interface ILendingAdapter {
     }
 
     function deposit(bytes calldata _args) external;
+
     function withdraw(bytes calldata _args) external;
 }

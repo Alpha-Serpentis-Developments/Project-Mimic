@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.6;
 
-import { ProtocolManager } from "./ProtocolManager.sol";
-import { SocialToken } from "./socialtoken/SocialToken.sol";
+import {ProtocolManager} from "./ProtocolManager.sol";
+import {SocialToken} from "./socialtoken/SocialToken.sol";
 
-import { Clones } from "../oz/proxy/Clones.sol";
-import { ReentrancyGuard } from "../oz/security/ReentrancyGuard.sol";
+import {Clones} from "../oz/proxy/Clones.sol";
+import {ReentrancyGuard} from "../oz/security/ReentrancyGuard.sol";
 
 contract Factory is ReentrancyGuard {
-
     /// -- CUSTOM ERRORS --
-    
+
     error ZeroAddress();
     error NotTrusted();
     error Unauthorized();
@@ -37,7 +36,7 @@ contract Factory is ReentrancyGuard {
 
     /// -- MODIFIER & FUNCTIONS --
 
-    modifier onlyProtocol {
+    modifier onlyProtocol() {
         _onlyProtocol();
         _;
     }
@@ -56,13 +55,13 @@ contract Factory is ReentrancyGuard {
         uint16 _managementFee,
         uint16 _performanceFee
     ) external nonReentrant {
-        if(
+        if (
             protocolManager.isTrusted(SC_TAG, _scImplementation) &&
             protocolManager.isTrusted(OA_TAG, _optionAdapter) &&
             protocolManager.isTrusted(EA_TAG, _exchangeAdapter) &&
             protocolManager.isTrusted(L_TAG, _lendingAdapter)
         ) {
-            if(_trader == address(0)) {
+            if (_trader == address(0)) {
                 revert ZeroAddress();
             }
 
@@ -88,8 +87,6 @@ contract Factory is ReentrancyGuard {
     }
 
     function _onlyProtocol() internal view {
-        if(msg.sender != address(protocolManager))
-            revert Unauthorized();
+        if (msg.sender != address(protocolManager)) revert Unauthorized();
     }
-
 }
