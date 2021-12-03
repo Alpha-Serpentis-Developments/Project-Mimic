@@ -9,4 +9,7 @@ interface ILendingAdapter {
         DEPOSIT,
         WITHDRAW
     }
+
+    function deposit(bytes memory _args) external;
+    function withdraw(bytes memory _args) external;
 }

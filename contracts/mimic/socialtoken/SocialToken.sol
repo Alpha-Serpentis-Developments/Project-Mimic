@@ -61,8 +61,8 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
 
         // Calculate both the protocol and social token fees
         (uint256 protocolFee, uint256 tokenFee) = (
-            _feeCalculation(ProtocolManager(protocolManager).depositFee(), mint, denominationAsset, protocolManager),
-            _feeCalculation(depositFee, mint, denominationAsset, address(this))
+            _feeCalculation(DenomAmt.unwrap(_amt), denominationAsset, protocolManager, ProtocolManager(protocolManager).depositFee()),
+            _feeCalculation(DenomAmt.unwrap(_amt), denominationAsset, address(this), depositFee)
         );
         
         // Calculate the minting amount
@@ -87,8 +87,8 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
             revert Invalid_ZeroValue();
 
         (uint256 protocolFee, uint256 tokenFee) = (
-            _feeCalculation(ProtocolManager(protocolManager).withdrawalFee(), share, denominationAsset, protocolManager),
-            _feeCalculation(depositFee, share, denominationAsset, address(this))
+            _feeCalculation(share, denominationAsset, protocolManager, ProtocolManager(protocolManager).withdrawalFee()),
+            _feeCalculation(share, denominationAsset, address(this), depositFee)
         );
 
         _burn(msg.sender, SocialTokenAmt.unwrap(_amt));
@@ -141,10 +141,10 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
     }
 
     function _feeCalculation(
-        uint16 _rate,
         uint256 _amount,
         address _token,
-        address _sendTo
+        address _sendTo,
+        uint16 _rate
     ) internal virtual returns(uint256 fee) {
         fee = _amount * _rate / 10000;
 

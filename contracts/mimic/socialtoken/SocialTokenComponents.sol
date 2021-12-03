@@ -5,6 +5,7 @@ import { ProtocolManager } from "../ProtocolManager.sol";
 import { GeneralActions } from "../interfaces/mimic/GeneralActions.sol";
 import { IOptionAdapter } from "../adapters/IOptionAdapter.sol";
 import { IExchangeAdapter } from "../adapters/IExchangeAdapter.sol";
+import { ILendingAdapter } from "../adapters/ILendingAdapter.sol";
 
 import { ERC20, IERC20 } from "../../oz/token/ERC20/ERC20.sol";
 import { SafeERC20 } from "../../oz/token/ERC20/utils/SafeERC20.sol";
@@ -141,23 +142,7 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
         bytes memory _position,
         bytes[] memory _args
     ) external onlyOwner() nonReentrant {
-        Position storage pos = positions[_position];
-
-        _operateActions(_actions, _args);
-
-        if(PositionSize.unwrap(pos.size) != 0) {
-            revert Position_DidNotClose();
-        } else {
-            for(uint256 i; i < activePositions.length; i++) {
-                if(keccak256(abi.encode(activePositions[i])) == keccak256(_position)) {
-                    activePositions[i] = activePositions[activePositions.length - 1];
-                    activePositions.pop();
-                    break;
-                }
-            }
-        }
-
-        emit PositionClosed(_position);
+        _closePosition(_actions, _position, _args);
     }
 
     function modifyPosition(
@@ -168,13 +153,38 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
 
     }
 
+    function _closePosition(
+        GeneralActions.Action[] memory _actions,
+        bytes memory _position,
+        bytes[] memory _args
+    ) internal virtual {
+        Position storage pos = positions[_position];
+
+        _operateActions(_actions, _args);
+
+        if(PositionSize.unwrap(pos.size) != 0) {
+            revert Position_DidNotClose();
+        } else {
+            for(uint256 i; i < activePositions.length; i++) {
+                if(keccak256(activePositions[i]) == keccak256(_position)) {
+                    activePositions[i] = activePositions[activePositions.length - 1];
+                    activePositions.pop();
+                    break;
+                }
+            }
+        }
+
+        emit PositionClosed(_position);
+    }
+
     /// @notice Operates the specified action(s)
     /// @dev Allows to execute the specified actions with said arguments
     /// @param _actions is an array of the provided actions
     /// @param _arguments is an array of encoded data of the arguments being passed that coincides with the action
-    function _operateActions(GeneralActions.Action[] memory _actions, bytes[] memory _arguments) internal returns(bytes memory) {
+    function _operateActions(GeneralActions.Action[] memory _actions, bytes[] memory _arguments) internal returns(bytes memory returnData) {
         IOptionAdapter oa = IOptionAdapter(optionAdapter);
         IExchangeAdapter ea = IExchangeAdapter(exchangeAdapter);
+        ILendingAdapter la = ILendingAdapter(lendingAdapter);
         
         for(uint256 i; i < _actions.length; i++) {
             if(_actions[i] == GeneralActions.Action.INCREASE_ALLOWANCE) {
@@ -186,30 +196,29 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
 
                 IERC20(assetToDecrease).safeDecreaseAllowance(approveTo, amount);
             } else if(_actions[i] == GeneralActions.Action.BATCH) {
-                oa.batchOperation(_arguments[i]);
-                return "";
+                return bytes.concat(returnData, oa.batchOperation(_arguments[i]));
             } else if(_actions[i] == GeneralActions.Action.ADD_COLLATERAL) {
-                oa.addCollateral(_arguments[i]);
+                returnData = bytes.concat(returnData, oa.addCollateral(_arguments[i]));
             } else if(_actions[i] == GeneralActions.Action.REMOVE_COLLATERAL) {
-                oa.removeCollateral(_arguments[i]);
+                returnData = bytes.concat(returnData, oa.removeCollateral(_arguments[i]));
             } else if(_actions[i] == GeneralActions.Action.OPEN_VAULT) {
-                oa.openVault(_arguments[i]);
+                returnData = bytes.concat(returnData, oa.openVault(_arguments[i]));
             } else if(_actions[i] == GeneralActions.Action.WRITE_OPTION) {
-                oa.writeOption(_arguments[i]);
+                returnData = bytes.concat(returnData, oa.writeOption(_arguments[i]));
             } else if(_actions[i] == GeneralActions.Action.BURN_OPTION) {
-                oa.burnOption(_arguments[i]);
+                returnData = bytes.concat(returnData, oa.burnOption(_arguments[i]));
             } else if(_actions[i] == GeneralActions.Action.SETTLE) {
-                oa.settle(_arguments[i]);
+                returnData = bytes.concat(returnData, oa.settle(_arguments[i]));
             } else if(_actions[i] == GeneralActions.Action.EXERCISE) {
-                oa.exercise(_arguments[i]);
+                returnData = bytes.concat(returnData, oa.exercise(_arguments[i]));
             } else if(_actions[i] == GeneralActions.Action.BUY) {
-
+                returnData = bytes.concat(returnData, ea.buy(_arguments[i]));
             } else if(_actions[i] == GeneralActions.Action.SELL) {
-
+                returnData = bytes.concat(returnData, ea.sell(_arguments[i]));
             } else if(_actions[i] == GeneralActions.Action.LEND) {
-
+                la.deposit(_arguments[i]);
             } else if(_actions[i] == GeneralActions.Action.WITHDRAW_LEND) {
-
+                la.withdraw(_arguments[i]);
             } else {
                 revert GeneralActions.Invalid_ActionDNE();
             }
