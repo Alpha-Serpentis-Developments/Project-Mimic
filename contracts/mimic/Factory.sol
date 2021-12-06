@@ -54,7 +54,7 @@ contract Factory is ReentrancyGuard {
         uint16 _withdrawalFee,
         uint16 _managementFee,
         uint16 _performanceFee
-    ) external nonReentrant {
+    ) external nonReentrant returns(address) {
         if (
             protocolManager.isTrusted(SC_TAG, _scImplementation) &&
             protocolManager.isTrusted(OA_TAG, _optionAdapter) &&
@@ -81,6 +81,10 @@ contract Factory is ReentrancyGuard {
                 _managementFee,
                 _performanceFee
             );
+
+            emit NewSocialToken(address(st));
+
+            return address(st);
         } else {
             revert NotTrusted();
         }
