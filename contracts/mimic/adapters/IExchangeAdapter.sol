@@ -15,11 +15,13 @@ interface IExchangeAdapter {
      - outgoing represents the outgoing token in the trade
      - incoming represents the incoming token in the trade
      - outgoingSize represents the size 
+     - incomingSize represents the anticipated size (or can be used as a minimum)
      */
     struct Order {
         Token outgoing;
         Token incoming;
         Size outgoingSize;
+        Size incomingSize;
         Exchange exchange;
     }
 
