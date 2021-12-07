@@ -1,15 +1,68 @@
 .card {
-		background-color: rgba(196, 196, 196, 50%);
-		padding: 5px;
-        margin-top: 50px;
-        width: 375px;
-        height: 200px;
-		.info {
-			border-bottom: 3px solid #fff;
+	font-family: "Corben", cursive;
+	background-color: rgba(196, 196, 196, 50%);
+	padding: 20px;
+	border-radius: 25px;
+	box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+	text-align: left;
+	margin-top: 50px;
+	width: 450px;
+	height: 280px;
+	.info {
+		line-height: 35px;
+		border-bottom: 3px solid #fff;
+		.top {
+			display: flex;
+			h2 {
+				font-size: 36px;
+			}
+			h3 {
+				font-size: 18px;
+			}
 		}
-        .stats {
-			border-top: 3px solid #fff;
+	}
+	.stats {
+		padding: 0 5px;
+		border-bottom: 3px solid #fff;
+		display: flex;
+		justify-content: space-between;
+		margin: 10px 0;
+		.time {
+			font-size: 14px;
+		}
+		.apy {
+			font-size: 16px;
+		}
 
-        }
-	
+		.coins {
+			.coin {
+				width: 40px;
+				border: 1px solid black;
+				border-radius: 50%;
+			}
+		}
+	}
+
+	.img {
+		background-color: #d6f2f1;
+		border-radius: 50%;
+		width: 80px;
+		height: 80px;
+		padding: 10px;
+		margin-right: 20px;
+	}
+
+	.buttons {
+		display: flex;
+		justify-content: space-between;
+		padding: 15px 0;
+		button {
+			padding: 5px 50px;
+			margin: 0 15px;
+			border: none;
+			border-radius: 20px;
+			font-size: 18px;
+			background-color: #cc49f7;
+		}
+	}
 }

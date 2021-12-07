@@ -15,13 +15,17 @@ import propTypes from "prop-types";
  * @param {string[]} Props.coins - ICON/Image
  *
  */
-export default function Card({ title, handler, img, socialRating, apyW, apyM }) {
+export default function Card({ title, handler, img, socialRating, apyW, apyM, coins }) {
 	return (
 		<div className={styles.card}>
 			<div className={styles.info}>
-				<img src={img} alt={title} />
-				<h2>{title}</h2>
-				<h3>{handler}</h3>
+				<div className={styles.top}>
+					<img className={styles.img} src={img} alt={title} />
+					<div className={styles.reference}>
+						<h2>{title}</h2>
+						<h3>{handler}</h3>
+					</div>
+				</div>
 				<p>
 					Social Rating:{" "}
 					<strong>
@@ -30,8 +34,23 @@ export default function Card({ title, handler, img, socialRating, apyW, apyM }) 
 				</p>
 			</div>
 			<div className={styles.stats}>
-                <p>r</p>
-            </div>
+				<div className={styles.coins}>
+					{
+					coins.map((coin) => (
+						<img className={styles.coin} src={coin.imageURL} alt={coin.name} />
+					))
+					}
+				</div>
+				<p className={styles.time}>
+					1-Week: <strong className={styles.apy}>{apyW} APY</strong>
+				</p>
+				<p className={styles.time}>
+					1-Month:{" "}
+					<stron className={styles.apy} g>
+						{apyM} APY
+					</stron>
+				</p>
+			</div>
 			<div className={styles.buttons}>
 				<button>Trade</button>
 				<button>Info</button>

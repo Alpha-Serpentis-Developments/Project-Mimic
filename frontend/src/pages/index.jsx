@@ -8,9 +8,9 @@ export default function Home() {
 	return (
 		<div>
 			<main className={styles.main}>
-				<p className={styles.title}>
-					Decentralized Social<br></br> Trading for Options
-				</p>
+				<h1 className={styles.title}>
+					Decentralized Social<br/>Trading for Options
+				</h1>
 				<div className={styles.tagline}>
 					<p className={`${styles.inline} ${styles.desc}`}>
 						<span>You Deposit. They Trade.</span> <span className={styles.purp}>You Earn.</span>
