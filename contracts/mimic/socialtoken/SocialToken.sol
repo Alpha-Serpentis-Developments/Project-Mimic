@@ -8,8 +8,6 @@ import { ERC20Upgradeable } from "../../oz/token/ERC20/ERC20Upgradeable.sol";
 import { ERC20, IERC20 } from "../../oz/token/ERC20/ERC20.sol";
 import { SafeERC20 } from "../../oz/token/ERC20/utils/SafeERC20.sol";
 
-import "hardhat/console.sol";
-
 /**
  * @notice The SocialToken provides the most basic framework to operate
  * but requires to be inherited by another contract to be deployed
