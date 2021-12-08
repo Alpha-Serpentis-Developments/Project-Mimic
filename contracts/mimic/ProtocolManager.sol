@@ -3,10 +3,15 @@ pragma solidity ^0.8.10;
 
 import {ReentrancyGuard} from "../oz/security/ReentrancyGuard.sol";
 
+import {IERC20} from "../oz/token/ERC20/ERC20.sol";
+import {SafeERC20} from "../oz/token/ERC20/utils/SafeERC20.sol";
+
 /**
  @notice Non-upgradeable protocol manager contract that contains the protocol-level fees and trusted list
  */
 contract ProtocolManager is ReentrancyGuard {
+    using SafeERC20 for IERC20;
+
     /// -- CUSTOM ERRORS --
 
     error Unauthorized();
@@ -60,7 +65,25 @@ contract ProtocolManager is ReentrancyGuard {
         _;
     }
 
-    function modifyUseTrustedList(bool _status) external onlyAdmin {
+    /// @notice Sweeps tokens sent to the protocol manager and sends it to the admin
+    /// @dev Sends a list of tokens to the admin from the protocol manager contract
+    /// @param _tokens is an array of addresses representing the tokens sent to the protocol manager
+    function sweepTokens(address[] memory _tokens) external nonReentrant {
+        for (uint256 i; i < _tokens.length; i++) {
+            IERC20 token = IERC20(_tokens[i]);
+
+            token.safeTransfer(admin, token.balanceOf(address(this)));
+        }
+    }
+
+    /// @notice Sets whether or not the protocol uses the 'trusted list'
+    /// @dev Set the protocol to use the 'trusted list'
+    /// @param _status is the boolean value to set the status of the trusted list
+    function modifyUseTrustedList(bool _status)
+        external
+        onlyAdmin
+        nonReentrant
+    {
         useTrustedList = _status;
 
         emit UseTrustedList(_status);
@@ -73,6 +96,7 @@ contract ProtocolManager is ReentrancyGuard {
     function addToTrustedList(bytes memory _tag, address _add)
         external
         onlyAdmin
+        nonReentrant
     {
         trustedList[_tag][_add] = true;
 
@@ -86,6 +110,7 @@ contract ProtocolManager is ReentrancyGuard {
     function removeFromTrustedList(bytes memory _tag, address _remove)
         external
         onlyAdmin
+        nonReentrant
     {
         trustedList[_tag][_remove] = false;
 
@@ -95,7 +120,7 @@ contract ProtocolManager is ReentrancyGuard {
     /// @notice Modifies the protocol-level deposit fee
     /// @dev Modifies the protocol-level deposit fee up to 5000 (50%)
     /// @param _fee uint16 value representing a % with two decimals of precision
-    function modifyDepositFee(uint16 _fee) external onlyAdmin {
+    function modifyDepositFee(uint16 _fee) external onlyAdmin nonReentrant {
         if (_fee > 5000) revert Invalid_FeeTooHigh();
 
         depositFee = _fee;
@@ -106,7 +131,7 @@ contract ProtocolManager is ReentrancyGuard {
     /// @notice Modifies the protocol-level withdrawal fee
     /// @dev Modifies the protocol-level withdrawal fee up to 5000 (50%)
     /// @param _fee uint16 value representing a % with two decimals of precision
-    function modifyWithdrawalFee(uint16 _fee) external onlyAdmin {
+    function modifyWithdrawalFee(uint16 _fee) external onlyAdmin nonReentrant {
         if (_fee > 5000) revert Invalid_FeeTooHigh();
 
         withdrawalFee = _fee;
@@ -117,7 +142,7 @@ contract ProtocolManager is ReentrancyGuard {
     /// @notice Modifies the protocol-level performance fee
     /// @dev Modifies the protocol-level performance fee up to 5000 (50%)
     /// @param _fee uint16 value representing a % with two decimals of precision
-    function modifyPerformanceFee(uint16 _fee) external onlyAdmin {
+    function modifyPerformanceFee(uint16 _fee) external onlyAdmin nonReentrant {
         if (_fee > 5000) revert Invalid_FeeTooHigh();
 
         performanceFee = _fee;
@@ -128,7 +153,7 @@ contract ProtocolManager is ReentrancyGuard {
     /// @notice Modifies the protocol-level management fee
     /// @dev Modifies the protocol-level management fee up to 5000 (50%)
     /// @param _fee uint16 value representing a % with two decimals of precision
-    function modifyManagementFee(uint16 _fee) external onlyAdmin {
+    function modifyManagementFee(uint16 _fee) external onlyAdmin nonReentrant {
         if (_fee > 5000) revert Invalid_FeeTooHigh();
 
         managementFee = _fee;
