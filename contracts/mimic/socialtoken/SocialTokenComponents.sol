@@ -89,12 +89,29 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
 
     /// -- EVENTS --
 
+    event FeeModified(bytes32 tag, uint16 newFee);
     event AdapterChanged(bytes tag, address adapter);
     event PositionOpened(bytes id);
     event PositionModified(bytes id);
     event PositionClosed(bytes id);
 
     /// -- MODIFIERS & FUNCTIONS --
+
+    function modifyFees(bytes32 tag, uint16 _fee) external onlyOwner() nonReentrant {
+        if(tag == bytes32("DEPOSIT")) {
+            depositFee = _fee;
+        } else if(tag == bytes32("WITHDRAWAL")) {
+            withdrawalFee = _fee;
+        } else if(tag == bytes32("MANAGEMENT")) {
+            managementFee = _fee;
+        } else if(tag == bytes32("PERFORMANCE")) {
+            performanceFee = _fee;
+        } else {
+            revert Invalid_TagDNE();
+        }
+
+        emit FeeModified(tag, _fee);
+    }
 
     function changeAdapter(
         bytes memory _tag,

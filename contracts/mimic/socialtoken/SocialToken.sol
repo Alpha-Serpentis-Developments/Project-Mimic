@@ -8,6 +8,8 @@ import { ERC20Upgradeable } from "../../oz/token/ERC20/ERC20Upgradeable.sol";
 import { ERC20, IERC20 } from "../../oz/token/ERC20/ERC20.sol";
 import { SafeERC20 } from "../../oz/token/ERC20/utils/SafeERC20.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @notice The SocialToken provides the most basic framework to operate
  * but requires to be inherited by another contract to be deployed
@@ -59,12 +61,15 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
     function deposit(DenomAmt _amt) external nonReentrant {
         uint256 mint;
 
+        // Deposit the denomination asset to the vault
+        IERC20(denominationAsset).safeTransferFrom(msg.sender, address(this), DenomAmt.unwrap(_amt));
+
         // Calculate both the protocol and social token fees
         (uint256 protocolFee, uint256 tokenFee) = (
             _feeCalculation(DenomAmt.unwrap(_amt), denominationAsset, protocolManager, ProtocolManager(protocolManager).depositFee()),
             _feeCalculation(DenomAmt.unwrap(_amt), denominationAsset, address(this), depositFee)
         );
-        
+
         // Calculate the minting amount
         mint = SocialTokenAmt.unwrap(_deposit(DenomAmt.wrap(DenomAmt.unwrap(_amt) - protocolFee - tokenFee)));
 
@@ -74,9 +79,6 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
 
         // Mint new social tokens
         _mint(msg.sender, mint);
-
-        // Deposit the denomination asset to the vault
-        IERC20(denominationAsset).safeTransferFrom(msg.sender, address(this), DenomAmt.unwrap(_amt) - protocolFee - tokenFee);
     }
     /// @notice Withdraw some asset in exchange for the social token
     /// @dev Burns the social tokens and redeems the denomination asset
@@ -88,7 +90,7 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
 
         (uint256 protocolFee, uint256 tokenFee) = (
             _feeCalculation(share, denominationAsset, protocolManager, ProtocolManager(protocolManager).withdrawalFee()),
-            _feeCalculation(share, denominationAsset, address(this), depositFee)
+            _feeCalculation(share, denominationAsset, address(this), withdrawalFee)
         );
 
         _burn(msg.sender, SocialTokenAmt.unwrap(_amt));
@@ -101,7 +103,7 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
             _share = SocialTokenAmt.wrap(DenomAmt.unwrap(_amt));
         } else {
             _share = SocialTokenAmt.wrap(
-                (totalSupply() * DenomAmt.unwrap(_amt)) / (IERC20(denominationAsset).balanceOf(address(this)) - unredeemedFees)
+                (totalSupply() * DenomAmt.unwrap(_amt)) / (IERC20(denominationAsset).balanceOf(address(this)) - DenomAmt.unwrap(_amt) - unredeemedFees)
             );
         }
     }
@@ -152,7 +154,7 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
             if(_sendTo == address(this))
                 unredeemedFees += fee;
             else
-                IERC20(_token).safeTransferFrom(msg.sender, address(_sendTo), fee);
+                IERC20(_token).safeTransfer(_sendTo, fee);
         }
     }
 
