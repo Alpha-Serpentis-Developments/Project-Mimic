@@ -3,6 +3,7 @@ const { ethers } = require("hardhat");
 
 describe('Social Token', () => {
     let ProtocolManager, Factory, TestSocialToken, TestExchangeAdapter, TestToken, OpynAdapter, protocolManager, factory, testToken, testExchangeAdapter, socialToken, socialTokenImpl, opynAdapter, deployer, manager, depositor0, depositor1;
+    let pricer, mockUSDC, mockOtokenAddr, controller, fake_multisig, fake_addressBook, fake_airswap;
 
     before(async () => {
         ProtocolManager = await ethers.getContractFactory('ProtocolManager');
@@ -12,7 +13,113 @@ describe('Social Token', () => {
         TestToken = await ethers.getContractFactory('TestToken');
         OpynAdapter = await ethers.getContractFactory('OpynAdapter');
 
-        [deployer, manager, depositor0, depositor1] = await ethers.getSigners();
+        OtokenFactory = await ethers.getContractFactory('OtokenFactory');
+        Otoken = await ethers.getContractFactory('Otoken');
+        Whitelist = await ethers.getContractFactory('Whitelist');
+        Oracle = await ethers.getContractFactory('Oracle');
+        MarginPool = await ethers.getContractFactory('MarginPool');
+        MarginCalculator = await ethers.getContractFactory('MarginCalculator');
+        MarginVault = await ethers.getContractFactory('MarginVault');
+        AddressBook = await ethers.getContractFactory('AddressBook');
+        Pricer = await ethers.getContractFactory('TestPricer');
+
+        [deployer, manager, depositor0, depositor1, fake_multisig] = await ethers.getSigners();
+
+        // Deploy all the addresses
+        addressBook = await AddressBook.connect(deployer).deploy();
+        otokenFactory = await OtokenFactory.connect(deployer).deploy(addressBook.address);
+        otokenImpl = await Otoken.connect(deployer).deploy();
+        whitelist = await Whitelist.connect(deployer).deploy(addressBook.address);
+        oracle = await Oracle.connect(deployer).deploy();
+        marginPool = await MarginPool.connect(deployer).deploy(addressBook.address);
+        marginCalculator = await MarginCalculator.connect(deployer).deploy(oracle.address);
+        marginVault = await MarginVault.connect(deployer).deploy();
+
+        testToken = await TestToken.connect(depositor0).deploy(
+            "TEST",
+            "TEST",
+            18,
+            ethers.utils.parseUnits('1000', 18)
+        );
+        mockUSDC = await TestToken.connect(depositor0).deploy(
+            "mockUSDC",
+            "USDC",
+            18,
+            ethers.utils.parseUnits('1000', 18)
+        ); 
+
+        Controller = await ethers.getContractFactory(
+            'Controller',
+            {
+                libraries: {
+                    MarginVault: marginVault.address
+                }
+            }
+        );
+
+        controller = await Controller.connect(deployer).deploy();
+
+        // Assign the addresses in the AddressBook
+        await addressBook.connect(deployer).setOtokenFactory(otokenFactory.address);
+        await addressBook.connect(deployer).setOtokenImpl(otokenImpl.address);
+        await addressBook.connect(deployer).setWhitelist(whitelist.address);
+        await addressBook.connect(deployer).setOracle(oracle.address);
+        await addressBook.connect(deployer).setMarginPool(marginPool.address);
+        await addressBook.connect(deployer).setMarginCalculator(marginCalculator.address);
+        await addressBook.connect(deployer).setController(controller.address);
+
+        controller = await controller.attach(await addressBook.getController());
+
+        // Transfer ownership
+        await addressBook.connect(deployer).transferOwnership(fake_multisig.address);
+        await whitelist.connect(deployer).transferOwnership(fake_multisig.address);
+        await oracle.connect(deployer).transferOwnership(fake_multisig.address);
+        await marginPool.connect(deployer).transferOwnership(fake_multisig.address);
+        await controller.connect(deployer).transferOwnership(fake_multisig.address);
+
+        // Prepare pricer
+        pricer = await Pricer.connect(deployer).deploy(addressBook.getOracle(), testToken.address);
+
+        // Prepare the oracle
+        await oracle.connect(fake_multisig).setAssetPricer(testToken.address, pricer.address);
+        //await oracle.connect(fake_multisig).setAssetPricer(mockUSDC.address, pricer.address);
+        await oracle.connect(fake_multisig).setStablePrice(mockUSDC.address, 1e6)
+
+        // Prepare the whitelist
+        await whitelist.connect(fake_multisig).whitelistCollateral(testToken.address);
+        await whitelist.connect(fake_multisig).whitelistCollateral(mockUSDC.address);
+        await whitelist.connect(fake_multisig).whitelistProduct(
+            testToken.address,
+            mockUSDC.address,
+            testToken.address,
+            false
+        );
+
+        await whitelist.connect(fake_multisig).whitelistProduct(
+            testToken.address,
+            mockUSDC.address,
+            mockUSDC.address,
+            true
+        );
+
+        // Prepare the oToken
+        mockOtokenTransaction = await otokenFactory.connect(fake_multisig).createOtoken(
+            testToken.address,
+            mockUSDC.address,
+            testToken.address,
+            ethers.utils.parseUnits('1000', 18),
+            1640937600, // 2021 Dec. 31 @ 8 UTC
+            false
+        );
+
+        const mockOtokenReceipt = await mockOtokenTransaction.wait();
+        mockOtokenAddr = mockOtokenReceipt.events[1].args[0];
+
+        mockOtoken = await ethers.getContractAt(
+            'Otoken',
+            mockOtokenAddr,
+            fake_multisig
+        );
 
         protocolManager = await ProtocolManager.deploy(
             deployer.address,
@@ -25,12 +132,6 @@ describe('Social Token', () => {
             protocolManager.address
         );
         socialTokenImpl = await TestSocialToken.deploy();
-        testToken = await TestToken.connect(depositor0).deploy(
-            "TEST",
-            "TEST",
-            18,
-            ethers.utils.parseUnits('1000', 18)
-        );
         await socialTokenImpl.initialize(
             "",
             "",
@@ -51,7 +152,7 @@ describe('Social Token', () => {
         );
         testExchangeAdapter = await TestExchangeAdapter.deploy();
         opynAdapter = await OpynAdapter.deploy(
-            "0x0000000000000000000000000000000000000000" // doesn't have to be the actual address book for this test
+            addressBook.address
         );
 
         await protocolManager.connect(deployer).addToTrustedList(
@@ -91,6 +192,8 @@ describe('Social Token', () => {
             receipt.events[2].args.token,
             manager
         );
+
+        await socialToken.connect(manager).allowOpynAdapter(controller.address);
     });
 
     describe("Deposit", () => {
@@ -190,6 +293,58 @@ describe('Social Token', () => {
 
             expect(await socialToken.balanceOf(depositor0.address)).to.be.equal(previousAmountSocialToken.add(ethers.utils.parseUnits('2', 18)));
             expect(await testToken.balanceOf(socialToken.address)).to.be.equal(previousAmountTestToken.add(ethers.utils.parseUnits('1', 18)));
+        });
+    });
+    describe("Withdraw", () => {
+
+    });
+    describe("Light Opyn option adapter testing", () => {
+        it('Should allow you to open a vault (single action)', async () => {
+            const types = [
+                "address",
+                "address",
+                "address",
+                "uint256",
+                "uint256",
+                "uint256",
+                "bytes"
+            ];
+
+            // let abiCoder = new ethers.utils.abiCoder();
+            let encodedArgs = new ethers.utils.AbiCoder().encode(
+                types,
+                [
+                    socialToken.address,
+                    socialToken.address,
+                    "0x0000000000000000000000000000000000000000",
+                    1,
+                    0,
+                    0,
+                    "0x"
+                ]
+            )
+            
+            await socialToken.connect(manager).openPosition(
+                [2],
+                [
+                    "0x",
+                    [
+                        "0x0000000000000000000000000000000000000000",
+                        "0x0000000000000000000000000000000000000000",
+                        0,
+                        0,
+                        "0x0000000000000000000000000000000000000000",
+                        0
+                    ],
+                    0,
+                    0,
+                    false
+                ],
+                [encodedArgs]
+            );
+        });
+        it('Should allow you to modify the original position (multi-action)', async () => {
+
         });
     });
 

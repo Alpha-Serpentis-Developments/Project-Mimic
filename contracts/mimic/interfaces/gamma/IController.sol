@@ -77,4 +77,6 @@ interface IController {
 
     function isSettlementAllowed(address _oToken) external view returns(bool);
 
+    function setOperator(address _operator, bool _isOperator) external;
+
 }
