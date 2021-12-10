@@ -1,26 +1,23 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100;200;300;400;500;600&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Corben&display=swap");
 
-
-.links {
-	margin-top: 40px;
-	margin-left: 25%;
-	width: max-content;
-}
-.links a {
-	padding-left: 5%;
-	padding-top: 10%;
-	color: var(--white);
-	font-family: "Roboto Slab" serif;
-	font-weight: 500;
-	font-size: 26px;
-}
+// .links {
+// 	margin-top: 40px;
+// }
+// .links a {
+// 	padding-left: 5%;
+// 	padding-top: 10%;
+// 	color: var(--white);
+// 	font-family: "Roboto Slab" serif;
+// 	font-weight: 500;
+// 	font-size: 26px;
+// }
 
 .inline {
 	display: inline;
 }
 .tagline {
-	margin: 0 auto;
+	margin: 50px auto;
 	align-items: center;
 	display: flex;
 }
@@ -28,27 +25,32 @@
 .launchbtn:active {
 	background-color: var(--active);
 }
+
 .launchbtn {
-	background-color: var(--regular);
+	background-color: rgba(204, 73, 247, 0.75);
 	filter: drop-shadow(0px 4px 9px rgba(0, 0, 0, 0.25));
-	margin-top: 30px;
-	margin-bottom: 30px;
 	font-size: 26px;
-	padding: 0.4% 1.5% 0.4% 1.5%;
 	font-weight: 700;
 	color: var(--white);
 	font-family: "Corben";
-	border-radius: 10%;
-	margin-left: 45%;
-	border-width: 0px;
+
+	border-radius: 25px;
+	border: none;
+	padding: 5px 45px;
+	transition: 0.3s ease-in-out;
 }
+
+.launchbtn:hover {
+	transform: scale(1.2);
+}
+
 .connectbtn:active {
 	background-color: var(--active);
 }
+
 .connectbtn {
 	filter: drop-shadow(0px 4px 9px rgba(0, 0, 0, 0.25));
 	margin-top: 30px;
-	margin-left: 60%;
 	width: 150px;
 	height: 44px;
 	border-width: 0px;
@@ -57,12 +59,24 @@
 	font-size: 26px;
 	font-weight: 500;
 	font-family: "Roboto Slab" serif;
-	border-radius: 10%;
+	border-radius: 25px;
+	transition: all .3s ease-in-out;
 }
+
+.connectbtn:hover {
+	transform: scale(1.2);
+}
+
 .main {
 	margin: 0 auto;
 	padding: 0 auto;
 	min-height: 400vh;
+}
+
+.main .hero {
+	display: flex;
+	align-items: center;
+	flex-direction: column;
 }
 
 .icon {
@@ -92,23 +106,22 @@
 	font-weight: 500;
 }
 .desc {
-	margin-left: 30%;
 	color: var(--white);
 	font-family: "Roboto Slab" serif;
 	font-size: 40px;
 	font-weight: 340;
 }
 .purp {
-	color: var(--active);
-
+	color: #cc49f7;
 	font-size: 40px;
 	font-weight: 550;
 }
 .cardscontainer {
-	display: grid;
-	grid-auto-flow: row;
-	overflow: visible;
+	display: flex;
+	margin: 0 auto;
+	justify-content: space-evenly;
 }
+
 .cardname {
 	width: fit-content;
 	margin-top: 0px;
@@ -123,19 +136,7 @@
 	margin-top: 0px;
 	font-size: 20px;
 }
-.cards {
-	width: 396px;
-	display: flex;
-	flex-direction: row;
-	margin-left: 10%;
-	font-family: "Corben";
-	font-weight: 400;
-	color: var(--white);
-	background-color: rgba(196, 196, 196, 0.5);
-	height: 279px;
-	box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-	border-radius: 25px;
-}
+
 .optionstitle {
 	text-align: center;
 	color: var(--white);

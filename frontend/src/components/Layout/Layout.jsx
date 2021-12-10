@@ -15,7 +15,7 @@ export default function Layout({ children }) {
 				<meta content="#e1b0f2" data-react-helmet="true" name="theme-color" />
 				<link rel="icon" href="/optional.svg" />
 			</Head>
-			<div>
+			<div className="container">
 				<Navbar />
 				{children}
 			</div>

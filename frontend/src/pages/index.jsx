@@ -2,37 +2,72 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable @next/next/no-html-link-for-pages */
 import Head from "next/head";
+import Card from "../components/Card/Card";
 import styles from "../styles/Home.module.scss";
 
 export default function Home() {
 	return (
 		<div>
 			<main className={styles.main}>
-				<h1 className={styles.title}>
-					Decentralized Social<br/>Trading for Options
-				</h1>
-				<div className={styles.tagline}>
-					<p className={`${styles.inline} ${styles.desc}`}>
-						<span>You Deposit. They Trade.</span> <span className={styles.purp}>You Earn.</span>
-					</p>
-				</div>
-				<button className={styles.launchbtn}>Launch App</button>
-				<div className={styles.cardscontainer}>
-					<div className={styles.cards}>
-						<div className={styles.venusicon}>
-							<img className={styles.venus} src="/venus_square 1.png"></img>
-						</div>
-						<div>
-							<p className={styles.cardname}>Venus</p>
-							<p className={styles.cardat}>@Venus</p>
-						</div>
-						<p>
-							Social Rating:{" "}
-							<strong>
-								<u>B</u>
-							</strong>
+				<div className={styles.hero}>
+					<h1 className={styles.title}>
+						Decentralized Social
+						<br />
+						Trading for Options
+					</h1>
+					<div className={styles.tagline}>
+						<p className={`${styles.inline} ${styles.desc}`}>
+							<span>You Deposit. They Trade.</span> <span className={styles.purp}>You Earn.</span>
 						</p>
 					</div>
+					<button className={styles.launchbtn}>Launch App</button>
+				</div>
+				<div className={styles.cardscontainer}>
+					<Card
+						title="Venus"
+						handler="@Venus"
+						apyM="43"
+						apyW="32"
+						socialRating="B"
+						coins={[
+							{
+								name: "Bitcoin",
+								imageURL: "/bitcoin.png",
+							},
+						]}
+						img={"venus.svg"}
+						key={1}
+					/>
+					<Card
+						title="Venus"
+						handler="@Venus"
+						apyM="43"
+						apyW="32"
+						socialRating="B"
+						coins={[
+							{
+								name: "Bitcoin",
+								imageURL: "/bitcoin.png",
+							},
+						]}
+						img={"venus.svg"}
+						key={2}
+					/>
+					<Card
+						title="Venus"
+						handler="@Venus"
+						apyM="43"
+						apyW="32"
+						socialRating="B"
+						coins={[
+							{
+								name: "Bitcoin",
+								imageURL: "/bitcoin.png",
+							},
+						]}
+						img={"venus.svg"}
+						key={3}
+					/>
 				</div>
 				<p className={styles.title}>About Optional</p>
 				<div>

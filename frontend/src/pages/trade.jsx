@@ -26,7 +26,7 @@ export default function trade() {
 					apyM={69}
 					apyW={420}
 				/>
-				{/* <Card
+				<Card
 					title="Bitcoin"
 					handler="@bitcoin"
 					img="/venus.svg"
@@ -53,7 +53,7 @@ export default function trade() {
 					socialRating="A"
 					apyM={69}
 					apyW={420}
-				/> */}
+				/>
 				<span>{">"}</span>
 			</div>
 		</div>
