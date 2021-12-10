@@ -12,7 +12,7 @@ import { SafeERC20 } from "../../oz/token/ERC20/utils/SafeERC20.sol";
 import { ReentrancyGuardUpgradeable } from "../../oz/security/ReentrancyGuardUpgradeable.sol";
 import { OwnableUpgradeable } from "../../oz/access/OwnableUpgradeable.sol";
 
-contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable {
+abstract contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20 for IERC20;
 
     /// -- USER-DEFINED TYPES --
@@ -32,7 +32,7 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
      @notice The position represents what the social trader has decided to execute
      - optionalData is optional data that a position can store
      - option represents the option the position references
-     - size represents the size of the position
+     - size represents the size of the option position
      - costBasis is negative if short (isLong == false) and positive if long (isLong == true) and represents how much of the denomination asset is used
      - isLong represents whether or not the position is long; if it is NOT long, size is assumed to be "negative"
      */
@@ -61,9 +61,9 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
     /// -- STATE VARIABLES --
 
     /// @notice Storage of all positions
-    mapping(bytes => Position) public positions;
+    mapping(uint256 => Position) public positions;
     /// @notice Currently active positions - recommended to not have more than FIVE active positions
-    bytes[] public activePositions;
+    uint256[] public activePositions;
     /// @notice The protocol manager
     address public protocolManager;
     /// @notice The token's denomination
@@ -74,6 +74,8 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
     address public exchangeAdapter;
     /// @notice The lending adapter
     address public lendingAdapter;
+    /// @notice Unique number
+    uint256 public positionId;
     /// @notice The token's current uncollected fees
     uint256 public unredeemedFees;
     /// @notice The token's maximum allowed assets in the denomination asset
@@ -91,9 +93,9 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
 
     event FeeModified(bytes32 tag, uint16 newFee);
     event AdapterChanged(bytes tag, address adapter);
-    event PositionOpened(bytes id);
-    event PositionModified(bytes id);
-    event PositionClosed(bytes id);
+    event PositionOpened(uint256 id);
+    event PositionModified(uint256 id);
+    event PositionClosed(uint256 id);
 
     /// -- MODIFIERS & FUNCTIONS --
 
@@ -142,7 +144,7 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
 
     function closePosition(
         GeneralActions.Action[] memory _actions,
-        bytes memory _position,
+        uint256 _position,
         bytes[] calldata _args
     ) external onlyOwner() nonReentrant {
         _closePosition(_actions, _position, _args);
@@ -150,7 +152,7 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
 
     function modifyPosition(
         GeneralActions.Action[] memory _actions,
-        bytes memory _position,
+        uint256 _position,
         bytes[] calldata _args
     ) external onlyOwner() nonReentrant {
         _modifyPosition(_actions, _position, _args);
@@ -159,47 +161,49 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
     function _openPosition(
         GeneralActions.Action[] memory _actions,
         Position memory _position,
-        bytes[] calldata _args
+        bytes[] memory _args
     ) internal virtual {
-        bytes memory posId = abi.encode(_position);
-        Position storage pos = positions[posId];
+        Position storage pos = positions[positionId];
 
         if(PositionSize.unwrap(pos.size) != 0)
             revert Position_AlreadyOpen();
 
-        bytes memory _optionalData = _operateActions(_actions, _args);
+        bytes memory _optionalData = _operateActions(_actions, _args, pos);
         
-        activePositions.push(posId);
+        activePositions.push(positionId);
         pos.optionalData = _optionalData;
         pos.option = _position.option;
-        pos.size = _position.size;
+        pos.size  = _position.size;
         pos.isLong = _position.isLong;
 
-        emit PositionOpened(posId);
+        emit PositionOpened(positionId++);
     }
 
     function _modifyPosition(
         GeneralActions.Action[] memory _actions,
-        bytes memory _position,
+        uint256 _position,
         bytes[] calldata _args
     ) internal virtual {
+        Position storage pos = positions[_position];
+
+        bytes memory _optionData = _operateActions(_actions, _args, pos);
 
     }
 
     function _closePosition(
         GeneralActions.Action[] memory _actions,
-        bytes memory _position,
+        uint256 _position,
         bytes[] calldata _args
     ) internal virtual {
         Position storage pos = positions[_position];
 
-        _operateActions(_actions, _args);
+        _operateActions(_actions, _args, pos);
 
         if(!_didPositionClose(pos)) {
             revert Position_DidNotClose();
         } else {
             for(uint256 i; i < activePositions.length; i++) {
-                if(keccak256(activePositions[i]) == keccak256(_position)) {
+                if(activePositions[i] == _position) {
                     activePositions[i] = activePositions[activePositions.length - 1];
                     activePositions.pop();
                     break;
@@ -210,16 +214,12 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
         emit PositionClosed(_position);
     }
 
-    function _didPositionClose(Position storage _position) internal view virtual returns(bool) {
-        return PositionSize.unwrap(_position.size) == 0;
-    }
-
     /// @notice Operates the specified action(s)
     /// @dev Allows to execute the specified actions with said arguments
     /// @param _actions is an array of the provided actions
     /// @param _arguments is an array of encoded data of the arguments being passed that coincides with the action
     /// @return returnData is the data returned by the operations concatenated together in order of their operation
-    function _operateActions(GeneralActions.Action[] memory _actions, bytes[] calldata _arguments) internal returns(bytes memory returnData) {
+    function _operateActions(GeneralActions.Action[] memory _actions, bytes[] memory _arguments, Position storage _pos) internal returns(bytes memory returnData) {
         IOptionAdapter oa = IOptionAdapter(optionAdapter);
         IExchangeAdapter ea = IExchangeAdapter(exchangeAdapter);
         ILendingAdapter la = ILendingAdapter(lendingAdapter);
@@ -234,7 +234,8 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
 
                 IERC20(assetToDecrease).safeDecreaseAllowance(approveTo, amount);
             } else if(_actions[i] == GeneralActions.Action.BATCH) {
-                return bytes.concat(returnData, oa.batchOperation(_arguments[i]));
+                returnData = bytes.concat(returnData, oa.batchOperation(_arguments[i]));
+                break;
             } else if(_actions[i] == GeneralActions.Action.ADD_COLLATERAL) {
                 returnData = bytes.concat(returnData, oa.addCollateral(_arguments[i]));
             } else if(_actions[i] == GeneralActions.Action.REMOVE_COLLATERAL) {
@@ -257,10 +258,16 @@ contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable
                 la.deposit(_arguments[i]);
             } else if(_actions[i] == GeneralActions.Action.WITHDRAW_LEND) {
                 la.withdraw(_arguments[i]);
-            } else {
-                revert GeneralActions.Invalid_ActionDNE();
             }
-        } 
+        }
+
+        _pos.costBasis = CostBasis.wrap(_calculateCostBasisInDenom(_pos));
+    }
+
+    function _calculateCostBasisInDenom(Position storage _pos) internal view virtual returns(uint256);
+
+    function _didPositionClose(Position storage _position) internal view virtual returns(bool) {
+        return PositionSize.unwrap(_position.size) == 0;
     }
 
 }

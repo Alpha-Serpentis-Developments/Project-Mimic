@@ -19,7 +19,7 @@ interface IOptionAdapter is GeneralActions {
      - PUT represents a put option
      - OTHER represents a non-conforming 'option' token (e.g., Squeeth)
      */
-    enum OptionType { CALL, PUT, OTHER }
+    enum OptionType { NULL, CALL, PUT, OTHER }
 
     /**
      @notice Option protocols may use the following struct to define their option token
@@ -49,6 +49,8 @@ interface IOptionAdapter is GeneralActions {
     function burnOption(bytes calldata _arguments) external returns(bytes memory);
     function settle(bytes calldata _arguments) external returns(bytes memory);
     function exercise(bytes calldata _arguments) external returns(bytes memory);
+
+    function getPositionsCollatAmt(bytes calldata _arguments) external view returns(bytes memory);
 
     function getCollateral(address _option) external view returns(Collateral);
     function getUnderlying(address _option) external view returns(Underlying);

@@ -5,6 +5,7 @@ import {SocialToken} from "./SocialToken.sol";
 import {IOptionAdapter} from "../adapters/IOptionAdapter.sol";
 
 import {ERC20, IERC20} from "../../oz/token/ERC20/ERC20.sol";
+import {IController} from "../interfaces/gamma/IController.sol";
 
 /**
  * @notice Optional's implementation of a social token integrating
@@ -23,7 +24,15 @@ contract Opyn_ST is SocialToken {
 
     /// -- FUNCTIONS --
 
-    function settleVault(bytes memory _position) external nonReentrant {
+    function allowOpynAdapter(address _controller)
+        external
+        onlyOwner
+        nonReentrant
+    {
+        IController(_controller).setOperator(optionAdapter, true);
+    }
+
+    function settleVault(uint256 _position) external nonReentrant {
         Position storage position = positions[_position];
 
         // Check if position is active and short
@@ -57,6 +66,7 @@ contract Opyn_ST is SocialToken {
                 (totalSupply() * DenomAmt.unwrap(_amt)) /
                     (IERC20(denominationAsset).balanceOf(address(this)) +
                         _calculateTempWithheld() -
+                        DenomAmt.unwrap(_amt) -
                         unredeemedFees)
             );
     }
@@ -86,4 +96,11 @@ contract Opyn_ST is SocialToken {
             );
         }
     }
+
+    function _calculateCostBasisInDenom(Position storage _pos)
+        internal
+        view
+        override
+        returns (uint256)
+    {}
 }

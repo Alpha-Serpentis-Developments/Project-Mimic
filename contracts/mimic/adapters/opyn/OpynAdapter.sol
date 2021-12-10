@@ -20,7 +20,7 @@ contract OpynAdapter is IOptionAdapter, ReentrancyGuard {
     /// -- STATE VARIABLES --
 
     /// @notice Address of Opyn Gamma's AddressBook
-    IAddressBook public addressBook;
+    IAddressBook public immutable addressBook;
 
     constructor(address _addressBook) {
         addressBook = IAddressBook(_addressBook);
@@ -59,12 +59,20 @@ contract OpynAdapter is IOptionAdapter, ReentrancyGuard {
         );
     }
 
+    function getPositionsCollatAmt(bytes calldata _arguments) external override view returns(bytes memory) {
+        uint256 vaultId = abi.decode(_arguments, (uint256));
+
+        GammaTypes.Vault memory vault = IController(addressBook.getController()).getVault(msg.sender, vaultId);
+
+        
+    }
+
     function batchOperation(bytes calldata _args) external nonReentrant override returns(bytes memory) {
         Actions.ActionArgs[] memory actions = abi.decode(_args, (Actions.ActionArgs[]));
 
         IController(addressBook.getController()).operate(actions);
 
-        return abi.encode(IController(addressBook.getController()).getAccountVaultCounter(msg.sender));
+        // return abi.encode(IController(addressBook.getController()).getAccountVaultCounter(msg.sender));
     }
     function addCollateral(bytes calldata _args) external nonReentrant override returns(bytes memory) {
         _executeNonBatch(Actions.ActionType.DepositCollateral, _args);

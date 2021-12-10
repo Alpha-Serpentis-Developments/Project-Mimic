@@ -1,14 +1,14 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe('Social Token', () => {
-    let ProtocolManager, Factory, TestSocialToken, TestExchangeAdapter, TestToken, OpynAdapter, protocolManager, factory, testToken, testExchangeAdapter, socialToken, socialTokenImpl, opynAdapter, deployer, manager, depositor0, depositor1;
+describe('Opyn Social Token', () => {
+    let ProtocolManager, Factory, Opyn_ST, TestExchangeAdapter, TestToken, OpynAdapter, protocolManager, factory, testToken, testExchangeAdapter, socialToken, socialTokenImpl, opynAdapter, deployer, manager, depositor0, depositor1;
     let pricer, mockUSDC, mockOtokenAddr, controller, fake_multisig, fake_addressBook, fake_airswap;
 
     before(async () => {
         ProtocolManager = await ethers.getContractFactory('ProtocolManager');
         Factory = await ethers.getContractFactory('contracts/mimic/Factory.sol:Factory');
-        TestSocialToken = await ethers.getContractFactory('contracts/mimic/test/TestSocialToken.sol:TestSocialToken');
+        Opyn_ST = await ethers.getContractFactory('contracts/mimic/socialtoken/Opyn_ST.sol:Opyn_ST');
         TestExchangeAdapter = await ethers.getContractFactory('TestExchangeAdapter');
         TestToken = await ethers.getContractFactory('TestToken');
         OpynAdapter = await ethers.getContractFactory('OpynAdapter');
@@ -131,7 +131,7 @@ describe('Social Token', () => {
         factory = await Factory.deploy(
             protocolManager.address
         );
-        socialTokenImpl = await TestSocialToken.deploy();
+        socialTokenImpl = await Opyn_ST.deploy();
         await socialTokenImpl.initialize(
             "",
             "",
@@ -188,7 +188,7 @@ describe('Social Token', () => {
         // console.log(receipt.events[2].args.token);
 
         socialToken = await ethers.getContractAt(
-            'TestSocialToken',
+            'Opyn_ST',
             receipt.events[2].args.token,
             manager
         );
@@ -322,7 +322,7 @@ describe('Social Token', () => {
                     0,
                     "0x"
                 ]
-            )
+            );
             
             await socialToken.connect(manager).openPosition(
                 [2],
@@ -342,8 +342,41 @@ describe('Social Token', () => {
                 ],
                 [encodedArgs]
             );
+
+            console.log(await socialToken.positions[0]);
+
+            expect(await socialToken.activePositions[0]).to.not.be.reverted();
+
+            // await socialToken.connect(manager).openVault();
         });
-        it('Should allow you to modify the original position (multi-action)', async () => {
+        it('Should allow you to modify the original position (batch/multi-action)', async () => {
+            // prepare the otoken
+            
+
+            const types = [
+                "address",
+                "address",
+                "address",
+                "uint256",
+                "uint256",
+                "uint256",
+                "bytes"
+            ];
+
+            let encodedArgs = new ethers.utils.AbiCoder().encode(
+                types,
+                [
+                    socialToken.address,
+                    socialToken.address,
+                    "0x0000000000000000000000000000000000000000",
+                    1,
+                    0,
+                    0,
+                    "0x"
+                ]
+            );
+
+            
 
         });
     });
