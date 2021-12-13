@@ -19,6 +19,9 @@ import "../proxy/utils/Initializable.sol";
  * the owner.
  */
 abstract contract OwnableUpgradeable is Initializable, ContextUpgradeable {
+
+    error NotOwner();
+
     address private _owner;
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
@@ -46,7 +49,7 @@ abstract contract OwnableUpgradeable is Initializable, ContextUpgradeable {
      * @dev Throws if called by any account other than the owner.
      */
     modifier onlyOwner() {
-        require(owner() == _msgSender(), "Ownable: caller is not the owner");
+        _onlyOwner();
         _;
     }
 
@@ -78,6 +81,11 @@ abstract contract OwnableUpgradeable is Initializable, ContextUpgradeable {
         address oldOwner = _owner;
         _owner = newOwner;
         emit OwnershipTransferred(oldOwner, newOwner);
+    }
+
+    function _onlyOwner() internal virtual {
+        if(owner() != _msgSender())
+            revert NotOwner();
     }
     uint256[49] private __gap;
 }
