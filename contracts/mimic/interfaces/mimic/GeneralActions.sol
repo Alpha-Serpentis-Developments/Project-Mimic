@@ -11,21 +11,21 @@ interface GeneralActions {
 
     /**
      @notice Protocols may use the following actions
-     - ADD_COLLATERAL adds collateral to the protocol
-     - REMOVE_COLLATERAL removes collateral from the protocol
-     - OPEN_VAULT opens up a 'vault'
-     - WRITE_OPTION writes options
-     - BURN_OPTION burns options
-     - REDEEM redeems the vault
-     - SETTLE settles options
-     - EXERCISE exercies options
-     - BUY executes a buy order (with the denomination asset)
-     - SELL executes a sell order (with some other asset)
-     - LEND executes to lend out deposits
-     - WITHDRAW_LEND executes to withdraw lent out assets
-     - INCREASE_ALLOWANCE executes an increase in approval (PRIORITY IN THE ARRAY OF ACTIONS)
-     - DECREASE_ALLOWANCE executes a decrease in approval
-     - BATCH tells the adapter to not individually call the functions (SECOND PRIORITY IN THE ARRAY OF ACTIONS) - WILL END EXECUTION AFTER BATCH CALL
+     - [0] ADD_COLLATERAL adds collateral to the protocol
+     - [1] REMOVE_COLLATERAL removes collateral from the protocol
+     - [2] OPEN_VAULT opens up a 'vault'
+     - [3] WRITE_OPTION writes options
+     - [4] BURN_OPTION burns options
+     - [5] REDEEM redeems the vault
+     - [6] SETTLE settles options
+     - [7] EXERCISE exercies options
+     - [8] BUY executes a buy order (with the denomination asset)
+     - [9] SELL executes a sell order (with some other asset)
+     - [10] LEND executes to lend out deposits
+     - [11] WITHDRAW_LEND executes to withdraw lent out assets
+     - [12] INCREASE_ALLOWANCE executes an increase in approval (PRIORITY IN THE ARRAY OF ACTIONS)
+     - [13] DECREASE_ALLOWANCE executes a decrease in approval
+     - [14] BATCH tells the adapter to not individually call the functions (SECOND PRIORITY IN THE ARRAY OF ACTIONS) - WILL END EXECUTION AFTER BATCH CALL
      */
     enum Action {
         ADD_COLLATERAL,

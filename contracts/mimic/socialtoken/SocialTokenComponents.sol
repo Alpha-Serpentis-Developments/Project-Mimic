@@ -1,18 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import { ProtocolManager } from "../ProtocolManager.sol";
-import { GeneralActions } from "../interfaces/mimic/GeneralActions.sol";
-import { IOptionAdapter } from "../adapters/IOptionAdapter.sol";
-import { IExchangeAdapter } from "../adapters/IExchangeAdapter.sol";
-import { ILendingAdapter } from "../adapters/ILendingAdapter.sol";
+import {ProtocolManager} from "../ProtocolManager.sol";
+import {GeneralActions} from "../interfaces/mimic/GeneralActions.sol";
+import {IOptionAdapter} from "../adapters/IOptionAdapter.sol";
+import {IExchangeAdapter} from "../adapters/IExchangeAdapter.sol";
+import {ILendingAdapter} from "../adapters/ILendingAdapter.sol";
 
-import { ERC20, IERC20 } from "../../oz/token/ERC20/ERC20.sol";
-import { SafeERC20 } from "../../oz/token/ERC20/utils/SafeERC20.sol";
-import { ReentrancyGuardUpgradeable } from "../../oz/security/ReentrancyGuardUpgradeable.sol";
-import { OwnableUpgradeable } from "../../oz/access/OwnableUpgradeable.sol";
+import {ERC20, IERC20} from "../../oz/token/ERC20/ERC20.sol";
+import {SafeERC20} from "../../oz/token/ERC20/utils/SafeERC20.sol";
+import {ReentrancyGuardUpgradeable} from "../../oz/security/ReentrancyGuardUpgradeable.sol";
+import {OwnableUpgradeable} from "../../oz/access/OwnableUpgradeable.sol";
 
-abstract contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUpgradeable {
+abstract contract SocialTokenComponents is
+    OwnableUpgradeable,
+    ReentrancyGuardUpgradeable
+{
     using SafeERC20 for IERC20;
 
     /// -- USER-DEFINED TYPES --
@@ -41,7 +44,7 @@ abstract contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUp
         IOptionAdapter.Option option;
         PositionSize size;
         CostBasis costBasis;
-        bool isLong;
+        uint256 isLong;
     }
 
     /**
@@ -99,14 +102,18 @@ abstract contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUp
 
     /// -- MODIFIERS & FUNCTIONS --
 
-    function modifyFees(bytes32 tag, uint16 _fee) external onlyOwner() nonReentrant {
-        if(tag == bytes32("DEPOSIT")) {
+    function modifyFees(bytes32 tag, uint16 _fee)
+        external
+        onlyOwner
+        nonReentrant
+    {
+        if (tag == bytes32("DEPOSIT")) {
             depositFee = _fee;
-        } else if(tag == bytes32("WITHDRAWAL")) {
+        } else if (tag == bytes32("WITHDRAWAL")) {
             withdrawalFee = _fee;
-        } else if(tag == bytes32("MANAGEMENT")) {
+        } else if (tag == bytes32("MANAGEMENT")) {
             managementFee = _fee;
-        } else if(tag == bytes32("PERFORMANCE")) {
+        } else if (tag == bytes32("PERFORMANCE")) {
             performanceFee = _fee;
         } else {
             revert Invalid_TagDNE();
@@ -115,21 +122,21 @@ abstract contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUp
         emit FeeModified(tag, _fee);
     }
 
-    function changeAdapter(
-        bytes memory _tag,
-        address _newAdapter
-    ) external onlyOwner() nonReentrant {
-        if(!ProtocolManager(protocolManager).isTrusted(_tag, _newAdapter))
+    function changeAdapter(bytes memory _tag, address _newAdapter)
+        external
+        onlyOwner
+        nonReentrant
+    {
+        if (!ProtocolManager(protocolManager).isTrusted(_tag, _newAdapter))
             revert Adapter_NotTrusted();
 
-        if(bytes32(_tag) == bytes32(OA_TAG)) {
-            if(activePositions.length != 0)
-                revert Position_DidNotClose();
+        if (bytes32(_tag) == bytes32(OA_TAG)) {
+            if (activePositions.length != 0) revert Position_DidNotClose();
 
             optionAdapter = _newAdapter;
-        } else if(bytes32(_tag) == bytes32(EA_TAG)) {
+        } else if (bytes32(_tag) == bytes32(EA_TAG)) {
             exchangeAdapter = _newAdapter;
-        } else if(bytes32(_tag) == bytes32(L_TAG)) {
+        } else if (bytes32(_tag) == bytes32(L_TAG)) {
             lendingAdapter = _newAdapter;
         }
     }
@@ -138,7 +145,7 @@ abstract contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUp
         GeneralActions.Action[] memory _actions,
         Position memory _position,
         bytes[] calldata _args
-    ) external onlyOwner() nonReentrant {
+    ) external onlyOwner nonReentrant {
         _openPosition(_actions, _position, _args);
     }
 
@@ -146,7 +153,7 @@ abstract contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUp
         GeneralActions.Action[] memory _actions,
         uint256 _position,
         bytes[] calldata _args
-    ) external onlyOwner() nonReentrant {
+    ) external onlyOwner nonReentrant {
         _closePosition(_actions, _position, _args);
     }
 
@@ -154,7 +161,7 @@ abstract contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUp
         GeneralActions.Action[] memory _actions,
         uint256 _position,
         bytes[] calldata _args
-    ) external onlyOwner() nonReentrant {
+    ) external onlyOwner nonReentrant {
         _modifyPosition(_actions, _position, _args);
     }
 
@@ -163,20 +170,31 @@ abstract contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUp
         Position memory _position,
         bytes[] memory _args
     ) internal virtual {
-        Position storage pos = positions[positionId];
+        if (_position.option.token == address(0)) revert Invalid_ZeroValue();
 
-        if(PositionSize.unwrap(pos.size) != 0)
-            revert Position_AlreadyOpen();
+        uint256 posId = positionId++;
+
+        Position storage pos = positions[posId];
+
+        if (PositionSize.unwrap(pos.size) != 0) revert Position_AlreadyOpen();
+
+        // bytes memory _optionalData = Execution._operateActions(
+        //     _actions,
+        //     _args,
+        //     optionAdapter,
+        //     exchangeAdapter,
+        //     lendingAdapter
+        // );
 
         bytes memory _optionalData = _operateActions(_actions, _args, pos);
-        
-        activePositions.push(positionId);
+
+        activePositions.push(posId);
         pos.optionalData = _optionalData;
         pos.option = _position.option;
-        pos.size  = _position.size;
+        pos.size = _position.size;
         pos.isLong = _position.isLong;
 
-        emit PositionOpened(positionId++);
+        emit PositionOpened(posId);
     }
 
     function _modifyPosition(
@@ -186,8 +204,15 @@ abstract contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUp
     ) internal virtual {
         Position storage pos = positions[_position];
 
-        bytes memory _optionData = _operateActions(_actions, _args, pos);
+        // bytes memory _optionalData = Execution._operateActions(
+        //     _actions,
+        //     _args,
+        //     optionAdapter,
+        //     exchangeAdapter,
+        //     lendingAdapter
+        // );
 
+        bytes memory _optionalData = _operateActions(_actions, _args, pos);
     }
 
     function _closePosition(
@@ -199,12 +224,14 @@ abstract contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUp
 
         _operateActions(_actions, _args, pos);
 
-        if(!_didPositionClose(pos)) {
+        if (!_didPositionClose(pos)) {
             revert Position_DidNotClose();
         } else {
-            for(uint256 i; i < activePositions.length; i++) {
-                if(activePositions[i] == _position) {
-                    activePositions[i] = activePositions[activePositions.length - 1];
+            for (uint256 i; i < activePositions.length; i++) {
+                if (activePositions[i] == _position) {
+                    activePositions[i] = activePositions[
+                        activePositions.length - 1
+                    ];
                     activePositions.pop();
                     break;
                 }
@@ -219,44 +246,82 @@ abstract contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUp
     /// @param _actions is an array of the provided actions
     /// @param _arguments is an array of encoded data of the arguments being passed that coincides with the action
     /// @return returnData is the data returned by the operations concatenated together in order of their operation
-    function _operateActions(GeneralActions.Action[] memory _actions, bytes[] memory _arguments, Position storage _pos) internal returns(bytes memory returnData) {
+    function _operateActions(
+        GeneralActions.Action[] memory _actions,
+        bytes[] memory _arguments,
+        Position storage _pos
+    ) internal returns (bytes memory returnData) {
         IOptionAdapter oa = IOptionAdapter(optionAdapter);
         IExchangeAdapter ea = IExchangeAdapter(exchangeAdapter);
         ILendingAdapter la = ILendingAdapter(lendingAdapter);
-        
-        for(uint256 i; i < _actions.length; i++) {
-            if(_actions[i] == GeneralActions.Action.INCREASE_ALLOWANCE) {
-                (address assetToApprove, address approveTo, uint256 amount) = abi.decode(_arguments[i], (address,address,uint256));
+
+        for (uint256 i; i < _actions.length; i++) {
+            if (_actions[i] == GeneralActions.Action.INCREASE_ALLOWANCE) {
+                (
+                    address assetToApprove,
+                    address approveTo,
+                    uint256 amount
+                ) = abi.decode(_arguments[i], (address, address, uint256));
 
                 IERC20(assetToApprove).safeIncreaseAllowance(approveTo, amount);
-            } else if(_actions[i] == GeneralActions.Action.DECREASE_ALLOWANCE) {
-                (address assetToDecrease, address approveTo, uint256 amount) = abi.decode(_arguments[i], (address,address,uint256));
+            } else if (
+                _actions[i] == GeneralActions.Action.DECREASE_ALLOWANCE
+            ) {
+                (
+                    address assetToDecrease,
+                    address approveTo,
+                    uint256 amount
+                ) = abi.decode(_arguments[i], (address, address, uint256));
 
-                IERC20(assetToDecrease).safeDecreaseAllowance(approveTo, amount);
-            } else if(_actions[i] == GeneralActions.Action.BATCH) {
-                returnData = bytes.concat(returnData, oa.batchOperation(_arguments[i]));
+                IERC20(assetToDecrease).safeDecreaseAllowance(
+                    approveTo,
+                    amount
+                );
+            } else if (_actions[i] == GeneralActions.Action.BATCH) {
+                returnData = bytes.concat(
+                    returnData,
+                    oa.batchOperation(_arguments[i])
+                );
                 break;
-            } else if(_actions[i] == GeneralActions.Action.ADD_COLLATERAL) {
-                returnData = bytes.concat(returnData, oa.addCollateral(_arguments[i]));
-            } else if(_actions[i] == GeneralActions.Action.REMOVE_COLLATERAL) {
-                returnData = bytes.concat(returnData, oa.removeCollateral(_arguments[i]));
-            } else if(_actions[i] == GeneralActions.Action.OPEN_VAULT) {
-                returnData = bytes.concat(returnData, oa.openVault(_arguments[i]));
-            } else if(_actions[i] == GeneralActions.Action.WRITE_OPTION) {
-                returnData = bytes.concat(returnData, oa.writeOption(_arguments[i]));
-            } else if(_actions[i] == GeneralActions.Action.BURN_OPTION) {
-                returnData = bytes.concat(returnData, oa.burnOption(_arguments[i]));
-            } else if(_actions[i] == GeneralActions.Action.SETTLE) {
+            } else if (_actions[i] == GeneralActions.Action.ADD_COLLATERAL) {
+                returnData = bytes.concat(
+                    returnData,
+                    oa.addCollateral(_arguments[i])
+                );
+            } else if (_actions[i] == GeneralActions.Action.REMOVE_COLLATERAL) {
+                returnData = bytes.concat(
+                    returnData,
+                    oa.removeCollateral(_arguments[i])
+                );
+            } else if (_actions[i] == GeneralActions.Action.OPEN_VAULT) {
+                returnData = bytes.concat(
+                    returnData,
+                    oa.openVault(_arguments[i])
+                );
+            } else if (_actions[i] == GeneralActions.Action.WRITE_OPTION) {
+                returnData = bytes.concat(
+                    returnData,
+                    oa.writeOption(_arguments[i])
+                );
+            } else if (_actions[i] == GeneralActions.Action.BURN_OPTION) {
+                returnData = bytes.concat(
+                    returnData,
+                    oa.burnOption(_arguments[i])
+                );
+            } else if (_actions[i] == GeneralActions.Action.SETTLE) {
                 returnData = bytes.concat(returnData, oa.settle(_arguments[i]));
-            } else if(_actions[i] == GeneralActions.Action.EXERCISE) {
-                returnData = bytes.concat(returnData, oa.exercise(_arguments[i]));
-            } else if(_actions[i] == GeneralActions.Action.BUY) {
+            } else if (_actions[i] == GeneralActions.Action.EXERCISE) {
+                returnData = bytes.concat(
+                    returnData,
+                    oa.exercise(_arguments[i])
+                );
+            } else if (_actions[i] == GeneralActions.Action.BUY) {
                 returnData = bytes.concat(returnData, ea.buy(_arguments[i]));
-            } else if(_actions[i] == GeneralActions.Action.SELL) {
+            } else if (_actions[i] == GeneralActions.Action.SELL) {
                 returnData = bytes.concat(returnData, ea.sell(_arguments[i]));
-            } else if(_actions[i] == GeneralActions.Action.LEND) {
+            } else if (_actions[i] == GeneralActions.Action.LEND) {
                 la.deposit(_arguments[i]);
-            } else if(_actions[i] == GeneralActions.Action.WITHDRAW_LEND) {
+            } else if (_actions[i] == GeneralActions.Action.WITHDRAW_LEND) {
                 la.withdraw(_arguments[i]);
             }
         }
@@ -264,10 +329,18 @@ abstract contract SocialTokenComponents is OwnableUpgradeable, ReentrancyGuardUp
         _pos.costBasis = CostBasis.wrap(_calculateCostBasisInDenom(_pos));
     }
 
-    function _calculateCostBasisInDenom(Position storage _pos) internal view virtual returns(uint256);
+    function _calculateCostBasisInDenom(Position storage _pos)
+        internal
+        view
+        virtual
+        returns (uint256);
 
-    function _didPositionClose(Position storage _position) internal view virtual returns(bool) {
+    function _didPositionClose(Position storage _position)
+        internal
+        view
+        virtual
+        returns (bool)
+    {
         return PositionSize.unwrap(_position.size) == 0;
     }
-
 }

@@ -2,7 +2,8 @@
 pragma solidity ^0.8.10;
 
 import {SocialToken} from "./SocialToken.sol";
-import {IOptionAdapter} from "../adapters/IOptionAdapter.sol";
+import {SocialTokenComponents} from "./SocialTokenComponents.sol";
+import {IOptionAdapter, GeneralActions} from "../adapters/IOptionAdapter.sol";
 
 import {ERC20, IERC20} from "../../oz/token/ERC20/ERC20.sol";
 import {IController} from "../interfaces/gamma/IController.sol";
@@ -22,6 +23,9 @@ contract Opyn_ST is SocialToken {
     /// -- CUSTOM ERRORS --
     error Position_CannotSettle();
 
+    /// -- STATE VARIABLES --
+    uint256 private vaultCounter = 1;
+
     /// -- FUNCTIONS --
 
     function allowOpynAdapter(address _controller)
@@ -36,7 +40,7 @@ contract Opyn_ST is SocialToken {
         Position storage position = positions[_position];
 
         // Check if position is active and short
-        if (PositionSize.unwrap(position.size) == 0 || position.isLong) {
+        if (PositionSize.unwrap(position.size) == 0 || position.isLong != 0) {
             revert Position_CannotSettle();
         }
 
@@ -52,6 +56,33 @@ contract Opyn_ST is SocialToken {
                 ""
             )
         );
+    }
+
+    function _openPosition(
+        GeneralActions.Action[] memory _actions,
+        Position memory _position,
+        bytes[] memory _args
+    ) internal override {
+        if (_position.option.token == address(0)) revert Invalid_ZeroValue();
+
+        uint256 posId = positionId++;
+
+        Position storage pos = positions[posId];
+
+        if (PositionSize.unwrap(pos.size) != 0) revert Position_AlreadyOpen();
+
+        _operateActions(
+            _actions,
+            _args,
+            pos
+        );
+
+        activePositions.push(posId);
+        pos.option = _position.option;
+        pos.size = _position.size;
+        pos.isLong = _position.isLong;
+
+        emit PositionOpened(posId);
     }
 
     function _deposit(DenomAmt _amt)

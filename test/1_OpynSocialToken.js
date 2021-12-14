@@ -108,7 +108,7 @@ describe('Opyn Social Token', () => {
             mockUSDC.address,
             testToken.address,
             ethers.utils.parseUnits('1000', 18),
-            1640937600, // 2021 Dec. 31 @ 8 UTC
+            1923379200, // 2030 Dec. 13 @ 8 UTC
             false
         );
 
@@ -195,7 +195,44 @@ describe('Opyn Social Token', () => {
 
         await socialToken.connect(manager).allowOpynAdapter(controller.address);
     });
+    describe("Verify initialization", () => {
+        // this test is necessary to verify the Initializable contract performs as anticipated due to an optimization change
+        it('Should not reinitialize', async () => {
+            await expect(
+                socialTokenImpl.initialize(
+                    "",
+                    "",
+                    "0x0000000000000000000000000000000000000000",
+                    "0x0000000000000000000000000000000000000000",
+                    "0x0000000000000000000000000000000000000000",
+                    "0x0000000000000000000000000000000000000000",
+                    "0x0000000000000000000000000000000000000000",
+                    "0x0000000000000000000000000000000000000001", // due to zero address
+                    0,
+                    0,
+                    0,
+                    0
+                )
+            ).to.be.revertedWith("Initializable: contract is already initialized");
 
+            await expect(
+                socialToken.initialize(
+                    "",
+                    "",
+                    "0x0000000000000000000000000000000000000000",
+                    "0x0000000000000000000000000000000000000000",
+                    "0x0000000000000000000000000000000000000000",
+                    "0x0000000000000000000000000000000000000000",
+                    "0x0000000000000000000000000000000000000000",
+                    "0x0000000000000000000000000000000000000001", // due to zero address
+                    0,
+                    0,
+                    0,
+                    0
+                )
+            ).to.be.revertedWith("Initializable: contract is already initialized");
+        });
+    });
     describe("Deposit", () => {
         it('Should mint 1:1 for a zero-supply deposit', async () => {
             let previousAmountTestToken = await testToken.balanceOf(socialToken.address);
@@ -299,7 +336,7 @@ describe('Opyn Social Token', () => {
 
     });
     describe("Light Opyn option adapter testing", () => {
-        it('Should allow you to open a vault (single action)', async () => {
+        it('Should not allow for an undefined position to be opened', async () => {
             const types = [
                 "address",
                 "address",
@@ -323,35 +360,31 @@ describe('Opyn Social Token', () => {
                     "0x"
                 ]
             );
-            
-            await socialToken.connect(manager).openPosition(
-                [2],
-                [
-                    "0x",
+
+            await expect(
+                socialToken.connect(manager).openPosition(
+                    [2],
                     [
-                        "0x0000000000000000000000000000000000000000",
-                        "0x0000000000000000000000000000000000000000",
+                        "0x",
+                        [
+                            "0x0000000000000000000000000000000000000000",
+                            "0x0000000000000000000000000000000000000000",
+                            0,
+                            0,
+                            "0x0000000000000000000000000000000000000000",
+                            0
+                        ],
                         0,
                         0,
-                        "0x0000000000000000000000000000000000000000",
                         0
                     ],
-                    0,
-                    0,
-                    false
-                ],
-                [encodedArgs]
-            );
-
-            console.log(await socialToken.positions[0]);
-
-            expect(await socialToken.activePositions[0]).to.not.be.reverted();
+                    [encodedArgs]
+                )
+            ).to.be.revertedWith("Invalid_ZeroValue()");
 
             // await socialToken.connect(manager).openVault();
         });
         it('Should allow you to modify the original position (batch/multi-action)', async () => {
-            // prepare the otoken
-            
 
             const types = [
                 "address",
@@ -363,7 +396,16 @@ describe('Opyn Social Token', () => {
                 "bytes"
             ];
 
-            let encodedArgs = new ethers.utils.AbiCoder().encode(
+            let approvalArgs = new ethers.utils.AbiCoder().encode(
+                ["address", "address", "uint256"],
+                [
+                    testToken.address,
+                    marginPool.address,
+                    (await testToken.balanceOf(socialToken.address)).sub(await socialToken.unredeemedFees())
+                ]
+            );
+
+            let encodedArgs0 = new ethers.utils.AbiCoder().encode(
                 types,
                 [
                     socialToken.address,
@@ -375,8 +417,49 @@ describe('Opyn Social Token', () => {
                     "0x"
                 ]
             );
+            let encodedArgs1 = new ethers.utils.AbiCoder().encode(
+                types,
+                [
+                    socialToken.address,
+                    socialToken.address,
+                    testToken.address,
+                    1,
+                    (await testToken.balanceOf(socialToken.address)).sub(await socialToken.unredeemedFees()),
+                    0,
+                    "0x"
+                ]
+            );
+            let encodedArgs2 = new ethers.utils.AbiCoder().encode(
+                types,
+                [
+                    socialToken.address,
+                    socialToken.address,
+                    mockOtoken.address,
+                    1,
+                    (await testToken.balanceOf(socialToken.address)).sub(await socialToken.unredeemedFees()).div(ethers.utils.parseUnits('10', 10)),
+                    0,
+                    "0x"
+                ]
+            );
 
-            
+            await socialToken.connect(manager).openPosition(
+                [12,2,0,3], // increase_allowance -> open -> deposit collat -> write options
+                [
+                    "0x", // optional data
+                    [
+                        testToken.address, // collateral
+                        mockUSDC.address, // underlying
+                        0, // expiration
+                        0, // strike
+                        mockOtoken.address, // token
+                        1 // option type
+                    ],
+                    (await testToken.balanceOf(socialToken.address)).sub(await socialToken.unredeemedFees()).div(ethers.utils.parseUnits('10', 10)), // size
+                    (await testToken.balanceOf(socialToken.address)).sub(await socialToken.unredeemedFees()), // costbasis
+                    0 // isLong
+                ],
+                [approvalArgs,encodedArgs0, encodedArgs1, encodedArgs2]
+            );
 
         });
     });

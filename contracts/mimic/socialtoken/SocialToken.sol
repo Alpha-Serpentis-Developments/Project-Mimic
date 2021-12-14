@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import { SocialTokenComponents } from "./SocialTokenComponents.sol";
-import { ProtocolManager } from "../ProtocolManager.sol";
+import {SocialTokenComponents} from "./SocialTokenComponents.sol";
+import {ProtocolManager} from "../ProtocolManager.sol";
 
-import { ERC20Upgradeable } from "../../oz/token/ERC20/ERC20Upgradeable.sol";
-import { ERC20, IERC20 } from "../../oz/token/ERC20/ERC20.sol";
-import { SafeERC20 } from "../../oz/token/ERC20/utils/SafeERC20.sol";
+import {ERC20Upgradeable} from "../../oz/token/ERC20/ERC20Upgradeable.sol";
+import {ERC20, IERC20} from "../../oz/token/ERC20/ERC20.sol";
+import {SafeERC20} from "../../oz/token/ERC20/utils/SafeERC20.sol";
 
 /**
  * @notice The SocialToken provides the most basic framework to operate
@@ -55,61 +55,108 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
 
     /// @notice Deposits some asset in exchange for social tokens
     /// @dev Deposit the denominationAsset in which new social tokens get minted
-    /// @param _amt Is the deposit amount 
+    /// @param _amt Is the deposit amount
     function deposit(DenomAmt _amt) external nonReentrant {
         uint256 mint;
 
         // Deposit the denomination asset to the vault
-        IERC20(denominationAsset).safeTransferFrom(msg.sender, address(this), DenomAmt.unwrap(_amt));
+        IERC20(denominationAsset).safeTransferFrom(
+            msg.sender,
+            address(this),
+            DenomAmt.unwrap(_amt)
+        );
 
         // Calculate both the protocol and social token fees
         (uint256 protocolFee, uint256 tokenFee) = (
-            _feeCalculation(DenomAmt.unwrap(_amt), denominationAsset, protocolManager, ProtocolManager(protocolManager).depositFee()),
-            _feeCalculation(DenomAmt.unwrap(_amt), denominationAsset, address(this), depositFee)
+            _feeCalculation(
+                DenomAmt.unwrap(_amt),
+                denominationAsset,
+                protocolManager,
+                ProtocolManager(protocolManager).depositFee()
+            ),
+            _feeCalculation(
+                DenomAmt.unwrap(_amt),
+                denominationAsset,
+                address(this),
+                depositFee
+            )
         );
 
         // Calculate the minting amount
-        mint = SocialTokenAmt.unwrap(_deposit(DenomAmt.wrap(DenomAmt.unwrap(_amt) - protocolFee - tokenFee)));
+        mint = SocialTokenAmt.unwrap(
+            _deposit(
+                DenomAmt.wrap(DenomAmt.unwrap(_amt) - protocolFee - tokenFee)
+            )
+        );
 
         // Zero-value safety checks
-        if(mint == 0 || DenomAmt.unwrap(_amt) == 0)
-            revert Invalid_ZeroValue();
+        if (mint == 0 || DenomAmt.unwrap(_amt) == 0) revert Invalid_ZeroValue();
 
         // Mint new social tokens
         _mint(msg.sender, mint);
     }
+
     /// @notice Withdraw some asset in exchange for the social token
     /// @dev Burns the social tokens and redeems the denomination asset
     /// @param _amt is the amount of social tokens being burned
     function withdraw(SocialTokenAmt _amt) external nonReentrant {
         uint256 share = DenomAmt.unwrap(_withdraw(_amt));
-        if(share == 0 || SocialTokenAmt.unwrap(_amt) == 0)
+        if (share == 0 || SocialTokenAmt.unwrap(_amt) == 0)
             revert Invalid_ZeroValue();
 
         (uint256 protocolFee, uint256 tokenFee) = (
-            _feeCalculation(share, denominationAsset, protocolManager, ProtocolManager(protocolManager).withdrawalFee()),
-            _feeCalculation(share, denominationAsset, address(this), withdrawalFee)
+            _feeCalculation(
+                share,
+                denominationAsset,
+                protocolManager,
+                ProtocolManager(protocolManager).withdrawalFee()
+            ),
+            _feeCalculation(
+                share,
+                denominationAsset,
+                address(this),
+                withdrawalFee
+            )
         );
 
         _burn(msg.sender, SocialTokenAmt.unwrap(_amt));
 
-        IERC20(denominationAsset).safeTransfer(msg.sender, share - protocolFee - tokenFee);
+        IERC20(denominationAsset).safeTransfer(
+            msg.sender,
+            share - protocolFee - tokenFee
+        );
     }
 
-    function _deposit(DenomAmt _amt) internal virtual returns(SocialTokenAmt _share) { // Basic Formula = (social token supply * deposit) / (denominationAsset)
-        if(totalSupply() == 0) {
+    function _deposit(DenomAmt _amt)
+        internal
+        virtual
+        returns (SocialTokenAmt _share)
+    {
+        // Basic Formula = (social token supply * deposit) / (denominationAsset)
+        if (totalSupply() == 0) {
             _share = SocialTokenAmt.wrap(DenomAmt.unwrap(_amt));
         } else {
             _share = SocialTokenAmt.wrap(
-                (totalSupply() * DenomAmt.unwrap(_amt)) / (IERC20(denominationAsset).balanceOf(address(this)) - DenomAmt.unwrap(_amt) - unredeemedFees)
+                (totalSupply() * DenomAmt.unwrap(_amt)) /
+                    (IERC20(denominationAsset).balanceOf(address(this)) -
+                        DenomAmt.unwrap(_amt) -
+                        unredeemedFees)
             );
         }
     }
-    function _withdraw(SocialTokenAmt _amt) internal virtual returns(DenomAmt _value) {
+
+    function _withdraw(SocialTokenAmt _amt)
+        internal
+        virtual
+        returns (DenomAmt _value)
+    {
         _value = DenomAmt.wrap(
-            (SocialTokenAmt.unwrap(_amt) * (IERC20(denominationAsset).balanceOf(address(this)) - unredeemedFees)) / totalSupply()
+            (SocialTokenAmt.unwrap(_amt) *
+                (IERC20(denominationAsset).balanceOf(address(this)) -
+                    unredeemedFees)) / totalSupply()
         );
     }
+
     function _initialize(
         string memory _name,
         string memory _symbol,
@@ -126,8 +173,7 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
     ) internal virtual {
         __ERC20_init(_name, _symbol);
         __Ownable_init();
-        if(msg.sender != _trader)
-            transferOwnership(_trader);
+        if (msg.sender != _trader) transferOwnership(_trader);
 
         protocolManager = _protocolManager;
         denominationAsset = _denominationAsset;
@@ -145,15 +191,12 @@ abstract contract SocialToken is ERC20Upgradeable, SocialTokenComponents {
         address _token,
         address _sendTo,
         uint16 _rate
-    ) internal virtual returns(uint256 fee) {
-        fee = _amount * _rate / 10000;
+    ) internal virtual returns (uint256 fee) {
+        fee = (_amount * _rate) / 10000;
 
-        if(fee != 0 && _token != address(0)) {
-            if(_sendTo == address(this))
-                unredeemedFees += fee;
-            else
-                IERC20(_token).safeTransfer(_sendTo, fee);
+        if (fee != 0 && _token != address(0)) {
+            if (_sendTo == address(this)) unredeemedFees += fee;
+            else IERC20(_token).safeTransfer(_sendTo, fee);
         }
     }
-
 }
