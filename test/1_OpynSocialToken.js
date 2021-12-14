@@ -384,7 +384,7 @@ describe('Opyn Social Token', () => {
 
             // await socialToken.connect(manager).openVault();
         });
-        it('Should allow you to modify the original position (batch/multi-action)', async () => {
+        it('Should allow you to open a short position (multi-action)', async () => {
 
             const types = [
                 "address",
@@ -401,7 +401,7 @@ describe('Opyn Social Token', () => {
                 [
                     testToken.address,
                     marginPool.address,
-                    (await testToken.balanceOf(socialToken.address)).sub(await socialToken.unredeemedFees())
+                    ethers.utils.parseUnits('1', 18)
                 ]
             );
 
@@ -424,7 +424,7 @@ describe('Opyn Social Token', () => {
                     socialToken.address,
                     testToken.address,
                     1,
-                    (await testToken.balanceOf(socialToken.address)).sub(await socialToken.unredeemedFees()),
+                    ethers.utils.parseUnits('1', 18),
                     0,
                     "0x"
                 ]
@@ -436,30 +436,37 @@ describe('Opyn Social Token', () => {
                     socialToken.address,
                     mockOtoken.address,
                     1,
-                    (await testToken.balanceOf(socialToken.address)).sub(await socialToken.unredeemedFees()).div(ethers.utils.parseUnits('10', 10)),
+                    ethers.utils.parseUnits('1', 8),
                     0,
                     "0x"
                 ]
             );
 
-            await socialToken.connect(manager).openPosition(
-                [12,2,0,3], // increase_allowance -> open -> deposit collat -> write options
-                [
-                    "0x", // optional data
+            await expect(
+                socialToken.connect(manager).openPosition(
+                    [12,2,0,3], // increase_allowance -> open -> deposit collat -> write options
                     [
-                        testToken.address, // collateral
-                        mockUSDC.address, // underlying
-                        0, // expiration
-                        0, // strike
-                        mockOtoken.address, // token
-                        1 // option type
+                        "0x", // optional data
+                        [
+                            testToken.address, // collateral
+                            mockUSDC.address, // underlying
+                            0, // expiration
+                            0, // strike
+                            mockOtoken.address, // token
+                            1 // option type
+                        ],
+                        (await testToken.balanceOf(socialToken.address)).sub(await socialToken.unredeemedFees()).div(ethers.utils.parseUnits('10', 10)), // size
+                        (await testToken.balanceOf(socialToken.address)).sub(await socialToken.unredeemedFees()), // costbasis
+                        0 // isLong
                     ],
-                    (await testToken.balanceOf(socialToken.address)).sub(await socialToken.unredeemedFees()).div(ethers.utils.parseUnits('10', 10)), // size
-                    (await testToken.balanceOf(socialToken.address)).sub(await socialToken.unredeemedFees()), // costbasis
-                    0 // isLong
-                ],
-                [approvalArgs,encodedArgs0, encodedArgs1, encodedArgs2]
+                    [approvalArgs,encodedArgs0, encodedArgs1, encodedArgs2]
+                )
             );
+
+            expect(await socialToken.vaultCounter()).to.be.equal(1);
+
+        });
+        it('Should allow you to open a short position (batch)', async () => {
 
         });
     });

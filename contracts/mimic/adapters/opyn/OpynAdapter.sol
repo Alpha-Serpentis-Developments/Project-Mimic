@@ -106,12 +106,19 @@ contract OpynAdapter is IOptionAdapter, ReentrancyGuard {
         nonReentrant
         returns (bytes memory)
     {
+        IController controller = IController(addressBook.getController());
+        uint256 currentVault = controller.getAccountVaultCounter(msg.sender);
+
         Actions.ActionArgs[] memory actions = abi.decode(
             _args,
             (Actions.ActionArgs[])
         );
 
-        IController(addressBook.getController()).operate(actions);
+        controller.operate(actions);
+
+        if(currentVault != controller.getAccountVaultCounter(msg.sender)) {
+            return abi.encode(currentVault + 1);
+        }
     }
 
     function addCollateral(bytes calldata _args)
@@ -139,6 +146,8 @@ contract OpynAdapter is IOptionAdapter, ReentrancyGuard {
         returns (bytes memory)
     {
         _executeNonBatch(Actions.ActionType.OpenVault, _args);
+
+        return abi.encode(IController(addressBook.getController()).getAccountVaultCounter(msg.sender));
     }
 
     function writeOption(bytes calldata _args)

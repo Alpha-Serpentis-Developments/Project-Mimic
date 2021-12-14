@@ -24,9 +24,41 @@ contract Opyn_ST is SocialToken {
     error Position_CannotSettle();
 
     /// -- STATE VARIABLES --
-    uint256 private vaultCounter = 1;
+    uint256 public vaultCounter;
 
     /// -- FUNCTIONS --
+
+    function initialize(
+        string memory _name,
+        string memory _symbol,
+        address _protocolManager,
+        address _denominationAsset,
+        address _optionAdapter,
+        address _exchangeAdapter,
+        address _lendingAdapter,
+        address _trader,
+        uint16 _depositFee,
+        uint16 _withdrawalFee,
+        uint16 _managementFee,
+        uint16 _performanceFee
+    ) external override initializer {
+        _initialize(
+            _name,
+            _symbol,
+            _protocolManager,
+            _denominationAsset,
+            _optionAdapter,
+            _exchangeAdapter,
+            _lendingAdapter,
+            _trader,
+            _depositFee,
+            _withdrawalFee,
+            _managementFee,
+            _performanceFee
+        );
+
+        vaultCounter = 1;
+    }
 
     function allowOpynAdapter(address _controller)
         external
@@ -44,9 +76,11 @@ contract Opyn_ST is SocialToken {
             revert Position_CannotSettle();
         }
 
-        IOptionAdapter oa = IOptionAdapter(optionAdapter);
-        oa.settle(
-            abi.encode(
+        GeneralActions.Action[] memory action = new GeneralActions.Action[](1);
+        bytes[] memory arg = new bytes[](1);
+
+        action[0] = GeneralActions.Action.SETTLE;
+        arg[0] = abi.encode(
                 address(this),
                 address(this),
                 address(0),
@@ -54,7 +88,12 @@ contract Opyn_ST is SocialToken {
                 IERC20(position.option.token).balanceOf(address(this)),
                 0,
                 ""
-            )
+            );
+
+        _closePosition(
+            action,
+            _position,
+            arg
         );
     }
 
@@ -71,12 +110,18 @@ contract Opyn_ST is SocialToken {
 
         if (PositionSize.unwrap(pos.size) != 0) revert Position_AlreadyOpen();
 
-        _operateActions(
+        bytes memory optionalData = _operateActions(
             _actions,
             _args,
             pos
         );
 
+        if(optionalData.length != 0) {
+            if(abi.decode(optionalData, (uint256)) != vaultCounter) {
+                vaultCounter++;
+            }
+        }
+        
         activePositions.push(posId);
         pos.option = _position.option;
         pos.size = _position.size;

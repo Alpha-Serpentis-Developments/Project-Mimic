@@ -152,7 +152,7 @@ abstract contract SocialTokenComponents is
     function closePosition(
         GeneralActions.Action[] memory _actions,
         uint256 _position,
-        bytes[] calldata _args
+        bytes[] memory _args
     ) external onlyOwner nonReentrant {
         _closePosition(_actions, _position, _args);
     }
@@ -160,7 +160,7 @@ abstract contract SocialTokenComponents is
     function modifyPosition(
         GeneralActions.Action[] memory _actions,
         uint256 _position,
-        bytes[] calldata _args
+        bytes[] memory _args
     ) external onlyOwner nonReentrant {
         _modifyPosition(_actions, _position, _args);
     }
@@ -178,14 +178,6 @@ abstract contract SocialTokenComponents is
 
         if (PositionSize.unwrap(pos.size) != 0) revert Position_AlreadyOpen();
 
-        // bytes memory _optionalData = Execution._operateActions(
-        //     _actions,
-        //     _args,
-        //     optionAdapter,
-        //     exchangeAdapter,
-        //     lendingAdapter
-        // );
-
         bytes memory _optionalData = _operateActions(_actions, _args, pos);
 
         activePositions.push(posId);
@@ -200,17 +192,9 @@ abstract contract SocialTokenComponents is
     function _modifyPosition(
         GeneralActions.Action[] memory _actions,
         uint256 _position,
-        bytes[] calldata _args
+        bytes[] memory _args
     ) internal virtual {
         Position storage pos = positions[_position];
-
-        // bytes memory _optionalData = Execution._operateActions(
-        //     _actions,
-        //     _args,
-        //     optionAdapter,
-        //     exchangeAdapter,
-        //     lendingAdapter
-        // );
 
         bytes memory _optionalData = _operateActions(_actions, _args, pos);
     }
@@ -218,7 +202,7 @@ abstract contract SocialTokenComponents is
     function _closePosition(
         GeneralActions.Action[] memory _actions,
         uint256 _position,
-        bytes[] calldata _args
+        bytes[] memory _args
     ) internal virtual {
         Position storage pos = positions[_position];
 
@@ -227,18 +211,22 @@ abstract contract SocialTokenComponents is
         if (!_didPositionClose(pos)) {
             revert Position_DidNotClose();
         } else {
-            for (uint256 i; i < activePositions.length; i++) {
-                if (activePositions[i] == _position) {
-                    activePositions[i] = activePositions[
-                        activePositions.length - 1
-                    ];
-                    activePositions.pop();
-                    break;
-                }
-            }
+            _cleanAndRemoveActivePositionsElement(activePositions, _position);
         }
 
         emit PositionClosed(_position);
+    }
+
+    function _cleanAndRemoveActivePositionsElement(uint256[] storage _arr, uint256 _find) internal virtual {
+        for (uint256 i; i < _arr.length; i++) {
+                if (_arr[i] == _find) {
+                    _arr[i] = _arr[
+                        _arr.length - 1
+                    ];
+                    _arr.pop();
+                    break;
+                }
+            }
     }
 
     /// @notice Operates the specified action(s)
