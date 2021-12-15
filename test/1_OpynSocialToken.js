@@ -385,6 +385,7 @@ describe('Opyn Social Token', () => {
             // await socialToken.connect(manager).openVault();
         });
         it('Should allow you to open a short position (multi-action)', async () => {
+            let previousAmountTestToken = await testToken.balanceOf(socialToken.address);
 
             const types = [
                 "address",
@@ -455,19 +456,95 @@ describe('Opyn Social Token', () => {
                             mockOtoken.address, // token
                             1 // option type
                         ],
-                        (await testToken.balanceOf(socialToken.address)).sub(await socialToken.unredeemedFees()).div(ethers.utils.parseUnits('10', 10)), // size
-                        (await testToken.balanceOf(socialToken.address)).sub(await socialToken.unredeemedFees()), // costbasis
+                        ethers.utils.parseUnits('1', 8), // size
+                        ethers.utils.parseUnits('1', 18), // costbasis
                         0 // isLong
                     ],
                     [approvalArgs,encodedArgs0, encodedArgs1, encodedArgs2]
                 )
-            );
+            ).to.not.be.reverted;
 
             expect(await socialToken.vaultCounter()).to.be.equal(1);
-
+            expect(await testToken.balanceOf(socialToken.address)).to.be.equal(previousAmountTestToken.sub(ethers.utils.parseUnits('1', 18)));
+            expect(await mockOtoken.balanceOf(socialToken.address)).to.be.equal(ethers.utils.parseUnits('1', 8));
         });
         it('Should allow you to open a short position (batch)', async () => {
+            let previousAmountTestToken = await testToken.balanceOf(socialToken.address);
+            let previousAmountOtokens = await mockOtoken.balanceOf(socialToken.address);
 
+            let approvalArgs = new ethers.utils.AbiCoder().encode(
+                ["address", "address", "uint256"],
+                [
+                    testToken.address,
+                    marginPool.address,
+                    ethers.utils.parseUnits('1', 18)
+                ]
+            );
+
+            let encodedArgsBatch = new ethers.utils.AbiCoder().encode(
+                [
+                    "tuple(uint8, address, address, address, uint256, uint256, uint256, bytes)[]"
+                ],
+                [
+                    [
+                        [
+                            0,
+                            socialToken.address,
+                            socialToken.address,
+                            "0x0000000000000000000000000000000000000000",
+                            2,
+                            0,
+                            0,
+                            "0x"
+                        ],
+                        [
+                            5,
+                            socialToken.address,
+                            socialToken.address,
+                            testToken.address,
+                            2,
+                            ethers.utils.parseUnits('1', 18),
+                            0,
+                            "0x"
+                        ],
+                        [
+                            1,
+                            socialToken.address,
+                            socialToken.address,
+                            mockOtoken.address,
+                            2,
+                            ethers.utils.parseUnits('1', 8),
+                            0,
+                            "0x"
+                        ]
+                    ]
+                ]
+            );
+
+            await expect(
+                socialToken.connect(manager).openPosition(
+                    [12,14], // increase_allowance -> batch (open vault -> dep. collat. -> write options)
+                    [
+                        "0x", // optional data
+                        [
+                            testToken.address, // collateral
+                            mockUSDC.address, // underlying
+                            0, // expiration
+                            0, // strike
+                            mockOtoken.address, // token
+                            1 // option type
+                        ],
+                        ethers.utils.parseUnits('1', 8), // size
+                        ethers.utils.parseUnits('1', 18), // costbasis
+                        0 // isLong
+                    ],
+                    [approvalArgs,encodedArgsBatch]
+                )
+            ).to.not.be.reverted;
+            
+            expect(await testToken.balanceOf(socialToken.address)).to.be.equal(previousAmountTestToken.sub(ethers.utils.parseUnits('1', 18)));
+            expect(await mockOtoken.balanceOf(socialToken.address)).to.be.equal(previousAmountOtokens.add(ethers.utils.parseUnits('1', 8)));
+            expect(await socialToken.vaultCounter()).to.be.equal(2);
         });
     });
 
