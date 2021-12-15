@@ -8,6 +8,8 @@ import {IOptionAdapter, GeneralActions} from "../adapters/IOptionAdapter.sol";
 import {ERC20, IERC20} from "../../oz/token/ERC20/ERC20.sol";
 import {IController} from "../interfaces/gamma/IController.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @notice Optional's implementation of a social token integrating
  * the Opyn ecosystem
@@ -17,7 +19,16 @@ contract Opyn_ST is SocialToken {
 
     /**
      * For Position.optionalData, the data is formatted as (uint256)
-     * - (0) uint256 represents the vault's ID
+     * - (0) uint256 represents the vault's ID IF applicable
+     */
+
+    /**
+     * When defining Position.Option, it may not be actually necessary
+     * to fully define the parameters of the option UNLESS for the purposes
+     * the social trader/manager intends to use it for otherwise off-chain data
+     * can be used instead.
+     *
+     * Position.Option.token MUST be defined however.
      */
 
     /// -- CUSTOM ERRORS --

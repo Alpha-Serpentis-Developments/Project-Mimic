@@ -15,6 +15,7 @@ interface IOptionAdapter is GeneralActions {
 
     /**
      @notice Option protocols may use the following types to define their option tokens
+     - NULL represents the default value
      - CALL represents a call option
      - PUT represents a put option
      - OTHER represents a non-conforming 'option' token (e.g., Squeeth)
