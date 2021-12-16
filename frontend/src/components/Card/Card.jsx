@@ -26,30 +26,30 @@ export default function Card({ title, handler, img, socialRating, apyW, apyM, co
 						<h3>{handler}</h3>
 					</div>
 				</div>
-				<p>
+				<p className={styles.socialRating}>
 					Social Rating:{" "}
 					<strong>
 						<u>{socialRating}</u>
 					</strong>
 				</p>
 			</div>
-			<div className={styles.stats}>
-				<div className={styles.coins}>
-					{
-					coins.map((coin) => (
-						<img className={styles.coin} src={coin.imageURL} alt={coin.name} />
-					))
-					}
+			<div className={styles.statsContainer}>
+				<div className={styles.stats}>
+					<div className={styles.coins}>
+						{coins.map((coin) => (
+							<img className={styles.coin} src={coin.imageURL} alt={coin.name} />
+						))}
+					</div>
+					<p className={styles.time}>
+						1-Week: <strong className={styles.apy}>{apyW} APY</strong>
+					</p>
+					<p className={styles.time}>
+						1-Month:{" "}
+						<stron className={styles.apy} g>
+							{apyM} APY
+						</stron>
+					</p>
 				</div>
-				<p className={styles.time}>
-					1-Week: <strong className={styles.apy}>{apyW} APY</strong>
-				</p>
-				<p className={styles.time}>
-					1-Month:{" "}
-					<stron className={styles.apy} g>
-						{apyM} APY
-					</stron>
-				</p>
 			</div>
 			<div className={styles.buttons}>
 				<button>Trade</button>

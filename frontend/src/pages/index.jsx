@@ -41,14 +41,19 @@ export default function Home() {
 					<Card
 						title="Venus"
 						handler="@Venus"
-						apyM="43"
-						apyW="32"
+						apyM={43}
+						apyW={32}
 						socialRating="B"
 						coins={[
 							{
-								name: "Bitcoin",
-								imageURL: "/bitcoin.png",
+								name: "Ethereum",
+								imageURL: "/ethereum.svg",
 							},
+							{
+								name: "Bitcoin",
+								imageURL: "/bitcoin.svg",
+							},
+							
 						]}
 						img={"venus.svg"}
 						key={2}

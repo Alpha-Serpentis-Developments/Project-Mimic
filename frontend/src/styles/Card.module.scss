@@ -1,5 +1,4 @@
 .card {
-	font-family: "Corben", cursive;
 	background-color: rgba(196, 196, 196, 50%);
 	padding: 20px;
 	border-radius: 25px;
@@ -7,10 +6,11 @@
 	text-align: left;
 	margin-top: 50px;
 	width: 400px;
-	height: 280px;
+	height: 260px;
 	.info {
+		font-family: "Corben", cursive;
 		line-height: 35px;
-		border-bottom: 3px solid #fff;
+		border-bottom: 1px solid #fff;
 		.top {
 			display: flex;
 			h2 {
@@ -21,28 +21,30 @@
 			}
 		}
 	}
-	.stats {
-		padding: 0 20px 0 5px;
-		border-bottom: 3px solid #fff;
-		display: flex;
-		justify-content: space-between;
-		margin: 10px 0;
-		.time {
-			font-size: 14px;
-		}
-		.apy {
-			font-size: 16px;
-		}
+	.statsContainer {
+		border-bottom: 1px solid #fff;
+		padding: 5px 10px 5px 5px;
+		.stats {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			.time {
+				font-size: 14px;
+			}
+			.apy {
+				font-size: 16px;
+			}
 
-		.coins {
-			.coin {
-				width: 40px;
-				border: 1px solid black;
-				border-radius: 50%;
+			.coins {
+				.coin {
+					width: 40px;
+					border: 1px solid black;
+					border-radius: 50%;
+					margin: 0 -20px 0 0;
+				}
 			}
 		}
 	}
-
 	.img {
 		background-color: #d6f2f1;
 		border-radius: 50%;
@@ -62,7 +64,7 @@
 			border: none;
 			border-radius: 20px;
 			font-size: 18px;
-			background-color: #cc49f7;
+			background-color: hsla(285, 92%, 63%, 75%);
 		}
 	}
 }
