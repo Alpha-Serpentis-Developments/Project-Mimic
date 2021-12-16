@@ -45,9 +45,9 @@ export default function Card({ title, handler, img, socialRating, apyW, apyM, co
 					</p>
 					<p className={styles.time}>
 						1-Month:{" "}
-						<stron className={styles.apy} g>
+						<strong className={styles.apy}>
 							{apyM} APY
-						</stron>
+						</strong>
 					</p>
 				</div>
 			</div>

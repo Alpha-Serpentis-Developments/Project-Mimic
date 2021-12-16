@@ -23,24 +23,24 @@
 	}
 	.statsContainer {
 		border-bottom: 1px solid #fff;
-		padding: 5px 10px 5px 5px;
+		padding: 0px 10px 5px 5px;
 		.stats {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
 			.time {
-				font-size: 14px;
+				font-size: 12px;
 			}
 			.apy {
-				font-size: 16px;
+				font-size: 14px;
 			}
 
 			.coins {
 				.coin {
-					width: 40px;
+					width: 37px;
 					border: 1px solid black;
 					border-radius: 50%;
-					margin: 0 -20px 0 0;
+					margin: 5px -20px 0 0;
 				}
 			}
 		}
