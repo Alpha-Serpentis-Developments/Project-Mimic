@@ -42,14 +42,14 @@ interface IOptionAdapter is GeneralActions {
 
     /// -- FUNCTIONS --
 
-    function batchOperation(bytes calldata _arguments) external returns(bytes memory);
-    function addCollateral(bytes calldata _arguments) external returns(bytes memory);
-    function removeCollateral(bytes calldata _arguments) external returns(bytes memory);
-    function openVault(bytes calldata _arguments) external returns(bytes memory);
-    function writeOption(bytes calldata _arguments) external returns(bytes memory);
-    function burnOption(bytes calldata _arguments) external returns(bytes memory);
-    function settle(bytes calldata _arguments) external returns(bytes memory);
-    function exercise(bytes calldata _arguments) external returns(bytes memory);
+    function batchOperation(bytes calldata _arguments, uint256 _costBasis) external returns(bytes memory, uint256 _positionSize);
+    function addCollateral(bytes calldata _arguments, uint256 _costBasis) external returns(bytes memory, uint256 _positionSize);
+    function removeCollateral(bytes calldata _arguments, uint256 _costBasis) external returns(bytes memory, uint256 _positionSize);
+    function openVault(bytes calldata _arguments, uint256 _costBasis) external returns(bytes memory, uint256 _positionSize);
+    function writeOption(bytes calldata _argument, uint256 _costBasis) external returns(bytes memory, uint256 _positionSize);
+    function burnOption(bytes calldata _arguments, uint256 _costBasis) external returns(bytes memory, uint256 _positionSize);
+    function settle(bytes calldata _arguments, uint256 _costBasis) external returns(bytes memory, uint256 _positionSize);
+    function exercise(bytes calldata _arguments, uint256 _costBasis) external returns(bytes memory, uint256 _positionSize);
 
     function getPositionsCollatAmt(bytes calldata _arguments) external view returns(bytes memory);
 

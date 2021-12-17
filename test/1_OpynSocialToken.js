@@ -464,7 +464,6 @@ describe('Opyn Social Token', () => {
                 )
             ).to.not.be.reverted;
 
-            expect(await socialToken.vaultCounter()).to.be.equal(1);
             expect(await testToken.balanceOf(socialToken.address)).to.be.equal(previousAmountTestToken.sub(ethers.utils.parseUnits('1', 18)));
             expect(await mockOtoken.balanceOf(socialToken.address)).to.be.equal(ethers.utils.parseUnits('1', 8));
         });
@@ -544,7 +543,23 @@ describe('Opyn Social Token', () => {
             
             expect(await testToken.balanceOf(socialToken.address)).to.be.equal(previousAmountTestToken.sub(ethers.utils.parseUnits('1', 18)));
             expect(await mockOtoken.balanceOf(socialToken.address)).to.be.equal(previousAmountOtokens.add(ethers.utils.parseUnits('1', 8)));
-            expect(await socialToken.vaultCounter()).to.be.equal(2);
+        });
+        it('Should close out vault #1 via modifyPositions', async () => {
+            let previousAmountTestToken = await testToken.balanceOf(socialToken.address);
+            let previousAmountOtokens = await mockOtoken.balanceOf(socialToken.address);
+
+            await expect(
+                socialToken.connect(manager).modifyPosition(
+                    [4,1], // burn_option -> remove_collateral
+                    0,
+                    [approvalArgs,encodedArgsBatch]
+                )
+            ).to.not.be.reverted;
+
+            console.log(await socialToken.activePositions());
+        });
+        it('Should close out vault #2 via closePosition', async () => {
+
         });
     });
 

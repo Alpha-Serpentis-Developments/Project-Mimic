@@ -18,15 +18,16 @@ contract Opyn_ST is SocialToken {
     /// -- NOTES --
 
     /**
-     * For Position.optionalData, the data is formatted as (uint256)
+     * [???] For Position.optionalData, the data is formatted as (uint256, uint256)
      * - (0) uint256 represents the vault's ID IF applicable
+     * - (1) uint256 represents the vault's COLLATERAL
      */
 
     /**
-     * When defining Position.Option, it may not be actually necessary
-     * to fully define the parameters of the option UNLESS for the purposes
-     * the social trader/manager intends to use it for otherwise off-chain data
-     * can be used instead.
+     * When defining Position.Option, it may not be necessary to
+     * fully define the parameters of struct Position UNLESS
+     * the social trader/manager intends to use them, otherwise
+     * off-chain data can be used instead.
      *
      * Position.Option.token MUST be defined however.
      */
@@ -38,38 +39,6 @@ contract Opyn_ST is SocialToken {
     uint256 public vaultCounter;
 
     /// -- FUNCTIONS --
-
-    function initialize(
-        string memory _name,
-        string memory _symbol,
-        address _protocolManager,
-        address _denominationAsset,
-        address _optionAdapter,
-        address _exchangeAdapter,
-        address _lendingAdapter,
-        address _trader,
-        uint16 _depositFee,
-        uint16 _withdrawalFee,
-        uint16 _managementFee,
-        uint16 _performanceFee
-    ) external override initializer {
-        _initialize(
-            _name,
-            _symbol,
-            _protocolManager,
-            _denominationAsset,
-            _optionAdapter,
-            _exchangeAdapter,
-            _lendingAdapter,
-            _trader,
-            _depositFee,
-            _withdrawalFee,
-            _managementFee,
-            _performanceFee
-        );
-
-        vaultCounter = 1;
-    }
 
     function allowOpynAdapter(address _controller)
         external
@@ -120,8 +89,9 @@ contract Opyn_ST is SocialToken {
         Position storage pos = positions[posId];
 
         if (PositionSize.unwrap(pos.size) != 0) revert Position_AlreadyOpen();
+        pos.isLong = _position.isLong; // determines the calculation
 
-        bytes memory optionalData = _operateActions(
+        (bytes memory optionalData, uint256 positionSize) = _operateActions(
             _actions,
             _args,
             pos
@@ -135,8 +105,7 @@ contract Opyn_ST is SocialToken {
         
         activePositions.push(posId);
         pos.option = _position.option;
-        pos.size = _position.size;
-        pos.isLong = _position.isLong;
+        pos.size = PositionSize.wrap(positionSize);
 
         emit PositionOpened(posId);
     }
@@ -184,10 +153,22 @@ contract Opyn_ST is SocialToken {
         }
     }
 
-    function _calculateCostBasisInDenom(Position storage _pos)
-        internal
-        view
-        override
-        returns (uint256)
-    {}
+    // function _calculateCostBasisInDenom(Position storage _pos, uint256 _initialBal, bytes memory _returnedData)
+    //     internal
+    //     view
+    //     override
+    //     returns (uint256)
+    // {
+    //     if(_returnedData.length != 0) {
+    //         (,uint256 _collat) = abi.decode(_returnedData, (uint256, uint256));
+
+    //         return _collat;
+    //     } else {
+    //         if(_pos.isLong != 0) {
+                
+    //         } else {
+
+    //         }
+    //     }
+    // }
 }

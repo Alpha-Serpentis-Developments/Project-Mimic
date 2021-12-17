@@ -36,8 +36,13 @@ abstract contract SocialTokenComponents is
      - optionalData is optional data that a position can store
      - option represents the option the position references
      - size represents the size of the option position
-     - costBasis is negative if short (isLong == false) and positive if long (isLong == true) and represents how much of the denomination asset is used
-     - isLong represents whether or not the position is long; if it is NOT long, size is assumed to be "negative"
+     - costBasis is negative if short (isLong == false) and
+       positive if long (isLong == true) and represents how much of the denomination
+       asset is used. IMPORTANT: costBasis is calculated by taking the difference before and
+       after the operation! DO NOT LEAVE THE ASSETS IN THE SOCIAL TOKEN IF IT'S PART OF THE
+       COST BASIS
+     - isLong represents whether or not the position is long; if it is NOT long,
+       size is assumed to be "negative" (0 = false, 1 = true) 
      */
     struct Position {
         bytes optionalData;
@@ -177,14 +182,18 @@ abstract contract SocialTokenComponents is
         Position storage pos = positions[posId];
 
         if (PositionSize.unwrap(pos.size) != 0) revert Position_AlreadyOpen();
+        pos.isLong = _position.isLong; // determines the calculation
 
-        bytes memory _optionalData = _operateActions(_actions, _args, pos);
+        (bytes memory _optionalData, uint256 _posSize) = _operateActions(
+            _actions,
+            _args,
+            pos
+        );
 
         activePositions.push(posId);
         pos.optionalData = _optionalData;
         pos.option = _position.option;
-        pos.size = _position.size;
-        pos.isLong = _position.isLong;
+        pos.size = PositionSize.wrap(_posSize);
 
         emit PositionOpened(posId);
     }
@@ -196,7 +205,19 @@ abstract contract SocialTokenComponents is
     ) internal virtual {
         Position storage pos = positions[_position];
 
-        bytes memory _optionalData = _operateActions(_actions, _args, pos);
+        (bytes memory _optionalData, uint256 _posSize) = _operateActions(
+            _actions,
+            _args,
+            pos
+        );
+
+        if (_didPositionClose(pos)) {
+            _cleanAndRemoveActivePositionsElement(_position);
+            emit PositionClosed(_position);
+        } else {
+            _optionalData = bytes.concat(pos.optionalData, _optionalData);
+            emit PositionModified(_position);
+        }
     }
 
     function _closePosition(
@@ -211,22 +232,25 @@ abstract contract SocialTokenComponents is
         if (!_didPositionClose(pos)) {
             revert Position_DidNotClose();
         } else {
-            _cleanAndRemoveActivePositionsElement(activePositions, _position);
+            _cleanAndRemoveActivePositionsElement(_position);
         }
 
         emit PositionClosed(_position);
     }
 
-    function _cleanAndRemoveActivePositionsElement(uint256[] storage _arr, uint256 _find) internal virtual {
+    function _cleanAndRemoveActivePositionsElement(uint256 _find)
+        internal
+        virtual
+    {
+        uint256[] storage _arr = activePositions;
+
         for (uint256 i; i < _arr.length; i++) {
-                if (_arr[i] == _find) {
-                    _arr[i] = _arr[
-                        _arr.length - 1
-                    ];
-                    _arr.pop();
-                    break;
-                }
+            if (_arr[i] == _find) {
+                _arr[i] = _arr[_arr.length - 1];
+                _arr.pop();
+                break;
             }
+        }
     }
 
     /// @notice Operates the specified action(s)
@@ -234,14 +258,22 @@ abstract contract SocialTokenComponents is
     /// @param _actions is an array of the provided actions
     /// @param _arguments is an array of encoded data of the arguments being passed that coincides with the action
     /// @return returnData is the data returned by the operations concatenated together in order of their operation
+    /// @return positionSize is the size of the position
     function _operateActions(
         GeneralActions.Action[] memory _actions,
         bytes[] memory _arguments,
         Position storage _pos
-    ) internal returns (bytes memory returnData) {
+    ) internal returns (bytes memory returnData, uint256 positionSize) {
         IOptionAdapter oa = IOptionAdapter(optionAdapter);
         IExchangeAdapter ea = IExchangeAdapter(exchangeAdapter);
         ILendingAdapter la = ILendingAdapter(lendingAdapter);
+
+        uint256 balanceOfDenomAsset = IERC20(denominationAsset).balanceOf(
+            address(this)
+        );
+        uint256 costBasis = CostBasis.unwrap(_pos.costBasis);
+
+        bytes memory tempB;
 
         for (uint256 i; i < _actions.length; i++) {
             if (_actions[i] == GeneralActions.Action.INCREASE_ALLOWANCE) {
@@ -266,43 +298,50 @@ abstract contract SocialTokenComponents is
                     amount
                 );
             } else if (_actions[i] == GeneralActions.Action.BATCH) {
-                returnData = bytes.concat(
-                    returnData,
-                    oa.batchOperation(_arguments[i])
+                (tempB, positionSize) = oa.batchOperation(
+                    _arguments[i],
+                    costBasis
                 );
+
+                returnData = bytes.concat(returnData, tempB);
                 break;
             } else if (_actions[i] == GeneralActions.Action.ADD_COLLATERAL) {
-                returnData = bytes.concat(
-                    returnData,
-                    oa.addCollateral(_arguments[i])
+                (tempB, positionSize) = oa.addCollateral(
+                    _arguments[i],
+                    costBasis
                 );
+
+                returnData = bytes.concat(returnData, tempB);
             } else if (_actions[i] == GeneralActions.Action.REMOVE_COLLATERAL) {
-                returnData = bytes.concat(
-                    returnData,
-                    oa.removeCollateral(_arguments[i])
+                (tempB, positionSize) = oa.removeCollateral(
+                    _arguments[i],
+                    costBasis
                 );
+
+                returnData = bytes.concat(returnData, tempB);
             } else if (_actions[i] == GeneralActions.Action.OPEN_VAULT) {
-                returnData = bytes.concat(
-                    returnData,
-                    oa.openVault(_arguments[i])
-                );
+                (tempB, positionSize) = oa.openVault(_arguments[i], costBasis);
+
+                returnData = bytes.concat(returnData, tempB);
             } else if (_actions[i] == GeneralActions.Action.WRITE_OPTION) {
-                returnData = bytes.concat(
-                    returnData,
-                    oa.writeOption(_arguments[i])
+                (tempB, positionSize) = oa.writeOption(
+                    _arguments[i],
+                    costBasis
                 );
+
+                returnData = bytes.concat(returnData, tempB);
             } else if (_actions[i] == GeneralActions.Action.BURN_OPTION) {
-                returnData = bytes.concat(
-                    returnData,
-                    oa.burnOption(_arguments[i])
-                );
+                (tempB, positionSize) = oa.burnOption(_arguments[i], costBasis);
+
+                returnData = bytes.concat(returnData, tempB);
             } else if (_actions[i] == GeneralActions.Action.SETTLE) {
-                returnData = bytes.concat(returnData, oa.settle(_arguments[i]));
+                (tempB, positionSize) = oa.settle(_arguments[i], costBasis);
+
+                returnData = bytes.concat(returnData, tempB);
             } else if (_actions[i] == GeneralActions.Action.EXERCISE) {
-                returnData = bytes.concat(
-                    returnData,
-                    oa.exercise(_arguments[i])
-                );
+                (tempB, positionSize) = oa.exercise(_arguments[i], costBasis);
+
+                returnData = bytes.concat(returnData, tempB);
             } else if (_actions[i] == GeneralActions.Action.BUY) {
                 returnData = bytes.concat(returnData, ea.buy(_arguments[i]));
             } else if (_actions[i] == GeneralActions.Action.SELL) {
@@ -313,15 +352,18 @@ abstract contract SocialTokenComponents is
                 la.withdraw(_arguments[i]);
             }
         }
-
-        _pos.costBasis = CostBasis.wrap(_calculateCostBasisInDenom(_pos));
     }
 
-    function _calculateCostBasisInDenom(Position storage _pos)
-        internal
-        view
-        virtual
-        returns (uint256);
+    // /// @notice Calculates the cost basis in the denomination asset
+    // /// @dev A virtual function that the implementation must define to calculate the cost basis
+    // /// @param _pos A Position pointer
+    // /// @param _initialBal the initial amount of balance before operating
+    // /// @param _returnedData optional data returned from the adapters
+    // function _calculateCostBasisInDenom(Position storage _pos, uint256 _initialBal, bytes memory _returnedData)
+    //     internal
+    //     view
+    //     virtual
+    //     returns (uint256);
 
     function _didPositionClose(Position storage _position)
         internal

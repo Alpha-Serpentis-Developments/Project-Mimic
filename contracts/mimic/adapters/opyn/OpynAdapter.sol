@@ -100,14 +100,13 @@ contract OpynAdapter is IOptionAdapter, ReentrancyGuard {
             .getVault(msg.sender, vaultId);
     }
 
-    function batchOperation(bytes calldata _args)
+    function batchOperation(bytes calldata _args, uint256 _costBasis)
         external
         override
         nonReentrant
-        returns (bytes memory)
+        returns (bytes memory, uint256)
     {
         IController controller = IController(addressBook.getController());
-        uint256 currentVault = controller.getAccountVaultCounter(msg.sender);
 
         Actions.ActionArgs[] memory actions = abi.decode(
             _args,
@@ -115,73 +114,67 @@ contract OpynAdapter is IOptionAdapter, ReentrancyGuard {
         );
 
         controller.operate(actions);
-
-        if(currentVault != controller.getAccountVaultCounter(msg.sender)) {
-            return abi.encode(currentVault + 1);
-        }
     }
 
-    function addCollateral(bytes calldata _args)
+    function addCollateral(bytes calldata _args, uint256 _costBasis)
         external
         override
         nonReentrant
-        returns (bytes memory)
+        returns (bytes memory, uint256)
     {
         _executeNonBatch(Actions.ActionType.DepositCollateral, _args);
     }
 
-    function removeCollateral(bytes calldata _args)
+    function removeCollateral(bytes calldata _args, uint256 _costBasis)
         external
         override
         nonReentrant
-        returns (bytes memory)
+        returns (bytes memory, uint256)
     {
         _executeNonBatch(Actions.ActionType.WithdrawCollateral, _args);
     }
 
-    function openVault(bytes calldata _args)
+    function openVault(bytes calldata _args, uint256 _costBasis)
         external
         override
         nonReentrant
-        returns (bytes memory)
+        returns (bytes memory, uint256)
     {
         _executeNonBatch(Actions.ActionType.OpenVault, _args);
-
-        return abi.encode(IController(addressBook.getController()).getAccountVaultCounter(msg.sender));
     }
 
-    function writeOption(bytes calldata _args)
+    function writeOption(bytes calldata _args, uint256 _costBasis)
         external
         override
         nonReentrant
-        returns (bytes memory)
+        returns (bytes memory, uint256)
     {
         _executeNonBatch(Actions.ActionType.MintShortOption, _args);
     }
 
-    function burnOption(bytes calldata _args)
+    function burnOption(bytes calldata _args, uint256 _costBasis)
         external
         override
         nonReentrant
-        returns (bytes memory)
+        returns (bytes memory, uint256)
     {
         _executeNonBatch(Actions.ActionType.BurnShortOption, _args);
     }
 
-    function settle(bytes calldata _args)
+    function settle(bytes calldata _args, uint256 _costBasis)
         external
         override
         nonReentrant
-        returns (bytes memory)
+        returns (bytes memory, uint256)
     {
         _executeNonBatch(Actions.ActionType.SettleVault, _args);
     }
 
-    function exercise(bytes calldata _args)
+    function exercise(bytes calldata _args, uint256 _costBasis)
         external
         pure
         override
-        returns (bytes memory)
+        returns (bytes memory, uint256)
     {
         _args; // used to silence warning
         revert NotInUse();
