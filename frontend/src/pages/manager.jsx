@@ -9,11 +9,11 @@ export default function Manager()
             <div className={styles.container}>
                 <div>
                     <div className={styles.div}>
-                        <p> Portfolio: </p>
+                        <p className={styles.bold}> Portfolio: </p>
                         { "$10,000.00" }
                     </div>
                     <div className={styles.div}>
-                        <p> Social Rating: </p>
+                        <p className={styles.bold}> Social Rating: </p>
                         { "A" }
                     </div>
                 </div>
@@ -43,6 +43,12 @@ export default function Manager()
                         <p> $230.00 </p>
                         <p> $230.00 </p>
                     </div>
+                </div>
+                <div className={styles.exdiv}>
+                    <p className={styles.bold}>Expiring soon</p>
+                    <p> Dec 31, 2021 ETH $10,000.00 Call</p>
+                    <p> Dec 31, 2021 BTC $10,000.00 Call</p>
+                    <p> Dec 31, 2021 UNI $10,000.00 Call</p>
                 </div>
             </div>
         </div>

@@ -7,12 +7,12 @@
 }
 .container {
     display: flex;
-    margin: 0 auto;
+    margin: 0 0% 0% 20%;
 }
 
 .div {
     margin: 10px  0px 20px 2%;
-    padding: 6px 18px;
+    padding: 13px 20px;
     width: 200px;
     font-size: 24px;
     text-align: center;
@@ -29,17 +29,28 @@
     display: flex;
     @extend .div;
 }
+.exdiv
+{   
+    font-size: 18;
+    max-width: 45%;
+    flex-direction: column;
+    @extend .managediv;
+}
 .bold
 {
     font-family: "Roboto Slab" serif;
-    font-size: 30px;
+    font-size: 25px;
     font-weight: 700;
 }
 .flex
 {
     flex: 1;
 }
-.flex p
+.flex *
 {
     padding: 5px;
+}
+.expire
+{
+
 }
