@@ -6,16 +6,40 @@
     font-size: 48px;
 }
 .container {
-    max-width: fit-content;
+    display: flex;
+    margin: 0 auto;
 }
 
 .div {
-    margin: 10px auto;
+    margin: 10px  0px 20px 2%;
     padding: 6px 18px;
     width: 200px;
     font-size: 24px;
     text-align: center;
+    grid-row: 1;
     background: rgba($color: #C4C4C4, $alpha: 0.5);
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
+}
+.managediv
+{
+    flex: 1;
+    max-width:50%;
+    height: 200px;
+    display: flex;
+    @extend .div;
+}
+.bold
+{
+    font-family: "Roboto Slab" serif;
+    font-size: 30px;
+    font-weight: 700;
+}
+.flex
+{
+    flex: 1;
+}
+.flex p
+{
+    padding: 5px;
 }
