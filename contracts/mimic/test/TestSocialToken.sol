@@ -45,7 +45,7 @@ contract TestSocialToken is SocialToken {
         );
     }
 
-    function _calculateCostBasisInDenom(Position storage _pos) internal view override returns(uint256) {
+    // function _calculateCostBasisInDenom(Position storage _pos) internal view override returns(uint256) {
         
-    }
+    // }
 }

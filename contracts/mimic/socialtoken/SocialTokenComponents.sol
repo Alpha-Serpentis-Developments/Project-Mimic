@@ -268,90 +268,90 @@ abstract contract SocialTokenComponents is
         IExchangeAdapter ea = IExchangeAdapter(exchangeAdapter);
         ILendingAdapter la = ILendingAdapter(lendingAdapter);
 
-        uint256 balanceOfDenomAsset = IERC20(denominationAsset).balanceOf(
-            address(this)
-        );
-        uint256 costBasis = CostBasis.unwrap(_pos.costBasis);
+        unchecked {
+            uint256 costBasis = CostBasis.unwrap(_pos.costBasis);
 
-        bytes memory tempB;
+            bytes memory tempB;
 
-        for (uint256 i; i < _actions.length; i++) {
-            if (_actions[i] == GeneralActions.Action.INCREASE_ALLOWANCE) {
-                (
-                    address assetToApprove,
-                    address approveTo,
-                    uint256 amount
-                ) = abi.decode(_arguments[i], (address, address, uint256));
+            for (uint256 i; i < _actions.length; i++) {
+                if (_actions[i] == GeneralActions.Action.INCREASE_ALLOWANCE) {
+                    (
+                        address assetToApprove,
+                        address approveTo,
+                        uint256 amount
+                    ) = abi.decode(_arguments[i], (address, address, uint256));
 
-                IERC20(assetToApprove).safeIncreaseAllowance(approveTo, amount);
-            } else if (
-                _actions[i] == GeneralActions.Action.DECREASE_ALLOWANCE
-            ) {
-                (
-                    address assetToDecrease,
-                    address approveTo,
-                    uint256 amount
-                ) = abi.decode(_arguments[i], (address, address, uint256));
+                    IERC20(assetToApprove).safeIncreaseAllowance(approveTo, amount);
+                } else if (
+                    _actions[i] == GeneralActions.Action.DECREASE_ALLOWANCE
+                ) {
+                    (
+                        address assetToDecrease,
+                        address approveTo,
+                        uint256 amount
+                    ) = abi.decode(_arguments[i], (address, address, uint256));
 
-                IERC20(assetToDecrease).safeDecreaseAllowance(
-                    approveTo,
-                    amount
-                );
-            } else if (_actions[i] == GeneralActions.Action.BATCH) {
-                (tempB, positionSize) = oa.batchOperation(
-                    _arguments[i],
-                    costBasis
-                );
+                    IERC20(assetToDecrease).safeDecreaseAllowance(
+                        approveTo,
+                        amount
+                    );
+                } else if (_actions[i] == GeneralActions.Action.BATCH) {
+                    (tempB, positionSize) = oa.batchOperation(
+                        _arguments[i],
+                        costBasis
+                    );
 
-                returnData = bytes.concat(returnData, tempB);
-                break;
-            } else if (_actions[i] == GeneralActions.Action.ADD_COLLATERAL) {
-                (tempB, positionSize) = oa.addCollateral(
-                    _arguments[i],
-                    costBasis
-                );
+                    returnData = bytes.concat(returnData, tempB);
+                    break;
+                } else if (_actions[i] == GeneralActions.Action.ADD_COLLATERAL) {
+                    (tempB, positionSize) = oa.addCollateral(
+                        _arguments[i],
+                        costBasis
+                    );
 
-                returnData = bytes.concat(returnData, tempB);
-            } else if (_actions[i] == GeneralActions.Action.REMOVE_COLLATERAL) {
-                (tempB, positionSize) = oa.removeCollateral(
-                    _arguments[i],
-                    costBasis
-                );
+                    returnData = bytes.concat(returnData, tempB);
+                } else if (_actions[i] == GeneralActions.Action.REMOVE_COLLATERAL) {
+                    (tempB, positionSize) = oa.removeCollateral(
+                        _arguments[i],
+                        costBasis
+                    );
 
-                returnData = bytes.concat(returnData, tempB);
-            } else if (_actions[i] == GeneralActions.Action.OPEN_VAULT) {
-                (tempB, positionSize) = oa.openVault(_arguments[i], costBasis);
+                    returnData = bytes.concat(returnData, tempB);
+                } else if (_actions[i] == GeneralActions.Action.OPEN_VAULT) {
+                    (tempB, positionSize) = oa.openVault(_arguments[i], costBasis);
 
-                returnData = bytes.concat(returnData, tempB);
-            } else if (_actions[i] == GeneralActions.Action.WRITE_OPTION) {
-                (tempB, positionSize) = oa.writeOption(
-                    _arguments[i],
-                    costBasis
-                );
+                    returnData = bytes.concat(returnData, tempB);
+                } else if (_actions[i] == GeneralActions.Action.WRITE_OPTION) {
+                    (tempB, positionSize) = oa.writeOption(
+                        _arguments[i],
+                        costBasis
+                    );
 
-                returnData = bytes.concat(returnData, tempB);
-            } else if (_actions[i] == GeneralActions.Action.BURN_OPTION) {
-                (tempB, positionSize) = oa.burnOption(_arguments[i], costBasis);
+                    returnData = bytes.concat(returnData, tempB);
+                } else if (_actions[i] == GeneralActions.Action.BURN_OPTION) {
+                    (tempB, positionSize) = oa.burnOption(_arguments[i], costBasis);
 
-                returnData = bytes.concat(returnData, tempB);
-            } else if (_actions[i] == GeneralActions.Action.SETTLE) {
-                (tempB, positionSize) = oa.settle(_arguments[i], costBasis);
+                    returnData = bytes.concat(returnData, tempB);
+                } else if (_actions[i] == GeneralActions.Action.SETTLE) {
+                    (tempB, positionSize) = oa.settle(_arguments[i], costBasis);
 
-                returnData = bytes.concat(returnData, tempB);
-            } else if (_actions[i] == GeneralActions.Action.EXERCISE) {
-                (tempB, positionSize) = oa.exercise(_arguments[i], costBasis);
+                    returnData = bytes.concat(returnData, tempB);
+                } else if (_actions[i] == GeneralActions.Action.EXERCISE) {
+                    (tempB, positionSize) = oa.exercise(_arguments[i], costBasis);
 
-                returnData = bytes.concat(returnData, tempB);
-            } else if (_actions[i] == GeneralActions.Action.BUY) {
-                returnData = bytes.concat(returnData, ea.buy(_arguments[i]));
-            } else if (_actions[i] == GeneralActions.Action.SELL) {
-                returnData = bytes.concat(returnData, ea.sell(_arguments[i]));
-            } else if (_actions[i] == GeneralActions.Action.LEND) {
-                la.deposit(_arguments[i]);
-            } else if (_actions[i] == GeneralActions.Action.WITHDRAW_LEND) {
-                la.withdraw(_arguments[i]);
+                    returnData = bytes.concat(returnData, tempB);
+                } else if (_actions[i] == GeneralActions.Action.BUY) {
+                    returnData = bytes.concat(returnData, ea.buy(_arguments[i]));
+                } else if (_actions[i] == GeneralActions.Action.SELL) {
+                    returnData = bytes.concat(returnData, ea.sell(_arguments[i]));
+                } else if (_actions[i] == GeneralActions.Action.LEND) {
+                    la.deposit(_arguments[i]);
+                } else if (_actions[i] == GeneralActions.Action.WITHDRAW_LEND) {
+                    la.withdraw(_arguments[i]);
+                }
             }
         }
+        
     }
 
     // /// @notice Calculates the cost basis in the denomination asset

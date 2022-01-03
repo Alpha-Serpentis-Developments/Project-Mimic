@@ -548,18 +548,87 @@ describe('Opyn Social Token', () => {
             let previousAmountTestToken = await testToken.balanceOf(socialToken.address);
             let previousAmountOtokens = await mockOtoken.balanceOf(socialToken.address);
 
+            let encodedArgs0 = new ethers.utils.AbiCoder().encode(
+                ["address", "address", "address", "uint256", "uint256", "uint256", "bytes"],
+                [
+                    socialToken.address,
+                    socialToken.address,
+                    mockOtoken.address,
+                    1,
+                    ethers.utils.parseUnits('1', 8),
+                    0,
+                    "0x"
+                ]
+            );
+            let encodedArgs1 = new ethers.utils.AbiCoder().encode(
+                ["address", "address", "address", "uint256", "uint256", "uint256", "bytes"],
+                [
+                    socialToken.address,
+                    socialToken.address,
+                    testToken.address,
+                    1,
+                    ethers.utils.parseUnits('1', 18),
+                    0,
+                    "0x"
+                ]
+            );
+
             await expect(
                 socialToken.connect(manager).modifyPosition(
                     [4,1], // burn_option -> remove_collateral
                     0,
-                    [approvalArgs,encodedArgsBatch]
+                    [encodedArgs0, encodedArgs1]
                 )
             ).to.not.be.reverted;
 
-            console.log(await socialToken.activePositions());
+            expect(await testToken.balanceOf(socialToken.address)).to.be.equal(previousAmountTestToken.add(ethers.utils.parseUnits('1', 18)));
+            expect(await mockOtoken.balanceOf(socialToken.address)).to.be.equal(previousAmountOtokens.sub(ethers.utils.parseUnits('1', 8)));
         });
         it('Should close out vault #2 via closePosition', async () => {
+            let previousAmountTestToken = await testToken.balanceOf(socialToken.address);
+            let previousAmountOtokens = await mockOtoken.balanceOf(socialToken.address);
 
+            let encodedArgsBatch = new ethers.utils.AbiCoder().encode(
+                [
+                    "tuple(uint256,address,address,address,uint256,uint256,uint256,bytes)[]"
+                ],
+                [
+                    [
+                        [
+                            2,
+                            socialToken.address,
+                            socialToken.address,
+                            mockOtoken.address,
+                            2,
+                            ethers.utils.parseUnits('1', 8),
+                            0,
+                            "0x"
+                        ],
+                        [
+                            6,
+                            socialToken.address,
+                            socialToken.address,
+                            testToken.address,
+                            2,
+                            ethers.utils.parseUnits('1', 18),
+                            0,
+                            "0x" 
+                        ]
+                    ]
+                ]
+                
+            );
+
+            await expect(
+                socialToken.connect(manager).modifyPosition(
+                    [14], // batch (burn -> remove collat)
+                    0,
+                    [encodedArgsBatch]
+                )
+            ).to.not.be.reverted;
+
+            expect(await testToken.balanceOf(socialToken.address)).to.be.equal(previousAmountTestToken.add(ethers.utils.parseUnits('1', 18)));
+            expect(await mockOtoken.balanceOf(socialToken.address)).to.be.equal(previousAmountOtokens.sub(ethers.utils.parseUnits('1', 8)));
         });
     });
 

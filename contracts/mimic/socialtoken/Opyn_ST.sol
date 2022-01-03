@@ -84,8 +84,11 @@ contract Opyn_ST is SocialToken {
     ) internal override {
         if (_position.option.token == address(0)) revert Invalid_ZeroValue();
 
-        uint256 posId = positionId++;
-
+        uint256 posId;
+        
+        unchecked {
+            posId = positionId++;
+        }
         Position storage pos = positions[posId];
 
         if (PositionSize.unwrap(pos.size) != 0) revert Position_AlreadyOpen();
@@ -99,7 +102,9 @@ contract Opyn_ST is SocialToken {
 
         if(optionalData.length != 0) {
             if(abi.decode(optionalData, (uint256)) != vaultCounter) {
-                vaultCounter++;
+                unchecked {
+                    vaultCounter++;
+                }
             }
         }
         
