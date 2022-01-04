@@ -18,6 +18,60 @@ export const dummy = [
 		apyM: 12.9,
 	},
 	{
+		title: "Mercury",
+		handler: "@Mercury",
+		img: "/venus.svg",
+		coins: [
+			{
+				alt: "bitcoin",
+				imageURL: "/bitcoin.png",
+			},
+			{
+				alt: "ethereum",
+				imageURL: "/ethereum.svg",
+			},
+		],
+		socialRating: "A",
+		apyW: 5,
+		apyM: 12.9,
+	},
+	{
+		title: "Mercury",
+		handler: "@Mercury",
+		img: "/venus.svg",
+		coins: [
+			{
+				alt: "bitcoin",
+				imageURL: "/bitcoin.png",
+			},
+			{
+				alt: "ethereum",
+				imageURL: "/ethereum.svg",
+			},
+		],
+		socialRating: "A",
+		apyW: 5,
+		apyM: 12.9,
+	},
+	{
+		title: "Mercury",
+		handler: "@Mercury",
+		img: "/venus.svg",
+		coins: [
+			{
+				alt: "bitcoin",
+				imageURL: "/bitcoin.png",
+			},
+			{
+				alt: "ethereum",
+				imageURL: "/ethereum.svg",
+			},
+		],
+		socialRating: "A",
+		apyW: 5,
+		apyM: 12.9,
+	},
+	{
 		title: "Venus",
 		handler: "@Venus",
 		img: "/venus.svg",

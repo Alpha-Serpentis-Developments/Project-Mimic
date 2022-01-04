@@ -1,21 +1,45 @@
-import React from "react";
+import React, { useRef } from "react";
 import Card from "../components/Card/Card";
 import { dummy } from "../components/Carosel/dummy";
 import styles from "./../styles/Trade.module.scss";
 
 export default function trade() {
+	const tradeRef = useRef(null)
+
+	const scrollLeft = () => {
+		if(tradeRef.current) {
+			tradeRef.current.scrollBy({
+				top: 0,
+				left: 480,
+				behavior: 'smooth'
+			})
+		}
+	};
+	const scrollRight = () => {
+		if (tradeRef.current) {
+			tradeRef.current.scrollBy({
+				top: 0,
+				left: -480,
+				behavior: "smooth",
+			});
+		}
+	};
 	return (
 		<div className={styles.trade}>
 			<div className={styles.following}>
 				<h1>Your Following</h1>
 				<div className={styles.cardCarosel}>
-					<button className={styles.controls}>
+					<button className={styles.controls} onClick={() => scrollRight()}>
 						<i className={"fa-solid fa-angle-left"} />
 					</button>
-					{dummy.map((card, index) => (
-						<Card key={index} {...card} />
-					))}
-					<button className={styles.controls}>
+					<div className={styles.cards} ref={tradeRef}>
+						{dummy.map((card, index) => (
+							<div className={styles.followCard}>
+								<Card key={index} {...card} />
+							</div>
+						))}
+					</div>
+					<button className={styles.controls} onClick={() => scrollLeft()}>
 						<i className={"fa-solid fa-angle-right"} />
 					</button>
 				</div>
@@ -117,7 +141,6 @@ export default function trade() {
 						img={"venus.svg"}
 						key={3}
 					/>
-					
 				</div>
 			</div>
 		</div>

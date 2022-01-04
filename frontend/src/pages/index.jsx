@@ -26,8 +26,8 @@ export default function Home() {
 					<Card
 						title="Venus"
 						handler="@Venus"
-						apyM="43"
-						apyW="32"
+						apyM={43}
+						apyW={32}
 						socialRating="B"
 						coins={[
 							{
@@ -61,8 +61,8 @@ export default function Home() {
 					<Card
 						title="Venus"
 						handler="@Venus"
-						apyM="43"
-						apyW="32"
+						apyM={43}
+						apyW={32}
 						socialRating="B"
 						coins={[
 							{
