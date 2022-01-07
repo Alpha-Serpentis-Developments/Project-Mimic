@@ -111,6 +111,7 @@ contract Opyn_ST is SocialToken {
         activePositions.push(posId);
         pos.option = _position.option;
         pos.size = PositionSize.wrap(positionSize);
+        pos.costBasis = _position.costBasis;
 
         emit PositionOpened(posId);
     }

@@ -100,7 +100,7 @@ contract OpynAdapter is IOptionAdapter, ReentrancyGuard {
             .getVault(msg.sender, vaultId);
     }
 
-    function batchOperation(bytes calldata _args, uint256 _costBasis)
+    function batchOperation(bytes calldata _args)
         external
         override
         nonReentrant
@@ -116,7 +116,7 @@ contract OpynAdapter is IOptionAdapter, ReentrancyGuard {
         controller.operate(actions);
     }
 
-    function addCollateral(bytes calldata _args, uint256 _costBasis)
+    function addCollateral(bytes calldata _args)
         external
         override
         nonReentrant
@@ -125,7 +125,7 @@ contract OpynAdapter is IOptionAdapter, ReentrancyGuard {
         _executeNonBatch(Actions.ActionType.DepositCollateral, _args);
     }
 
-    function removeCollateral(bytes calldata _args, uint256 _costBasis)
+    function removeCollateral(bytes calldata _args)
         external
         override
         nonReentrant
@@ -134,7 +134,7 @@ contract OpynAdapter is IOptionAdapter, ReentrancyGuard {
         _executeNonBatch(Actions.ActionType.WithdrawCollateral, _args);
     }
 
-    function openVault(bytes calldata _args, uint256 _costBasis)
+    function openVault(bytes calldata _args)
         external
         override
         nonReentrant
@@ -143,7 +143,7 @@ contract OpynAdapter is IOptionAdapter, ReentrancyGuard {
         _executeNonBatch(Actions.ActionType.OpenVault, _args);
     }
 
-    function writeOption(bytes calldata _args, uint256 _costBasis)
+    function writeOption(bytes calldata _args)
         external
         override
         nonReentrant
@@ -152,7 +152,7 @@ contract OpynAdapter is IOptionAdapter, ReentrancyGuard {
         _executeNonBatch(Actions.ActionType.MintShortOption, _args);
     }
 
-    function burnOption(bytes calldata _args, uint256 _costBasis)
+    function burnOption(bytes calldata _args)
         external
         override
         nonReentrant
@@ -161,7 +161,7 @@ contract OpynAdapter is IOptionAdapter, ReentrancyGuard {
         _executeNonBatch(Actions.ActionType.BurnShortOption, _args);
     }
 
-    function settle(bytes calldata _args, uint256 _costBasis)
+    function settle(bytes calldata _args)
         external
         override
         nonReentrant
@@ -170,7 +170,7 @@ contract OpynAdapter is IOptionAdapter, ReentrancyGuard {
         _executeNonBatch(Actions.ActionType.SettleVault, _args);
     }
 
-    function exercise(bytes calldata _args, uint256 _costBasis)
+    function exercise(bytes calldata _args)
         external
         pure
         override

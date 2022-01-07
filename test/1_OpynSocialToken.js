@@ -466,6 +466,10 @@ describe('Opyn Social Token', () => {
 
             expect(await testToken.balanceOf(socialToken.address)).to.be.equal(previousAmountTestToken.sub(ethers.utils.parseUnits('1', 18)));
             expect(await mockOtoken.balanceOf(socialToken.address)).to.be.equal(ethers.utils.parseUnits('1', 8));
+
+            let position = await socialToken.positions(0);
+
+            console.log(position);
         });
         it('Should allow you to open a short position (batch)', async () => {
             let previousAmountTestToken = await testToken.balanceOf(socialToken.address);

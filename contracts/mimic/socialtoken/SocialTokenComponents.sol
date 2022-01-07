@@ -38,9 +38,7 @@ abstract contract SocialTokenComponents is
      - size represents the size of the option position
      - costBasis is negative if short (isLong == false) and
        positive if long (isLong == true) and represents how much of the denomination
-       asset is used. IMPORTANT: costBasis is calculated by taking the difference before and
-       after the operation! DO NOT LEAVE THE ASSETS IN THE SOCIAL TOKEN IF IT'S PART OF THE
-       COST BASIS
+       asset is used. NOTE: The value of costBasis matters, particularly when executed!
      - isLong represents whether or not the position is long; if it is NOT long,
        size is assumed to be "negative" (0 = false, 1 = true) 
      */
@@ -270,6 +268,8 @@ abstract contract SocialTokenComponents is
 
         unchecked {
             uint256 costBasis = CostBasis.unwrap(_pos.costBasis);
+            uint256 initBalOfDenomAsset = IERC20(denominationAsset).balanceOf(address(this));
+            uint256 absoluteDiff; // absolute diff between cost basis and final amount
 
             bytes memory tempB;
 
@@ -297,59 +297,66 @@ abstract contract SocialTokenComponents is
                     );
                 } else if (_actions[i] == GeneralActions.Action.BATCH) {
                     (tempB, positionSize) = oa.batchOperation(
-                        _arguments[i],
-                        costBasis
+                        _arguments[i]
                     );
 
                     returnData = bytes.concat(returnData, tempB);
                     break;
                 } else if (_actions[i] == GeneralActions.Action.ADD_COLLATERAL) {
                     (tempB, positionSize) = oa.addCollateral(
-                        _arguments[i],
-                        costBasis
+                        _arguments[i]
                     );
 
                     returnData = bytes.concat(returnData, tempB);
                 } else if (_actions[i] == GeneralActions.Action.REMOVE_COLLATERAL) {
                     (tempB, positionSize) = oa.removeCollateral(
-                        _arguments[i],
-                        costBasis
+                        _arguments[i]
                     );
 
                     returnData = bytes.concat(returnData, tempB);
                 } else if (_actions[i] == GeneralActions.Action.OPEN_VAULT) {
-                    (tempB, positionSize) = oa.openVault(_arguments[i], costBasis);
+                    (tempB, positionSize) = oa.openVault(_arguments[i]);
 
                     returnData = bytes.concat(returnData, tempB);
                 } else if (_actions[i] == GeneralActions.Action.WRITE_OPTION) {
                     (tempB, positionSize) = oa.writeOption(
-                        _arguments[i],
-                        costBasis
+                        _arguments[i]
                     );
 
                     returnData = bytes.concat(returnData, tempB);
                 } else if (_actions[i] == GeneralActions.Action.BURN_OPTION) {
-                    (tempB, positionSize) = oa.burnOption(_arguments[i], costBasis);
+                    (tempB, positionSize) = oa.burnOption(_arguments[i]);
 
                     returnData = bytes.concat(returnData, tempB);
                 } else if (_actions[i] == GeneralActions.Action.SETTLE) {
-                    (tempB, positionSize) = oa.settle(_arguments[i], costBasis);
+                    (tempB, positionSize) = oa.settle(_arguments[i]);
 
                     returnData = bytes.concat(returnData, tempB);
                 } else if (_actions[i] == GeneralActions.Action.EXERCISE) {
-                    (tempB, positionSize) = oa.exercise(_arguments[i], costBasis);
+                    (tempB, positionSize) = oa.exercise(_arguments[i]);
 
                     returnData = bytes.concat(returnData, tempB);
                 } else if (_actions[i] == GeneralActions.Action.BUY) {
-                    returnData = bytes.concat(returnData, ea.buy(_arguments[i]));
+                    uint256 tempVal;
+
+                    (tempB, tempVal) = ea.buy(_arguments[i]);
+
+                    returnData = bytes.concat(returnData, tempB);
                 } else if (_actions[i] == GeneralActions.Action.SELL) {
-                    returnData = bytes.concat(returnData, ea.sell(_arguments[i]));
+                    uint256 tempVal;
+
+                    (tempB, tempVal) = ea.sell(_arguments[i]);
+
+
+                    returnData = bytes.concat(returnData, tempB);
                 } else if (_actions[i] == GeneralActions.Action.LEND) {
                     la.deposit(_arguments[i]);
                 } else if (_actions[i] == GeneralActions.Action.WITHDRAW_LEND) {
                     la.withdraw(_arguments[i]);
                 }
             }
+
+            absoluteDiff = _absoluteDifference(costBasis, IERC20(denominationAsset).balanceOf(address(this)));
         }
         
     }
@@ -372,5 +379,13 @@ abstract contract SocialTokenComponents is
         returns (bool)
     {
         return PositionSize.unwrap(_position.size) == 0;
+    }
+
+    /// @notice Takes the absolute difference
+    /// @dev Takes the difference between _a and _b
+    /// @param _a first value
+    /// @param _b second value
+    function _absoluteDifference(uint256 _a, uint256 _b) internal pure returns(uint256) {
+        return _a >= _b ? _a - _b : _b - _a;
     }
 }
