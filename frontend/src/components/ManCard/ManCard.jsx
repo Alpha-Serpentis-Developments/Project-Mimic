@@ -15,7 +15,7 @@ import propTypes from "prop-types";
  * @param {string} Props.Outflow - Outflow
  * @param {string} Props.TVL - TVL
  */
-export default function Card({ title, socialRating, nExp, uncFees, coins, inflow, outflow, tvl }) {
+export default function MCard({ title, socialRating, nExp, uncFees, coins, inflow, outflow, tvl }) {
 	return (
 		<div className={styles.card}>
 
@@ -25,7 +25,7 @@ export default function Card({ title, socialRating, nExp, uncFees, coins, inflow
 				</div>
 			</div>
 			<div className={styles.info}>
-				<div className={styles.stats}>
+				<div className={styles.statdiv}>
 					<div  className={styles.stats2}>
 						<p className={styles.socialRating}>
 							Social Rating:{" "}
@@ -43,7 +43,7 @@ export default function Card({ title, socialRating, nExp, uncFees, coins, inflow
 							</strong>
 						</p>
 					</div>
-					<div className={styles.stats2}>
+					<div className={styles.stats3}>
 						Inflow:{" "}
 						<strong className={styles.apy}>
 							{inflow} 
@@ -66,7 +66,7 @@ export default function Card({ title, socialRating, nExp, uncFees, coins, inflow
 	);
 }
 
-Card.propTypes = {
+MCard.propTypes = {
 	title: propTypes.string,
 	handler: propTypes.string,
 	socialRating: propTypes.string,

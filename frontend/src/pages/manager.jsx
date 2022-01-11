@@ -1,4 +1,4 @@
-import Card from "../components/ManCard/ManCard";
+import MCard from "../components/ManCard/ManCard";
 import styles from "../styles/Manager.module.scss";
 export default function Manager()
 {
@@ -52,7 +52,7 @@ export default function Manager()
                 </div>
             </div>
             <div className={styles.cards}></div>
-            <Card
+            <MCard
                 title="Cash Money"
                 socialRating="B"
                 nExp="Dec. 31st"

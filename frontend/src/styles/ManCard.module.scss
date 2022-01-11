@@ -7,10 +7,21 @@
 	margin-top: 50px;
 	width: 400px;
 	height: 260px;
+	.statdiv
+	{
+		flex: 1;
+		display: flex;
+	}
 	.stats2
 	{
-		width: 50%;
+		width: 65%;
 		border-right: 1px solid #fff;
+	}
+	.stats3
+	{
+		width: 35%;
+		@extend .stats2;
+		border-right: unset;
 	}
 	.info {
 		line-height: 35px;
