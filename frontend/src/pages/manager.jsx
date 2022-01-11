@@ -1,4 +1,4 @@
-import Card from "../components/Card/Card";
+import Card from "../components/ManCard/ManCard";
 import styles from "../styles/Manager.module.scss";
 export default function Manager()
 {
@@ -51,6 +51,9 @@ export default function Manager()
                     <p> Dec 31, 2021 UNI $10,000.00 Call</p>
                 </div>
             </div>
+            <Card>
+                
+            </Card>
         </div>
     );
 }

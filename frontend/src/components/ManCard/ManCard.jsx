@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./../../styles/Card.module.scss";
+import styles from "./../../styles/ManCard.module.scss";
 import propTypes from "prop-types";
 
 /**
@@ -11,16 +11,14 @@ import propTypes from "prop-types";
  * @param {string} Props.socialRating - Social Rating for the Card.
  * @param {number} Props.apyW - APY in one Week.
  * @param {number} Props.apyM - APY in one Month.
- * @param {string} Props.img - ICON/Image
  * @param {string[]} Props.coins - ICON/Image
  *
  */
-export default function Card({ title, handler, img, socialRating, apyW, apyM, coins }) {
+export default function Card({ title, handler, socialRating, apyW, apyM, coins }) {
 	return (
 		<div className={styles.card}>
 			<div className={styles.info}>
 				<div className={styles.top}>
-					<img className={styles.img} src={img} alt={title} />
 					<div className={styles.reference}>
 						<h2>{title}</h2>
 						<h3>{handler}</h3>
@@ -61,7 +59,6 @@ export default function Card({ title, handler, img, socialRating, apyW, apyM, co
 
 Card.propTypes = {
 	title: propTypes.string,
-	img: propTypes.string,
 	handler: propTypes.string,
 	socialRating: propTypes.string,
 	apyW: propTypes.number,
