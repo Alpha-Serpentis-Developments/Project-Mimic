@@ -51,6 +51,7 @@ export default function Manager()
                     <p> Dec 31, 2021 UNI $10,000.00 Call</p>
                 </div>
             </div>
+            <div className={styles.cards}></div>
             <Card
                 title="Cash Money"
                 socialRating="B"

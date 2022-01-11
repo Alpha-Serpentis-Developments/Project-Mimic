@@ -26,7 +26,7 @@ export default function Card({ title, socialRating, nExp, uncFees, coins, inflow
 			</div>
 			<div className={styles.info}>
 				<div className={styles.stats}>
-					<div >
+					<div  className={styles.stats2}>
 						<p className={styles.socialRating}>
 							Social Rating:{" "}
 							<strong>
@@ -43,7 +43,7 @@ export default function Card({ title, socialRating, nExp, uncFees, coins, inflow
 							</strong>
 						</p>
 					</div>
-					<div>
+					<div className={styles.stats2}>
 						Inflow:{" "}
 						<strong className={styles.apy}>
 							{inflow} 
