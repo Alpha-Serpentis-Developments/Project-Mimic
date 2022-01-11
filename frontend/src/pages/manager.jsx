@@ -51,9 +51,18 @@ export default function Manager()
                     <p> Dec 31, 2021 UNI $10,000.00 Call</p>
                 </div>
             </div>
-            <Card>
-                
-            </Card>
+            <Card
+                title="Cash Money"
+                socialRating="B"
+                nExp="Dec. 31st"
+                uncFees="$100"
+                coins={[
+                    {
+                        name: "Bitcoin",
+                        imageURL:"./bitcoin.svg"
+                    }
+                ]}
+            />
         </div>
     );
 }
