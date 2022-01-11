@@ -25,8 +25,10 @@
 	}
 	.statsContainer {
 		border-bottom: 1px solid #fff;
+		border-right: 1px solid #fff;
 		padding: 0px 10px 5px 5px;
 		.stats {
+			width: 50%;
 			display: flex;
 			font-family: "Roboto Slab", serif;
 			flex-direction: column;
