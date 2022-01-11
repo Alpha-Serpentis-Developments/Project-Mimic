@@ -12,7 +12,9 @@ import propTypes from "prop-types";
  * @param {number} Props.apyW - APY in one Week.
  * @param {number} Props.apyM - APY in one Month.
  * @param {string[]} Props.coins - ICON/Image
- *
+ * @param {string} Props.Inflow - Inflow
+ * @param {string} Props.Outflow - Outflow
+ * @param {string} Props.TVL - TVL
  */
 export default function Card({ title, handler, socialRating, apyW, apyM, coins }) {
 	return (
@@ -64,4 +66,7 @@ Card.propTypes = {
 	apyW: propTypes.number,
 	apyM: propTypes.number,
 	coins: propTypes.arrayOf(propTypes.string),
+	inflow: propTypes.string,
+	outflow: propTypes.string,
+	tvl: propTypes.string
 };
