@@ -8,28 +8,32 @@
 	width: 400px;
 	height: 260px;
 	.info {
-		font-family: "Roboto Slab", serif;
 		line-height: 35px;
 		border-bottom: 1px solid #fff;
 		.top {
+			
 			display: flex;
 			h2 {
+				font-family: "Corben", cursive;
 				font-size: 36px;
 			}
 			h3 {
 				font-size: 18px;
 			}
 		}
+
 	}
 	.statsContainer {
 		border-bottom: 1px solid #fff;
 		padding: 0px 10px 5px 5px;
 		.stats {
 			display: flex;
+			font-family: "Roboto Slab", serif;
+			flex-direction: column;
 			justify-content: space-between;
 			align-items: center;
 			.time {
-				font-size: 12px;
+				font-size: 14px;
 			}
 			.apy {
 				font-size: 14px;

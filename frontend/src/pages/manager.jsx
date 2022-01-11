@@ -62,6 +62,9 @@ export default function Manager()
                         imageURL:"./bitcoin.svg"
                     }
                 ]}
+                inflow="$500.00"
+                outflow="$200.00"
+                tvl="$25,000.00"
             />
         </div>
     );

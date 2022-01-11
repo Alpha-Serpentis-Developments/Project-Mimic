@@ -18,32 +18,35 @@ import propTypes from "prop-types";
 export default function Card({ title, socialRating, nExp, uncFees, coins, inflow, outflow, tvl }) {
 	return (
 		<div className={styles.card}>
-			<div className={styles.info}>
-				<div className={styles.top}>
-					<div className={styles.reference}>
-						<h2>{title}</h2>
-					</div>
-				</div>
-				<p className={styles.socialRating}>
-					Social Rating:{" "}
-					<strong>
-						<u>{socialRating}</u>
-					</strong>
-				</p>
-				<div className={styles.stats}>
-					
-					<p className={styles.time}>
-						Nearest Expiration: <strong className={styles.apy}>{nExp}</strong>
-					</p>
-					<p className={styles.time}>
-						Uncollected Fees:{" "}
-						<strong className={styles.apy}>
-							{uncFees} 
-						</strong>
-					</p>
+
+			<div className={styles.top}>
+				<div className={styles.reference}>
+					<h2>{title}</h2>
 				</div>
 			</div>
-			
+			<div className={styles.info}>
+				<div>
+					<div className={styles.stats}>
+						<p className={styles.socialRating}>
+							Social Rating:{" "}
+							<strong>
+								<u>{socialRating}</u>
+							</strong>
+						</p>
+						<p className={styles.time}>
+							Nearest Expiration: <strong className={styles.apy}>{nExp}</strong>
+						</p>
+						<p className={styles.time}>
+							Uncollected Fees:{" "}
+							<strong className={styles.apy}>
+								{uncFees} 
+							</strong>
+						</p>
+					</div>
+				</div>
+
+			</div>
+				
 			<div className={styles.coins}>
 				{coins.map((coin) => (
 					<img className={styles.coin} src={coin.imageURL} alt={coin.name} />
