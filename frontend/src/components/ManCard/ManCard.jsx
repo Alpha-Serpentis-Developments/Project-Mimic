@@ -26,7 +26,7 @@ export default function Card({ title, socialRating, nExp, uncFees, coins, inflow
 			</div>
 			<div className={styles.info}>
 				<div className={styles.stats}>
-					<div>
+					<div >
 						<p className={styles.socialRating}>
 							Social Rating:{" "}
 							<strong>
