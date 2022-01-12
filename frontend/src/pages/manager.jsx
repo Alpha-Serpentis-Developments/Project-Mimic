@@ -66,6 +66,8 @@ export default function Manager()
                 inflow="$500.00"
                 outflow="$200.00"
                 tvl="$25,000.00"
+                apyM={7.4}
+                apyW={10.9}
             />
         </div>
     );

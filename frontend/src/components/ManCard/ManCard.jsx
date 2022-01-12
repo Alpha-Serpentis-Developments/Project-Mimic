@@ -18,7 +18,7 @@ import propTypes from "prop-types";
  * @param {string} Props.ApyW - Inflow
  * @param {string} Props.ApyM - Outflow
  */
-export default function MCard({ title, socialRating, nExp, uncFees, coins, inflow, outflow, tvl, apyw, apym}) {
+export default function MCard({ title, socialRating, nExp, uncFees, coins, inflow, outflow, tvl, apyW, apyM}) {
 	return (
 		<div className={styles.card}>
 
@@ -74,15 +74,15 @@ export default function MCard({ title, socialRating, nExp, uncFees, coins, inflo
 					))}
 				</div>
 				<p>
-					Apy-W:{" "}
+					1-Week:{" "}
 					<strong className={styles.apy}>
-						{apyw}
+						{apyW}% APY
 					</strong>
 				</p>
 				<p>
-					Apy-M:{" "}
+					1-Month:{" "}
 					<strong className={styles.apy}>
-						{apym}
+						{apyM}% APY
 					</strong>
 				</p>
 			</div>
@@ -98,6 +98,7 @@ MCard.propTypes = {
 	title: propTypes.string,
 	handler: propTypes.string,
 	socialRating: propTypes.string,
+	nExp: propTypes.string,
 	apyW: propTypes.number,
 	apyM: propTypes.number,
 	coins: propTypes.arrayOf(propTypes.string),
