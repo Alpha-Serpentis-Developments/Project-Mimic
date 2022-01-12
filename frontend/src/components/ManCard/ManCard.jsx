@@ -14,8 +14,11 @@ import propTypes from "prop-types";
  * @param {string} Props.Inflow - Inflow
  * @param {string} Props.Outflow - Outflow
  * @param {string} Props.TVL - TVL
+ * 
+ * @param {string} Props.ApyW - Inflow
+ * @param {string} Props.ApyM - Outflow
  */
-export default function MCard({ title, socialRating, nExp, uncFees, coins, inflow, outflow, tvl }) {
+export default function MCard({ title, socialRating, nExp, uncFees, coins, inflow, outflow, tvl, apyw, apym}) {
 	return (
 		<div className={styles.card}>
 
@@ -48,15 +51,40 @@ export default function MCard({ title, socialRating, nExp, uncFees, coins, inflo
 						<strong className={styles.apy}>
 							{inflow} 
 						</strong>
+						<br></br>
+						Outflow:{" "}
+						<strong className={styles.apy}>
+							{outflow} 
+						</strong>
+						<br></br>
+						TVL:{" "}
+						<strong className={styles.apy}>
+							{tvl} 
+						</strong>
 					</div>
 				</div>
 
 			</div>
 				
-			<div className={styles.coins}>
-				{coins.map((coin) => (
-					<img className={styles.coin} src={coin.imageURL} alt={coin.name} />
-				))}
+			
+			<div className={styles.stats}>
+				<div className={styles.coins}>
+					{coins.map((coin) => (
+						<img className={styles.coin} src={coin.imageURL} alt={coin.name} />
+					))}
+				</div>
+				<p>
+					Apy-W:{" "}
+					<strong className={styles.apy}>
+						{apyw}
+					</strong>
+				</p>
+				<p>
+					Apy-M:{" "}
+					<strong className={styles.apy}>
+						{apym}
+					</strong>
+				</p>
 			</div>
 			<div className={styles.buttons}>
 				<button>Manage</button>
