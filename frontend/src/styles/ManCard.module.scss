@@ -7,18 +7,32 @@
 	margin-top: 50px;
 	width: 400px;
 	height: 260px;
-	.statdiv
-	{
+	.flex{
+		display: flex;
+		.coins {
+				
+			.coin {
+				width: 37px;
+				border: 1px solid black;
+				border-radius: 50%;
+				margin: 5px -20px 0 0;
+			}
+		}
+		p{
+			font-size: small;
+			margin: 20px 0 0 0;
+			padding-left: 30px;
+		}
+	}
+	.statdiv{
 		flex: 1;
 		display: flex;
 	}
-	.stats2
-	{
+	.stats2{
 		width: 65%;
 		border-right: 1px solid #fff;
 	}
-	.stats3
-	{
+	.stats3{
 		width: 35%;
 		@extend .stats2;
 		border-right: unset;
@@ -55,16 +69,9 @@
 				font-size: 14px;
 			}
 
-			.coins {
-				
-				.coin {
-					width: 37px;
-					border: 1px solid black;
-					border-radius: 50%;
-					margin: 5px -20px 0 0;
-				}
-			}
+			
 		}
+		
 	}
 	.img {
 		background-color: #d6f2f1;

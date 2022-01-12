@@ -67,7 +67,7 @@ export default function MCard({ title, socialRating, nExp, uncFees, coins, inflo
 			</div>
 				
 			
-			<div className={styles.stats}>
+			<div className={styles.flex}>
 				<div className={styles.coins}>
 					{coins.map((coin) => (
 						<img className={styles.coin} src={coin.imageURL} alt={coin.name} />
