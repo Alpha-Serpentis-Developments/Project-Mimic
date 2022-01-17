@@ -7,9 +7,9 @@ export default function Vault() {
 		<div className={styles.vaultPage}>
 			<div className={styles.left}>
 				<div className={styles.information}>
-					<h1>
+					<h2>
 						Social Trader Earth <span>0xBA5ED...</span>
-					</h1>
+					</h2>
 					<p>
 						The social trader token is managed by @OptionalFinance, a social trading platform designed for
 						social traders
@@ -29,9 +29,34 @@ export default function Vault() {
 							<td>9854</td>
 							<td>$69</td>
 							<td>45%</td>
-							<td>43958794759740</td>
+							<td>439587940</td>
+						</tr>
+						<tr className={styles.heading}>
+							<td>Eth</td>
+							<td>9854</td>
+							<td>$69</td>
+							<td>45%</td>
+							<td>439587940</td>
+						</tr>
+						<tr className={styles.heading}>
+							<td>Eth</td>
+							<td>9854</td>
+							<td>$69</td>
+							<td>45%</td>
+							<td>439587940</td>
+						</tr>
+						<tr className={styles.heading}>
+							<td>Eth</td>
+							<td>9854</td>
+							<td>$69</td>
+							<td>45%</td>
+							<td>439587940</td>
 						</tr>
 					</table>
+				</div>
+				<div className={styles.recent}>
+					<h2>Recent Trades</h2>
+					<p>No Data to Present..</p>
 				</div>
 			</div>
 			<Calculator />
