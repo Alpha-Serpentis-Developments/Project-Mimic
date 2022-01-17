@@ -51,24 +51,60 @@ export default function Manager()
                     <p> Dec 31, 2021 UNI $10,000.00 Call</p>
                 </div>
             </div>
-            <div className={styles.cards}></div>
-            <MCard
-                title="Cash Money"
-                socialRating="B"
-                nExp="Dec. 31st"
-                uncFees="$100"
-                coins={[
-                    {
-                        name: "Bitcoin",
-                        imageURL:"./bitcoin.svg"
-                    }
-                ]}
-                inflow="$500.00"
-                outflow="$200.00"
-                tvl="$25,000.00"
-                apyM={7.4}
-                apyW={10.9}
-            />
+            <div className={styles.cards}>
+                <MCard
+                    title="Cash Money"
+                    socialRating="B"
+                    nExp="Dec. 31st"
+                    uncFees="$100"
+                    coins={[
+                        {
+                            name: "Bitcoin",
+                            imageURL:"./bitcoin.svg"
+                        }
+                    ]}
+                    inflow="$500.00"
+                    outflow="$200.00"
+                    tvl="$25,000.00"
+                    apyM={7.4}
+                    apyW={10.9}
+                />
+                <MCard
+                    title="Cash Money"
+                    socialRating="B"
+                    nExp="Dec. 31st"
+                    uncFees="$100"
+                    coins={[
+                        {
+                            name: "Bitcoin",
+                            imageURL:"./bitcoin.svg"
+                        }
+                    ]}
+                    inflow="$500.00"
+                    outflow="$200.00"
+                    tvl="$25,000.00"
+                    apyM={7.4}
+                    apyW={10.9}
+                />
+                <MCard
+                    title="Cash Money"
+                    socialRating="B"
+                    nExp="Dec. 31st"
+                        uncFees="$100"
+                    coins={[
+                        {
+                            name: "Bitcoin",
+                            imageURL:"./bitcoin.svg"
+                        }
+                    ]}
+                    inflow="$500.00"
+                    outflow="$200.00"
+                    tvl="$25,000.00"
+                    apyM={7.4}
+                    apyW={10.9}
+                />
+            </div>
+            
         </div>
     );
 }

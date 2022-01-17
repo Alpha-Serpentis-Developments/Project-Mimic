@@ -4,10 +4,11 @@
 	border-radius: 25px;
 	box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
 	text-align: left;
-	margin-top: 50px;
+    margin: 50px 40px 0px 60px;
 	width: 400px;
 	height: 260px;
 	.flex{
+		border-bottom: 1px solid #fff;
 		display: flex;
 		.coins {
 				
@@ -29,11 +30,12 @@
 		display: flex;
 	}
 	.stats2{
-		width: 65%;
+		width: 62%;
 		border-right: 1px solid #fff;
 	}
 	.stats3{
-		width: 35%;
+		width: 38%;
+		padding-left: 2px;
 		@extend .stats2;
 		border-right: unset;
 	}
