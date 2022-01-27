@@ -36,8 +36,8 @@ export default function Card({ title, handler, img, socialRating, apyW, apyM, co
 			<div className={styles.statsContainer}>
 				<div className={styles.stats}>
 					<div className={styles.coins}>
-						{coins.map((coin) => (
-							<img className={styles.coin} src={coin.imageURL} alt={coin.name} />
+						{coins.map((coin, index) => (
+							<img className={styles.coin} src={coin.imageURL} key={index} alt={coin.name} />
 						))}
 					</div>
 					<p className={styles.time}>

@@ -5,7 +5,7 @@ import Link from 'next/link'
 export default function Navbar() {
 	return (
 		<nav className={styles.navbar}>
-			<img className={styles.icon} src="/optional.svg" width="50px" height="60px" />
+			<img className={styles.icon} alt={"optional logo"} src="/optional.svg" width="50px" height="60px" />
 			<div className={styles.links}>
 				<Link href="/">
 					<a>Home</a>

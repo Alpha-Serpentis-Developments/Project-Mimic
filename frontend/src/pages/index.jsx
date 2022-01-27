@@ -53,7 +53,6 @@ export default function Home() {
 								name: "Bitcoin",
 								imageURL: "/bitcoin.svg",
 							},
-							
 						]}
 						img={"venus.svg"}
 						key={2}
@@ -85,12 +84,12 @@ export default function Home() {
 							</p>
 						</div>
 						<div className={styles.optionsicon}>
-							<img className={styles.opyn} src="/image 5.png"></img>
+							<img className={styles.opyn} alt={"opyn icon"} src="/image 5.png"></img>
 						</div>
 					</div>
 					<div className={styles.earndesc}>
 						<div className={styles.earnicon}>
-							<img className={styles.earn} src="/Vector.png"></img>
+							<img alt={"earn icon"} className={styles.earn} src="/Vector.png"></img>
 						</div>
 						<div>
 							<p className={styles.optionstitle}>

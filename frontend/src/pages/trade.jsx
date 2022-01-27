@@ -3,16 +3,16 @@ import Card from "../components/Card/Card";
 import { dummy } from "../components/Carosel/dummy";
 import styles from "./../styles/Trade.module.scss";
 
-export default function trade() {
-	const tradeRef = useRef(null)
+export default function Trade() {
+	const tradeRef = useRef(null);
 
 	const scrollLeft = () => {
-		if(tradeRef.current) {
+		if (tradeRef.current) {
 			tradeRef.current.scrollBy({
 				top: 0,
 				left: 480,
-				behavior: 'smooth'
-			})
+				behavior: "smooth",
+			});
 		}
 	};
 	const scrollRight = () => {
@@ -35,7 +35,7 @@ export default function trade() {
 					</button>
 					<div className={styles.cards} ref={tradeRef}>
 						{dummy.map((card, index) => (
-							<div className={styles.followCard}>
+							<div className={styles.followCard} key={index}>
 								<Card key={index} {...card} />
 							</div>
 						))}
