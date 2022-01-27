@@ -64,7 +64,7 @@ Card.propTypes = {
 	img: propTypes.string,
 	handler: propTypes.string,
 	socialRating: propTypes.string,
-	apyW: propTypes.number,
+	apyW: propTypes.number,	
 	apyM: propTypes.number,
 	coins: propTypes.arrayOf(propTypes.string),
 };

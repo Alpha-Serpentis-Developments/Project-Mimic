@@ -14,10 +14,12 @@ body {
 	background: linear-gradient(287.56deg, #5d86ef 0%, #f2b6f3 100%);
 	background-repeat: no-repeat;
 	background-size:130% 100%;
+	min-height: 150vh;
+
 }
 
 .container {
-	max-width: 1536px;
+	max-width: 1584px;
 	width: 100%;
 	margin: 0 auto;
 	@media only screen and (max-width: 1280px) {
