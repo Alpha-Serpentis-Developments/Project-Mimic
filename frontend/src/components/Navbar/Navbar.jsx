@@ -16,7 +16,7 @@ export default function Navbar() {
 				<Link href="/manager">
 					<a>Manager</a>
 				</Link>
-				<Link href="/docs">
+				<Link href="https://docs.optional.finance/">
 					<a>Docs</a>
 				</Link>
 			</div>

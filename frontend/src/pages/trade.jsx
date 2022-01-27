@@ -22,6 +22,7 @@ export default function trade() {
 				left: -480,
 				behavior: "smooth",
 			});
+			console.log(tradeRef.current);
 		}
 	};
 	return (
@@ -39,7 +40,7 @@ export default function trade() {
 							</div>
 						))}
 					</div>
-					<button className={styles.controls} onClick={() => scrollLeft()}>
+					<button className={styles.controls} onClick={() => scrollLeft()} disabled={false}>
 						<i className={"fa-solid fa-angle-right"} />
 					</button>
 				</div>
