@@ -11,9 +11,10 @@ export default function Home() {
 			<main className={styles.main}>
 				<div className={styles.hero}>
 					<h1 className={styles.title}>
-						Decentralized Social
-						<br />
-						Trading for Options
+					Decentralized
+					<br/>
+					Vault Management for Options
+
 					</h1>
 					<div className={styles.tagline}>
 						<p className={`${styles.inline} ${styles.desc}`}>
@@ -79,7 +80,7 @@ export default function Home() {
 						<div>
 							<p className={styles.optionstitle}> Exposure to Options</p>
 							<p>
-								Optional allows both social traders and their followers to expose themselves to the
+								Optional allows both vault managers and their followers to expose themselves to the
 								options market utilizing decentralized option protocols like Opyn.
 							</p>
 						</div>
@@ -97,7 +98,7 @@ export default function Home() {
 								Earn Yield for Followers,<br></br> Earn Fees for Yourself
 							</p>
 							<p>
-								Social traders can earn fees for themselves in a variety of ways, especially if their
+								Vault managers can earn fees for themselves in a variety of ways, especially if their
 								performance is exceptional!
 							</p>
 						</div>

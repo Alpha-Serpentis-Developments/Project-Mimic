@@ -46,7 +46,7 @@ export default function Trade() {
 				</div>
 			</div>
 			<div className={styles.avaliable}>
-				<h1>Avaliable Social Trades</h1>
+				<h1>Available Vault Managers</h1>
 				<div className={styles.cards}>
 					<Card
 						title="Venus"
