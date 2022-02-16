@@ -6,10 +6,16 @@ export default function Footer(){
     return(
         <div className={styles.footer}>
             <a className={styles.img} href="https://discord.gg/u9wMgBY">
-                <img className={styles.img} src="/discord.svg" alt="Optional Finance Discord"/>
+                <img className={styles.l} src="/discord.svg" alt="Optional Finance Discord"/>
             </a>
             <a className={styles.img} href="https://twitter.com/OptionalFinance">
-                <img className={styles.img} src="/twitter.svg" alt="Optional Finance Twitter" href="https://twitter.com/OptionalFinance"/>                
+                <img className={styles.l} src="/twitter.svg" alt="Optional Finance Twitter" href="https://twitter.com/OptionalFinance"/>                
+            </a>
+            <a className={styles.img} href="https://github.com/Alpha-Serpentis-Developments/Project-Mimic">
+                <img className={styles.l} src="/GitHub-Mark-64px.svg" alt="Optional finance github" />
+            </a>
+            <a className={styles.img} href="https://medium.com/@OptionalFinance">
+                <img className={styles.l} src="/Medium.svg" alt="Optional finance medium" />
             </a>
         </div>
     )
