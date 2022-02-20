@@ -5,7 +5,7 @@ export default function Manager()
     return(
         <div className={styles.main}>
         
-            <h1 className={styles.title}>Social tokens you manage </h1>
+            <h1 className={styles.title}>Vaults You Manage</h1>
             <div className={styles.container}>
                 <div>
                     <div className={styles.div}>
