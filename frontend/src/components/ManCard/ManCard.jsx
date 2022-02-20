@@ -73,13 +73,13 @@ export default function MCard({ title, socialRating, nExp, uncFees, coins, inflo
 						<img key={index} className={styles.coin} src={coin.imageURL} alt={coin.name} />
 					))}
 				</div>
-				<p>
+				<p className={styles.apy}>
 					1-Week:{" "}
 					<strong className={styles.apy}>
 						{apyW}% APY
 					</strong>
 				</p>
-				<p>
+				<p className={styles.apy}>
 					1-Month:{" "}
 					<strong className={styles.apy}>
 						{apyM}% APY
