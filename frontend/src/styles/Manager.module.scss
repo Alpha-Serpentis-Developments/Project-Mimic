@@ -52,9 +52,12 @@
 .cards
 {
     display: flex;
+    flex: 1;
     flex-direction: row;
     border-top: 1px solid rgba(0, 0, 0, 0.25);
-    width: 81%;
-    margin-left: 10%;
-    
+    width: 100%;
+    margin-left: 5%;
+    .cards div{
+        margin-left: 100px;
+    }   
 }

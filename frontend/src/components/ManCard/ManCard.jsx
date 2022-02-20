@@ -37,7 +37,7 @@ export default function MCard({ title, socialRating, nExp, uncFees, coins, inflo
 							</strong>
 						</p>
 						<p className={styles.time}>
-							Nearest Expiration: <strong className={styles.apy}>{nExp}</strong>
+							Near. Exp.: <strong className={styles.apy}>{nExp}</strong>
 						</p>
 						<p className={styles.time}>
 							Uncollected Fees:{" "}
@@ -47,20 +47,21 @@ export default function MCard({ title, socialRating, nExp, uncFees, coins, inflo
 						</p>
 					</div>
 					<div className={styles.stats3}>
-						Inflow:{" "}
-						<strong className={styles.apy}>
-							{inflow} 
-						</strong>
-						<br></br>
-						Outflow:{" "}
-						<strong className={styles.apy}>
-							{outflow} 
-						</strong>
-						<br></br>
-						TVL:{" "}
-						<strong className={styles.apy}>
-							{tvl} 
-						</strong>
+						<p className={styles.apy}>Inflow:
+							<strong className={styles.apy}>
+								{inflow} 
+							</strong>
+						</p>
+						<p className={styles.apy}>Outflow:
+							<strong className={styles.apy}>
+								{inflow} 
+							</strong>
+						</p>
+						<p className={styles.apy}>TVL:
+							<strong className={styles.apy}>
+								{inflow} 
+							</strong>
+						</p>
 					</div>
 				</div>
 
