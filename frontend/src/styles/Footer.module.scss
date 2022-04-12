@@ -1,0 +1,17 @@
+.footer{
+    margin: 0px 5% 0;
+    width: 90%;
+    display: grid;
+    grid-auto-flow: column;
+    .img{
+        margin: 1% 0 0 0;
+        width: fit-content;
+    }
+    .l:hover{
+        transform: scale(1);
+    }
+    .l{
+        margin-left: 100%;
+        transform: scale(.75);
+    }
+}

@@ -1,12 +1,46 @@
 .trade {
-    margin: 40px;
-    text-align: center;
+	margin: 40px;
+	text-align: center;
 	h1 {
-        font-size: 48px;
-    }
-    .cardCarosel {
-        display: flex;
-        justify-content: space-around;
+		font-size: 48px;
+	}
+	.following {
+		margin-top: 60px;
+	}
 
-    }
+	.avaliable {
+		margin-top: 60px;
+		.cards {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-evenly;
+		}
+	}
+
+	.cardCarosel {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		.cards {
+			display: flex;
+			overflow-x: hidden;
+			justify-content: space-between;
+			align-items: center;
+			padding: 10px 20px;
+			.followCard {
+				&:not(:last-child) {
+					margin-right: 80px;
+				}
+			}
+		}
+		.controls {
+			border: none;
+			border-radius: 50%;
+			padding: 10px 20px;
+			font-size: 24px;
+			i {
+				color: black;
+			}
+		}
+	}
 }

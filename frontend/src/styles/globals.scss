@@ -1,21 +1,46 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100;200;300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Corben&display=swap');
 
 * {
 	padding: 0;
 	margin: 0;
 	box-sizing: border-box;
-  color: #ffffff
+  	color: #ffffff
 }
 
 html,
 body {
 	font-family: "Roboto Slab";
 	background: linear-gradient(287.56deg, #5d86ef 0%, #f2b6f3 100%);
+	background-repeat: no-repeat;
+	background-size:130% 100%;
+	min-height: 100vh;
+
 }
 
 .container {
-	margin: 40px auto;
-	width: 1280px;
+	max-width: 1584px;
+	width: 100%;
+	margin: 0 auto;
+	@media only screen and (max-width: 1280px) {
+		max-width: 1024px;
+		width: 100%;
+		margin: 0 auto;
+	}
+	@media only screen and (max-width: 1024px) {
+		max-width: 768px;
+		width: 100%;
+		margin: 0 auto;
+	}
+	@media only screen and (max-width: 640px) {
+		width: 100vw;
+		h1 {
+			font-size: 32px !important;
+		}
+		p, span {
+			font-size: 16px !important;
+		}
+	}
 }
 
 :root {
