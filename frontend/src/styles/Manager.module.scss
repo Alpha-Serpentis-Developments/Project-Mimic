@@ -1,0 +1,63 @@
+.main{
+    min-height: 110vh;
+}
+.title {
+    text-align: center;
+    font-size: 48px;
+}
+.container {
+    display: flex;
+    margin: 0% 10% 20px 10%;
+}
+
+.div {
+    margin: 10px  0px 20px 2%;
+    padding: 13px 20px;
+    width: 200px;
+    font-size: 24px;
+    text-align: center;
+    background: rgba($color: #C4C4C4, $alpha: 0.5);
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+}
+.managediv
+{
+    flex: 1;
+    max-width:50%;
+    height: 200px;
+    display: flex;
+    @extend .div;
+}
+.exdiv
+{   
+    font-size: 18;
+    max-width: 45%;
+    flex-direction: column;
+    @extend .managediv;
+}
+.bold
+{
+    font-family: "Roboto Slab" serif;
+    font-size: 22px;
+    font-weight: 700;
+}
+.flex
+{
+    flex: 1;
+}
+.flex *
+{
+    padding: 5px;
+}
+.cards
+{
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    border-top: 1px solid rgba(0, 0, 0, 0.25);
+    width: 100%;
+    margin-left: 5%;
+    .cards div{
+        margin-left: 100px;
+    }   
+}

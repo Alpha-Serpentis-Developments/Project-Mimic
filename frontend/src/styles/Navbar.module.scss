@@ -1,0 +1,50 @@
+.navbar {
+	padding: 15px 20px;
+	font-size: 20px;
+	margin: 0 auto;
+	position: relative;
+	// width: 1480px;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	margin: auto;
+	justify-content: space-between;
+	overflow: hidden;
+	.links {
+		display: flex;
+		flex-direction: row;
+		// ! TEMPORARY
+		// TODO: Find a Better way to center the button
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%);
+		a {
+			margin: 0 25px;
+			color: var(--white);
+			font-family: "Roboto Slab" serif;
+			font-weight: 500;
+			text-decoration: none;
+			&:hover {
+				text-decoration: underline;
+			}
+		}
+	}
+	.connectbtn {
+		font-size: 20px;
+		filter: drop-shadow(0px 4px 9px rgba(0, 0, 0, 0.25));
+		border-width: 0px;
+		padding: 5px 20px;
+		margin: 0px;
+		background-color: var(--regular);
+		color: var(--white);
+		font-weight: 500;
+		border-radius: 10px;
+		transition: all 0.3s ease-in-out;
+		&:active {
+			background-color: var(--active);
+		}
+		&:hover {
+			transform: scale(1.2);
+		}
+	}
+}
